@@ -22,13 +22,13 @@ async function fetchAndDisplayCategories() {
             </div>
         `;
 
-        // المرور على الأقسام المجلوبة وإضافتها بالتصميم الجديد
+        // المرور على الأقسام المجلوبة وإضافتها بالتصميم الجديد (صورة كاملة مع نص بخلفية زجاجية شفافة)
         if (categories && categories.length > 0) {
             categories.forEach(category => {
                 const categoryHTML = `
-                    <div class="category-item" data-category="${category.name}">
-                        <img class="category-img" src="${category.image_url}" alt="${category.name}">
-                        <p class="category-title">${category.name}</p>
+                    <div class="category-item" data-category="${category.name}" style="position: relative; display: flex; justify-content: center;">
+                        <img class="category-img" src="${category.image_url}" alt="${category.name}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 18px; z-index: 1;">
+                        <p class="category-title" style="position: absolute; bottom: 8px; z-index: 2; width: max-content; max-width: 90%; background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); color: #1A1A1A; font-size: 11px; font-weight: 800; text-align: center; padding: 4px 12px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${category.name}</p>
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', categoryHTML);
@@ -115,11 +115,20 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
     });
 }
 
-// 4. دالة تفعيل أزرار الأقسام (مفصولة ليتم استدعاؤها بعد الجلب)
+// 4. دالة تفعيل أزرار الأقسام (مفصولة ليتم استدعاؤها بعد الجلب مع إضافة الحركة البهلوانية)
 function setupCategoryListeners() {
     const categoryCards = document.querySelectorAll('.category-item');
     categoryCards.forEach(card => {
         card.addEventListener('click', () => {
+            // إضافة كلاس الحركة البهلوانية (الجيلي)
+            card.classList.add('pop-anim');
+            
+            // إزالة كلاس الحركة بعد 0.4 ثانية (لتكون جاهزة للضغط مرة أخرى)
+            setTimeout(() => {
+                card.classList.remove('pop-anim');
+            }, 400);
+
+            // باقي الأوامر الخاصة بتغيير القسم المختار
             categoryCards.forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
