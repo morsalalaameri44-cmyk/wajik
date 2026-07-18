@@ -3,7 +3,7 @@ const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
 const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// 2. دالة جلب الأقسام وعرضها في الواجهة بالتصميم الشبكي الجديد
+// 2. دالة جلب الأقسام وعرضها في الواجهة
 async function fetchAndDisplayCategories() {
     try {
         const { data: categories, error } = await supabaseClient
@@ -12,15 +12,10 @@ async function fetchAndDisplayCategories() {
 
         if (error) throw error;
 
-        const container = document.querySelector('.categories-container');
+        const container = document.getElementById('categoriesContainer');
         
-        // تفريغ الحاوية الحالية وإبقاء زر "الكل" بتصميم الشبكة (Grid) الجديد
-        container.innerHTML = `
-            <div class="category-item all-btn active" data-category="الكل">
-                <i class="fa-solid fa-border-all"></i>
-                <p class="category-title">الكل</p>
-            </div>
-        `;
+        // تفريغ الحاوية بالكامل (إزالة زر "الكل" الثابت كما طلبت)
+        container.innerHTML = '';
 
         // المرور على الأقسام المجلوبة وإضافتها بالتصميم الجديد (صورة كاملة مع نص بخلفية زجاجية شفافة)
         if (categories && categories.length > 0) {
@@ -57,7 +52,7 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
     let query = supabaseClient.from('stores').select('*');
     
     if (categoryName !== 'الكل') {
-        query = query.eq('category', categoryName); // تأكد أن لديك عمود اسمه 'category' في جدول stores
+        query = query.eq('category', categoryName);
     }
 
     const { data, error } = await query;
@@ -91,8 +86,6 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
     finalData.forEach(store => {
         const storeName = store.name || store.store_name || 'متجر غير مسمى';
         const storeCategory = store.category || 'عام';
-        
-        // استخدام صورة المطعم من قاعدة البيانات (logo_url) إذا توفرت، وإلا استخدام الصورة الافتراضية
         const storeImage = store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80'; 
 
         const card = document.createElement("a");
@@ -120,28 +113,60 @@ function setupCategoryListeners() {
     const categoryCards = document.querySelectorAll('.category-item');
     categoryCards.forEach(card => {
         card.addEventListener('click', () => {
-            // إضافة كلاس الحركة البهلوانية (الجيلي)
             card.classList.add('pop-anim');
             
-            // إزالة كلاس الحركة بعد 0.4 ثانية (لتكون جاهزة للضغط مرة أخرى)
             setTimeout(() => {
                 card.classList.remove('pop-anim');
             }, 400);
 
-            // باقي الأوامر الخاصة بتغيير القسم المختار
             categoryCards.forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
             const selectedCategory = card.getAttribute('data-category');
-            
             document.getElementById('searchInput').value = '';
-            
             loadStores(selectedCategory);
         });
     });
 }
 
-// 5. تفعيل الأوامر عند تشغيل الصفحة
+// 5. جعل جميع عناصر الواجهة تعمل بصورة تفاعلية
+function setupInterfaceInteractions() {
+    // برمجة نص "عرض الكل"
+    document.getElementById('viewAllCategoriesBtn').addEventListener('click', () => {
+        // إزالة التحديد عن أي قسم نشط
+        const categoryCards = document.querySelectorAll('.category-item');
+        categoryCards.forEach(c => c.classList.remove('active'));
+        
+        // تفريغ مربع البحث
+        document.getElementById('searchInput').value = '';
+        
+        // تحميل كل المتاجر
+        loadStores('الكل');
+    });
+
+    // برمجة زر الموقع
+    document.getElementById('locationBtn').addEventListener('click', () => {
+        alert('ستفتح خريطة تحديد موقع التوصيل في التحديث القادم!');
+    });
+
+    // برمجة زر الإشعارات
+    document.getElementById('notificationBtn').addEventListener('click', () => {
+        alert('لا توجد إشعارات جديدة حالياً، طلباتك كلها تمام!');
+    });
+
+    // برمجة زر العرض الخاطف (بنر 1) - يجلب التموينات مثلاً
+    document.getElementById('bannerBtn1').addEventListener('click', () => {
+        loadStores('تموينات');
+        // يمكن إضافة حركة أو تنبيه هنا
+    });
+
+    // برمجة زر صحتك تهمنا (بنر 2) - يجلب الصيدليات
+    document.getElementById('bannerBtn2').addEventListener('click', () => {
+        loadStores('صيدليات');
+    });
+}
+
+// 6. تفعيل الأوامر عند تشغيل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
     
     // جلب الأقسام الحقيقية من قاعدة البيانات
@@ -149,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // جلب المتاجر الافتراضية
     loadStores('الكل');
+
+    // تشغيل برمجة الأزرار التفاعلية (الموقع، الإشعارات، عرض الكل، البنرات)
+    setupInterfaceInteractions();
 
     // تفعيل مربع البحث
     const searchInput = document.getElementById('searchInput');
