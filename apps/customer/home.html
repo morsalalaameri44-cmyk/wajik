@@ -110,16 +110,71 @@
         .section-title h3 { font-size: 17px; font-weight: 800; color: var(--text-dark); }
         .section-title span { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; }
 
-        .categories-container { display: flex; gap: 15px; padding: 5px 20px 15px 20px; overflow-x: auto; }
-        .category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0; }
-        .category-icon-box {
-            width: 64px; height: 64px; border-radius: 18px; background-color: #FFFFFF; display: flex;
-            justify-content: center; align-items: center; font-size: 22px; color: var(--text-dark);
-            box-shadow: var(--card-shadow); border: 1px solid #FAFAFA; transition: 0.3s;
+        /* --- التصميم الجديد: نظام الشبكة الملونة للأقسام --- */
+        .categories-container { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
+            padding: 5px 20px 15px 20px; 
         }
-        .category-item.active .category-icon-box { background-color: var(--primary); color: #FFFFFF; box-shadow: 0 6px 15px rgba(242, 92, 5, 0.25); }
-        .category-item p { font-size: 13px; font-weight: 700; color: var(--text-dark); transition: 0.2s; }
-        .category-item.active p { color: var(--primary); }
+        
+        .category-item { 
+            position: relative;
+            height: 105px;
+            border-radius: 18px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding-top: 12px;
+            cursor: pointer; 
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .category-item:active { transform: scale(0.95); }
+
+        /* إعطاء ألوان متدرجة تلقائية للأقسام */
+        .category-item:nth-child(6n+1) { background: linear-gradient(135deg, #FF9F1C, #F25C05); } /* برتقالي واجيك */
+        .category-item:nth-child(6n+2) { background: linear-gradient(135deg, #48CAE4, #0077B6); } /* أزرق صيدليات */
+        .category-item:nth-child(6n+3) { background: linear-gradient(135deg, #52B788, #2D6A4F); } /* أخضر تموينات */
+        .category-item:nth-child(6n+4) { background: linear-gradient(135deg, #FF6B6B, #E63946); } /* أحمر */
+        .category-item:nth-child(6n+5) { background: linear-gradient(135deg, #B5179E, #7209B7); } /* بنفسجي هدايا */
+        .category-item:nth-child(6n+0) { background: linear-gradient(135deg, #F4A261, #E76F51); } /* سلموني */
+
+        /* تصميم زر "الكل" ليكون مختلفاً ومميزاً باللون الأبيض */
+        .category-item.all-btn { background: #FFFFFF; border: 2px solid #F0F0F0; justify-content: center; padding-top: 0; box-shadow: none; }
+        .category-item.all-btn i { font-size: 28px; color: var(--text-gray); margin-bottom: 5px; transition: 0.2s;}
+        .category-item.all-btn p.category-title { position: static; background: transparent; color: var(--text-dark); font-size: 13px; padding: 0; box-shadow: none; width: auto; }
+        
+        /* القسم النشط */
+        .category-item.active { outline: 3px solid var(--text-dark); outline-offset: 2px; }
+        .category-item.all-btn.active { border-color: var(--primary); outline: none; }
+        .category-item.all-btn.active i, .category-item.all-btn.active p.category-title { color: var(--primary); }
+
+        /* صورة القسم */
+        .category-img { width: 55px; height: 55px; object-fit: contain; z-index: 1; transition: 0.3s; }
+        .category-item.active .category-img { transform: scale(1.1); }
+
+        /* النص (اسم القسم) داخل المربع الأبيض الصغير أسفل القسم */
+        .category-title {
+            position: absolute;
+            bottom: 8px;
+            width: 85%;
+            background-color: #FFFFFF;
+            color: var(--text-dark);
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+            padding: 5px 2px;
+            border-radius: 10px;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* --- نهاية التعديل --- */
 
         .stores-list { padding: 5px 20px; display: flex; flex-direction: column; gap: 15px; }
         
@@ -211,26 +266,12 @@
                 <h3>أقسام واجيك</h3>
                 <span>عرض الكل</span>
             </div>
+            
+            <!-- الحاوية الأساسية للأقسام -->
             <div class="categories-container no-scrollbar">
-                <div class="category-item active" data-category="الكل">
-                    <div class="category-icon-box"><i class="fa-solid fa-border-all"></i></div>
-                    <p>الكل</p>
-                </div>
-                <div class="category-item" data-category="مطاعم">
-                    <div class="category-icon-box" style="color: #E63946;"><i class="fa-solid fa-utensils"></i></div>
-                    <p>مطاعم</p>
-                </div>
-                <div class="category-item" data-category="سوبر ماركت">
-                    <div class="category-icon-box" style="color: #4C956C;"><i class="fa-solid fa-basket-shopping"></i></div>
-                    <p>تموينات</p>
-                </div>
-                <div class="category-item" data-category="صيدليات">
-                    <div class="category-icon-box" style="color: #0077B6;"><i class="fa-solid fa-heart-pulse"></i></div>
-                    <p>صيدليات</p>
-                </div>
-                <div class="category-item" data-category="تحف وهدايا">
-                    <div class="category-icon-box" style="color: #8338EC;"><i class="fa-solid fa-gift"></i></div>
-                    <p>هدايا</p>
+                <div class="category-item all-btn active" data-category="الكل">
+                    <i class="fa-solid fa-border-all"></i>
+                    <p class="category-title">الكل</p>
                 </div>
             </div>
 
