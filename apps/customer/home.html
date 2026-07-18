@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>واجيك - الرئيسية</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --primary-light: #FFF2EB;
+            --bg-light: #F8F9FA;
+            --text-dark: #1A1A1A;
+            --text-gray: #757575;
+            --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            --nav-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #E9ECEF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            max-height: 900px;
+            background-color: var(--bg-light);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .app-header {
+            background-color: #FFFFFF;
+            padding: 20px 20px 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-container { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .location-icon {
+            width: 40px; height: 40px; background-color: var(--primary-light);
+            color: var(--primary); border-radius: 12px; display: flex;
+            justify-content: center; align-items: center; font-size: 18px;
+        }
+        .location-text p { font-size: 12px; color: var(--text-gray); }
+        .location-text h4 { font-size: 15px; font-weight: 800; color: var(--text-dark); }
+
+        .notification-btn {
+            width: 40px; height: 40px; border: 1px solid #EFEFEF; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center; font-size: 18px;
+            color: var(--text-dark); position: relative; cursor: pointer; background: white;
+        }
+        .notification-badge {
+            position: absolute; top: 10px; right: 11px; width: 8px; height: 8px;
+            background-color: #E63946; border-radius: 50%;
+        }
+
+        .search-section { background-color: #FFFFFF; padding: 5px 20px 15px 20px; }
+        .search-wrapper { position: relative; display: flex; align-items: center; }
+        .search-wrapper i { position: absolute; right: 18px; color: var(--text-gray); font-size: 16px; }
+        .search-input {
+            width: 100%; padding: 15px 48px 15px 15px; border: 1px solid #F0F0F0;
+            background-color: #F6F6F6; border-radius: 14px; font-size: 14px; outline: none; transition: 0.3s;
+        }
+        .search-input:focus { border-color: var(--primary); background-color: #FFFFFF; box-shadow: 0 0 0 4px var(--primary-light); }
+
+        .main-content { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+
+        .banners-slider { display: flex; gap: 15px; padding: 15px 20px; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .banner-card {
+            flex: 0 0 85%; scroll-snap-align: start; height: 140px; border-radius: 20px; padding: 20px;
+            color: #FFFFFF; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center;
+        }
+        .banner-1 { background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%); }
+        .banner-2 { background: linear-gradient(135deg, #00B4D8 0%, #0077B6 100%); }
+        .banner-3 { background: linear-gradient(135deg, #439A86 0%, #00725B 100%); }
+
+        .banner-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 5px; z-index: 2; }
+        .banner-card p { font-size: 13px; font-weight: 500; opacity: 0.9; margin-bottom: 12px; z-index: 2; }
+        .banner-btn {
+            align-self: flex-start; background-color: #FFFFFF; color: var(--text-dark);
+            padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; border: none; z-index: 2; cursor: pointer;
+        }
+        .banner-card i.bg-icon { position: absolute; left: -10px; bottom: -20px; font-size: 110px; opacity: 0.15; z-index: 1; }
+
+        .section-title { padding: 15px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title h3 { font-size: 17px; font-weight: 800; color: var(--text-dark); }
+        .section-title span { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; }
+
+        .categories-container { display: flex; gap: 15px; padding: 5px 20px 15px 20px; overflow-x: auto; }
+        .category-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0; }
+        .category-icon-box {
+            width: 64px; height: 64px; border-radius: 18px; background-color: #FFFFFF; display: flex;
+            justify-content: center; align-items: center; font-size: 22px; color: var(--text-dark);
+            box-shadow: var(--card-shadow); border: 1px solid #FAFAFA; transition: 0.3s;
+        }
+        .category-item.active .category-icon-box { background-color: var(--primary); color: #FFFFFF; box-shadow: 0 6px 15px rgba(242, 92, 5, 0.25); }
+        .category-item p { font-size: 13px; font-weight: 700; color: var(--text-dark); transition: 0.2s; }
+        .category-item.active p { color: var(--primary); }
+
+        .stores-list { padding: 5px 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .store-card {
+            background-color: #FFFFFF; border-radius: 20px; padding: 12px; display: flex; gap: 15px;
+            box-shadow: var(--card-shadow); border: 1px solid #FDFDFD; cursor: pointer; transition: 0.2s; text-decoration: none; color: inherit;
+        }
+        .store-card:active { transform: scale(0.98); }
+
+        .store-img-wrapper {
+            position: relative; width: 90px; height: 90px; border-radius: 16px;
+            background-color: #F5F5F5; background-size: cover; background-position: center;
+            flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.08); border: 1px solid #EFEFEF;
+        }
+
+        .store-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .store-info h4 { font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .store-tags { font-size: 12px; color: var(--text-gray); font-weight: 500; margin-bottom: 8px; }
+        .store-meta { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 700; color: var(--text-dark); }
+        .meta-item { display: flex; align-items: center; gap: 4px; }
+        .meta-item.rating i { color: #FFB300; }
+        .meta-item.time i { color: #5C677D; }
+        .meta-item.delivery i { color: #2A9D8F; }
+
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 75px; background-color: #FFFFFF;
+            border-top: 1px solid #EFEFEF; box-shadow: var(--nav-shadow); display: flex;
+            justify-content: space-around; align-items: center; z-index: 10; padding: 0 10px;
+        }
+
+        .nav-link {
+            display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-gray);
+            text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s; width: 60px;
+        }
+        .nav-link i { font-size: 20px; }
+        .nav-link.active { color: var(--primary); }
+
+        .cart-nav-link { position: relative; }
+        .cart-badge {
+            position: absolute; top: -5px; right: 12px; background-color: var(--primary); color: white;
+            font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: flex;
+            justify-content: center; align-items: center; font-weight: 800; border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="app-header">
+            <div class="location-container">
+                <div class="location-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="location-text">
+                    <p>التوصيل إلى</p>
+                    <h4>عدن - خورمكسر <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-right: 3px;"></i></h4>
+                </div>
+            </div>
+            <div class="notification-btn">
+                <i class="fa-solid fa-bell"></i>
+                <div class="notification-badge"></div>
+            </div>
+        </header>
+
+        <div class="search-section">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="ابحث عن مطعم، سوبرماركت، صيدلية...">
+            </div>
+        </div>
+
+        <main class="main-content no-scrollbar">
+            
+            <div class="banners-slider no-scrollbar">
+                <div class="banner-card banner-1">
+                    <i class="fa-solid fa-bolt bg-icon"></i>
+                    <h3>عرض واجيك الخاطف!</h3>
+                    <p>توصيل مجاني لجميع طلبات السوبرماركت اليوم</p>
+                    <button class="banner-btn">اطلب الآن</button>
+                </div>
+                <div class="banner-card banner-2">
+                    <i class="fa-solid fa-prescription-bottle-medical bg-icon"></i>
+                    <h3>صحتك تهمنا</h3>
+                    <p>اطلب أدويتك ومستلزماتك من أقرب صيدلية بلحظات</p>
+                    <button class="banner-btn">تصفح الصيدليات</button>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <h3>أقسام واجيك</h3>
+                <span>عرض الكل</span>
+            </div>
+            <div class="categories-container no-scrollbar">
+                <div class="category-item active" data-category="الكل">
+                    <div class="category-icon-box"><i class="fa-solid fa-border-all"></i></div>
+                    <p>الكل</p>
+                </div>
+                <div class="category-item" data-category="مطاعم">
+                    <div class="category-icon-box" style="color: #E63946;"><i class="fa-solid fa-utensils"></i></div>
+                    <p>مطاعم</p>
+                </div>
+                <div class="category-item" data-category="سوبر ماركت">
+                    <div class="category-icon-box" style="color: #4C956C;"><i class="fa-solid fa-basket-shopping"></i></div>
+                    <p>تموينات</p>
+                </div>
+                <div class="category-item" data-category="صيدليات">
+                    <div class="category-icon-box" style="color: #0077B6;"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <p>صيدليات</p>
+                </div>
+                <div class="category-item" data-category="تحف وهدايا">
+                    <div class="category-icon-box" style="color: #8338EC;"><i class="fa-solid fa-gift"></i></div>
+                    <p>هدايا</p>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <h3>المتاجر المتاحة بالقرب منك</h3>
+            </div>
+            
+            <div class="stores-list" id="storesList">
+            </div>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-link active">
+                <i class="fa-solid fa-house"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="orders.html" class="nav-link">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>طلباتي</span>
+            </a>
+            <a href="checkout.html" class="nav-link cart-nav-link">
+                <i class="fa-solid fa-bag-shopping"></i>
+                <div class="cart-badge">2</div>
+                <span>السلة</span>
+            </a>
+            <a href="profile.html" class="nav-link">
+                <i class="fa-solid fa-user"></i>
+                <span>حسابي</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="home.js"></script>
+</body>
+</html>

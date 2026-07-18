@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مهامي - واجيك كابتن</title>
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --bg-dark: #121212;
+            --surface: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-gray: #A0A0A0;
+            --success: #05CD99;
+            --danger: #EE5D50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
+            background-color: var(--bg-dark); position: relative;
+            display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px;
+        }
+
+        /* الهيدر */
+        .page-header {
+            padding: 25px 20px 15px;
+            background-color: var(--surface);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .page-title { font-size: 20px; font-weight: 900; color: var(--text-light); margin-bottom: 15px; }
+
+        /* التبويبات (Tabs) */
+        .tabs { display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        .tab { flex: 1; text-align: center; font-size: 14px; font-weight: 700; color: var(--text-gray); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .tab.active { background-color: rgba(242, 92, 5, 0.1); color: var(--primary); font-weight: 900; }
+
+        /* قائمة المهام */
+        .tasks-list { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .task-card {
+            background-color: var(--surface); border-radius: 15px; padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05); position: relative;
+        }
+        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+        .task-id { font-size: 14px; font-weight: 900; color: var(--primary); }
+        .task-time { font-size: 12px; color: var(--text-gray); }
+
+        .task-route { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .route-point { display: flex; align-items: center; gap: 10px; }
+        .point-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-pickup { background-color: var(--primary); }
+        .dot-dropoff { background-color: var(--success); }
+        .point-text { font-size: 13px; font-weight: 700; color: var(--text-light); }
+
+        .task-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .status-badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+        .status-completed { background: rgba(5, 205, 153, 0.1); color: var(--success); }
+        .status-canceled { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+        .task-earning { font-size: 14px; font-weight: 900; color: var(--success); }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; max-width: 420px; height: 70px;
+            background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-around; align-items: center; z-index: 30;
+        }
+        .nav-link {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s;
+        }
+        .nav-link i { font-size: 20px; }
+        .nav-link.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="page-header">
+            <h1 class="page-title">مهامي</h1>
+            <div class="tabs">
+                <div class="tab active">مهام مكتملة</div>
+                <div class="tab">طلبات ملغية</div>
+            </div>
+        </header>
+
+        <div class="tasks-list">
+            
+            <!-- مهمة مكتملة 1 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <span class="task-id">#WAJ-992</span>
+                    <span class="task-time">اليوم • 01:30 م</span>
+                </div>
+                <div class="task-route">
+                    <div class="route-point">
+                        <div class="point-dot dot-pickup"></div>
+                        <span class="point-text">استلام: مطعم المراسيم</span>
+                    </div>
+                    <div class="route-point">
+                        <div class="point-dot dot-dropoff"></div>
+                        <span class="point-text">تسليم: خورمكسر - جولة البجعة</span>
+                    </div>
+                </div>
+                <div class="task-footer">
+                    <span class="status-badge status-completed"><i class="fa-solid fa-check"></i> مكتمل</span>
+                    <span class="task-earning">+1,500 ر.ي</span>
+                </div>
+            </div>
+
+            <!-- مهمة مكتملة 2 -->
+            <div class="task-card">
+                <div class="task-header">
+                    <span class="task-id">#WAJ-985</span>
+                    <span class="task-time">اليوم • 11:15 ص</span>
+                </div>
+                <div class="task-route">
+                    <div class="route-point">
+                        <div class="point-dot dot-pickup"></div>
+                        <span class="point-text">استلام: بروستد الشلال</span>
+                    </div>
+                    <div class="route-point">
+                        <div class="point-dot dot-dropoff"></div>
+                        <span class="point-text">تسليم: المعلا - الشارع الرئيسي</span>
+                    </div>
+                </div>
+                <div class="task-footer">
+                    <span class="status-badge status-completed"><i class="fa-solid fa-check"></i> مكتمل</span>
+                    <span class="task-earning">+1,000 ر.ي</span>
+                </div>
+            </div>
+
+            <!-- مهمة ملغية -->
+            <div class="task-card" style="opacity: 0.6;">
+                <div class="task-header">
+                    <span class="task-id">#WAJ-970</span>
+                    <span class="task-time">أمس • 08:45 م</span>
+                </div>
+                <div class="task-route">
+                    <div class="route-point">
+                        <div class="point-dot dot-pickup"></div>
+                        <span class="point-text">استلام: بيتزا هت</span>
+                    </div>
+                    <div class="route-point">
+                        <div class="point-dot dot-dropoff"></div>
+                        <span class="point-text">تسليم: كريتر - الطويلة</span>
+                    </div>
+                </div>
+                <div class="task-footer">
+                    <span class="status-badge status-canceled"><i class="fa-solid fa-xmark"></i> ألغاه العميل</span>
+                    <span class="task-earning" style="color: var(--text-gray);">0 ر.ي</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- شريط التنقل السفلي المربوط بالملفات -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-link">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>الخريطة</span>
+            </a>
+            <a href="tasks.html" class="nav-link active">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <span>مهامي</span>
+            </a>
+            <a href="wallet.html" class="nav-link">
+                <i class="fa-solid fa-wallet"></i>
+                <span>محفظتي</span>
+            </a>
+        </nav>
+
+    </div>
+</body>
+</html>

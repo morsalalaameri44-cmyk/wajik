@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سبيد جو أوبس - غرفة العمليات</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05; --bg-color: #F8FAFC; --sidebar-bg: #1E293B;
+            --sidebar-hover: #334155; --sidebar-text: #CBD5E1; --card-bg: #FFFFFF;
+            --text-dark: #0F172A; --text-gray: #64748B; --border: #E2E8F0;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --info: #3B82F6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); display: flex; height: 100vh; overflow: hidden; position: relative; }
+
+        /* القائمة الجانبية */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; transition: 0.3s ease-in-out; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; position: relative; }
+        .close-sidebar-btn { display: none; position: absolute; left: 15px; top: 25px; color: white; background: none; border: none; font-size: 20px; cursor: pointer; }
+        .logo-icon { width: 40px; height: 40px; background-color: var(--primary); color: white; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .brand-name { color: white; font-size: 20px; font-weight: 900; }
+        .brand-sub { color: var(--sidebar-text); font-size: 11px; font-weight: 500; }
+        .nav-menu { flex: 1; padding: 20px 0; overflow-y: auto; }
+        .nav-group { margin-bottom: 25px; }
+        .nav-group-title { color: #64748B; font-size: 11px; font-weight: 800; padding: 0 25px; margin-bottom: 10px; text-transform: uppercase; }
+        
+        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 25px; color: var(--sidebar-text); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s; border-right: 3px solid transparent; cursor: pointer; }
+        .nav-link:hover, .nav-link.active { background-color: var(--sidebar-hover); color: white; border-right-color: var(--primary); }
+        .nav-link i { width: 20px; font-size: 16px; text-align: center; }
+        
+        .badge { margin-right: auto; background-color: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 35px; height: 35px; background: #CBD5E1; border-radius: 50%; }
+        .user-info h4 { color: white; font-size: 13px; font-weight: 700; }
+        .user-info p { color: var(--sidebar-text); font-size: 11px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; opacity: 0; transition: 0.3s; }
+
+        /* منطقة المحتوى */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; width: 100%; }
+        .top-navbar { height: 70px; background-color: var(--card-bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-shrink: 0; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        .menu-toggle-btn { display: none; background: none; border: none; font-size: 24px; color: var(--text-dark); cursor: pointer; }
+        .page-title { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+        .top-actions { display: flex; gap: 10px; }
+        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background-color: var(--bg-color); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; color: var(--text-gray); cursor: pointer; transition: 0.2s; position: relative; }
+        .workspace { flex: 1; padding: 20px; overflow-y: auto; background-color: #F1F5F9; }
+
+        /* تصميمات عامة للبطاقات يتم استخدامها في الواجهات */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .data-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; }
+        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
+        /* -- التنسيق الاحترافي لبطاقات الطلبات (Pro Version 2.0) -- */
+        .order-card-pro {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px; /* مساحة تنفس أكبر */
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid #E2E8F0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* تباعد أفضل بين الأقسام */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .order-card-pro:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+            border-color: #CBD5E1;
+        }
+
+        /* شريط جانبي صغير */
+        .order-card-pro::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 5px; /* زيادة السماكة قليلاً */
+            border-radius: 0 16px 16px 0;
+        }
+        .status-new::before { background: var(--info); }
+        .status-prep::before { background: var(--warning); }
+        .status-done::before { background: var(--success); }
+
+        .order-header-pro {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #F1F5F9; /* خط تقسيم صلب وأنيق بدلاً من المتقطع */
+            padding-bottom: 16px;
+            margin-bottom: 4px;
+        }
+
+        .order-id-pro { font-weight: 900; font-size: 20px; color: #0F172A; }
+        
+        .badge-pro { 
+            padding: 6px 16px; 
+            border-radius: 20px; 
+            font-size: 12.5px; 
+            font-weight: 800; 
+            letter-spacing: 0.5px;
+        }
+        .badge-new { background: #EFF6FF; color: #2563EB; }
+        .badge-prep { background: #FEF3C7; color: #D97706; }
+
+        .order-body-pro { display: flex; flex-direction: column; gap: 14px; }
+
+        .info-row-pro { 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            color: #475569; 
+            font-size: 15px; 
+            font-weight: 600;
+        }
+        /* ضبط أيقونات المعلومات لتكون متوازية تماماً */
+        .info-row-pro i { 
+            color: #64748B; 
+            width: 28px; 
+            height: 28px; 
+            background: #F1F5F9; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 13px;
+        }
+
+        .order-time-pro { color: #64748B; font-size: 13.5px; }
+
+        /* صندوق الإجمالي بتباين أفضل */
+        .order-summary-box {
+            background: #F1F5F9; /* لون أغمق قليلاً للتباين */
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+        .order-items-count { font-size: 13.5px; color: #64748B; font-weight: 700; }
+        .order-total-pro { font-weight: 900; color: #059669; font-size: 19px; }
+
+        .order-actions-pro { display: flex; gap: 10px; margin-top: 8px; }
+
+        /* تصميم الأزرار بظلال ملونة (Colored Shadows) */
+        .btn-pro { 
+            flex: 1; 
+            border: none; 
+            padding: 14px; 
+            border-radius: 12px; 
+            font-weight: 800; 
+            font-size: 15px;
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            color: #FFF; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+        }
+        .btn-pro:active { transform: scale(0.96); }
+        
+        .btn-accept { 
+            background: #2563EB; 
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); /* ظل أزرق متناسق */
+        }
+        .btn-accept:hover { 
+            background: #1D4ED8;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); 
+        }
+        
+        .btn-assign { 
+            background: #F59E0B; 
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3); /* ظل برتقالي متناسق */
+        }
+        .btn-assign:hover { 
+            background: #D97706;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4); 
+        }
+
+        /* التجاوب للجوال */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; right: -260px; height: 100%; }
+            .sidebar.active { right: 0; }
+            .overlay.active { display: block; opacity: 1; }
+            .menu-toggle-btn { display: block; }
+            .close-sidebar-btn { display: block; }
+            .workspace { padding: 15px; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="close-sidebar-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div>
+                <div class="brand-name">سبيد جو أوبس</div>
+                <div class="brand-sub">إدارة العمليات المركزية</div>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-group">
+                <div class="nav-group-title">العمليات والطلبات</div>
+                <a class="nav-link" id="nav-live_orders" onclick="navigateTo('live_orders', 'الطلبات الحية')">
+                    <i class="fa-solid fa-satellite-dish"></i> الطلبات الحية <span class="badge" id="newOrdersCount">0</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">الشركاء واللوجستيات</div>
+                <a class="nav-link" id="nav-stores" onclick="navigateTo('stores', 'إدارة المطاعم')">
+                    <i class="fa-solid fa-store"></i> إدارة المطاعم
+                </a>
+                <a class="nav-link" id="nav-drivers" onclick="navigateTo('drivers', 'إدارة المناديب')">
+                    <i class="fa-solid fa-motorcycle"></i> إدارة المناديب
+                </a>
+            </div>
+        </nav>
+        
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <h4>مرسل العامري</h4>
+                <p>مدير العمليات</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- منطقة المحتوى الرئيسية -->
+    <main class="main-content">
+        <header class="top-navbar">
+            <div class="header-right">
+                <button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="page-title" id="pageTitle">لوحة التحكم</div>
+            </div>
+            <div class="top-actions">
+                <button class="icon-btn" onclick="refreshCurrentView()"><i class="fa-solid fa-arrows-rotate"></i></button>
+            </div>
+        </header>
+
+        <!-- هذه هي المساحة التي سيتم حقن الواجهات بداخلها -->
+        <div class="workspace" id="workspaceContent"></div>
+    </main>
+
+    <!-- 1. استدعاء مكتبة قاعدة البيانات -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. تعريف الاتصال مباشرة داخل الملف لتجنب مشاكل المسارات في Acode -->
+    <script>
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
+        window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+    
+    <!-- 3. استدعاء ملفات الواجهات (Components) -->
+    <script src="js/views/live_orders.js"></script>
+    
+    <!-- 4. استدعاء محرك التطبيق الأساسي (Router) -->
+    <script src="js/app.js"></script>
+</body>
+</html>

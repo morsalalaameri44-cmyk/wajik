@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المنيو - واجيك للمتاجر</title>
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --primary-light: #FFF2EB;
+            --bg-color: #F4F7FE;
+            --sidebar-bg: #FFFFFF;
+            --text-dark: #2B3674;
+            --text-gray: #A3AED0;
+            --success: #05CD99;
+            --danger: #EE5D50;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            --border-radius: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg-color); display: flex; min-height: 100vh; color: var(--text-dark); overflow-x: hidden; }
+
+        /* =========================================
+           القائمة الجانبية (Sidebar)
+           ========================================= */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: transform 0.3s ease; box-shadow: var(--shadow); }
+        .logo { font-size: 32px; font-weight: 900; color: var(--primary); text-align: center; margin-bottom: 40px; }
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+        .nav-item { padding: 14px 20px; border-radius: 14px; display: flex; align-items: center; gap: 15px; color: var(--text-gray); text-decoration: none; font-size: 15px; font-weight: 700; transition: 0.3s; }
+        .nav-item i { font-size: 18px; }
+        .nav-item.active { background-color: var(--primary); color: white; box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3); }
+        .nav-item:hover:not(.active) { background-color: var(--primary-light); color: var(--primary); }
+        
+        .close-sidebar-btn { display: none; position: absolute; top: 20px; left: 20px; font-size: 24px; color: var(--text-dark); cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; transition: 0.3s; }
+
+        /* =========================================
+           المحتوى الرئيسي
+           ========================================= */
+        .main-content { flex: 1; margin-right: 260px; padding: 30px 40px; transition: margin-right 0.3s ease; width: 100%; }
+        
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 15px; }
+        .title-container { display: flex; align-items: center; gap: 15px; }
+        .menu-toggle-btn { display: none; font-size: 24px; cursor: pointer; background: none; border: none; }
+        .page-title h1 { font-size: 24px; font-weight: 800; }
+
+        .add-btn { background-color: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3); transition: 0.2s; }
+        .add-btn:active { transform: scale(0.95); }
+
+        /* =========================================
+           شبكة المنتجات (Menu Grid)
+           ========================================= */
+        .categories-tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 10px; }
+        .categories-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { padding: 8px 20px; background: white; border: 1px solid #E0E5F2; border-radius: 20px; font-size: 14px; font-weight: 700; color: var(--text-gray); cursor: pointer; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        
+        .menu-card { background: white; border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; }
+        .menu-img { width: 100%; height: 160px; background-size: cover; background-position: center; position: relative; }
+        
+        .item-status { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 800; background: white; color: var(--success); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .item-status.out-of-stock { color: var(--danger); }
+
+        .menu-info { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .menu-info h3 { font-size: 16px; font-weight: 800; margin-bottom: 5px; }
+        .menu-info p { font-size: 12px; color: var(--text-gray); margin-bottom: 15px; line-height: 1.5; flex: 1; }
+        .menu-price { font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 15px; }
+
+        .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F0F2F8; padding-top: 15px; }
+        
+        /* زر التبديل (Toggle Switch) */
+        .switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .action-icons { display: flex; gap: 10px; }
+        .action-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .edit-icon { background: var(--primary-light); color: var(--primary); }
+        .delete-icon { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+
+        /* =========================================
+           النافذة المنبثقة لإضافة وجبة (Modal)
+           ========================================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: var(--border-radius); padding: 30px; position: relative; }
+        .close-modal { position: absolute; top: 20px; left: 20px; font-size: 20px; cursor: pointer; color: var(--text-gray); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #E0E5F2; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: var(--primary); }
+        .submit-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; margin-top: 10px; cursor: pointer; }
+
+        /* استعلامات الوسائط */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(100%); }
+            .sidebar.active { transform: translateX(0); }
+            .close-sidebar-btn, .menu-toggle-btn { display: block; }
+            .main-content { margin-right: 0; padding: 20px; }
+            .top-header { flex-direction: column; align-items: flex-start; }
+            .add-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الطبقة الشفافة للجوال -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- القائمة الجانبية بالروابط المحدثة -->
+    <aside class="sidebar" id="sidebar">
+        <i class="fa-solid fa-xmark close-sidebar-btn" onclick="toggleSidebar()"></i>
+        <div class="logo">واجيك <span style="font-size: 14px; color: #757575;">للمتاجر</span></div>
+        <ul class="nav-links">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-bell-concierge"></i> الطلبات الحية</a>
+            <a href="menu.html" class="nav-item active"><i class="fa-solid fa-book-open"></i> إدارة المنيو</a>
+            <a href="reports.html" class="nav-item"><i class="fa-solid fa-chart-pie"></i> التقارير والأرباح</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-star"></i> التقييمات</a>
+            <a href="settings.html" class="nav-item"><i class="fa-solid fa-gear"></i> إعدادات المطعم</a>
+        </ul>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        
+        <header class="top-header">
+            <div class="title-container">
+                <button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="page-title">
+                    <h1>إدارة قائمة الطعام (المنيو) 🍔</h1>
+                    <p>أضف، عدّل، أو أوقف الوجبات حسب توفرها في مطبخك.</p>
+                </div>
+            </div>
+            <button class="add-btn" onclick="openModal()"><i class="fa-solid fa-plus"></i> إضافة صنف جديد</button>
+        </header>
+
+        <!-- تصنيفات المنيو -->
+        <div class="categories-tabs">
+            <button class="tab-btn active">الكل</button>
+            <button class="tab-btn">الأطباق الرئيسية</button>
+            <button class="tab-btn">المشويات</button>
+            <button class="tab-btn">المشروبات</button>
+            <button class="tab-btn">الحلويات</button>
+        </div>
+
+        <!-- شبكة الوجبات -->
+        <div class="menu-grid">
+            
+            <!-- الصنف الأول -->
+            <div class="menu-card">
+                <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80');">
+                    <span class="item-status" id="statusText-1"><i class="fa-solid fa-check-circle"></i> متوفر</span>
+                </div>
+                <div class="menu-info">
+                    <h3>نفر زربيان لحم</h3>
+                    <p>لحم بلدي طازج مع أرز الزربيان العدني بالبهارات الخاصة.</p>
+                    <div class="menu-price">7,000 ر.ي</div>
+                    
+                    <div class="card-actions">
+                        <label class="switch" title="تفعيل أو إيقاف الصنف">
+                            <input type="checkbox" checked onchange="toggleStatus(this, 1)">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="action-icons">
+                            <div class="action-icon edit-icon" title="تعديل"><i class="fa-solid fa-pen"></i></div>
+                            <div class="action-icon delete-icon" title="حذف"><i class="fa-solid fa-trash"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الصنف الثاني -->
+            <div class="menu-card">
+                <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&q=80');">
+                    <span class="item-status" id="statusText-2"><i class="fa-solid fa-check-circle"></i> متوفر</span>
+                </div>
+                <div class="menu-info">
+                    <h3>نصف حبة دجاج مظبي</h3>
+                    <p>دجاج مشوي على الحجر مع الأرز الحضرمي.</p>
+                    <div class="menu-price">3,500 ر.ي</div>
+                    
+                    <div class="card-actions">
+                        <label class="switch">
+                            <input type="checkbox" checked onchange="toggleStatus(this, 2)">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="action-icons">
+                            <div class="action-icon edit-icon"><i class="fa-solid fa-pen"></i></div>
+                            <div class="action-icon delete-icon"><i class="fa-solid fa-trash"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الصنف الثالث (نفدت الكمية) -->
+            <div class="menu-card" style="opacity: 0.7;">
+                <div class="menu-img" style="background-image: url('https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=400&q=80');">
+                    <span class="item-status out-of-stock" id="statusText-3"><i class="fa-solid fa-times-circle"></i> غير متوفر</span>
+                </div>
+                <div class="menu-info">
+                    <h3>بروستد دجاج حراق</h3>
+                    <p>وجبة بروستد 4 قطع مع البطاطس والمثومة.</p>
+                    <div class="menu-price">4,000 ر.ي</div>
+                    
+                    <div class="card-actions">
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleStatus(this, 3)">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="action-icons">
+                            <div class="action-icon edit-icon"><i class="fa-solid fa-pen"></i></div>
+                            <div class="action-icon delete-icon"><i class="fa-solid fa-trash"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- النافذة المنبثقة لإضافة صنف (Modal) -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeModal()"></i>
+            <h2 style="margin-bottom: 20px; font-weight: 900;">إضافة صنف جديد</h2>
+            
+            <form onsubmit="event.preventDefault(); alert('تم إضافة الصنف بنجاح!'); closeModal();">
+                <div class="form-group">
+                    <label>اسم الصنف</label>
+                    <input type="text" class="form-control" placeholder="مثال: بيتزا مارغريتا" required>
+                </div>
+                <div class="form-group">
+                    <label>وصف الصنف (المكونات)</label>
+                    <textarea class="form-control" rows="3" placeholder="اكتب المكونات بشكل شهي لزيادة المبيعات..." required></textarea>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>السعر (ريال يمني)</label>
+                        <input type="number" class="form-control" placeholder="0" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>القسم</label>
+                        <select class="form-control">
+                            <option>الأطباق الرئيسية</option>
+                            <option>المشويات</option>
+                            <option>المشروبات</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>صورة الوجبة (رابط أو رفع)</label>
+                    <input type="file" class="form-control" style="padding: 9px;">
+                </div>
+                
+                <button type="submit" class="submit-btn">حفظ الصنف ونشره في التطبيق</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // دالة التجاوب للقائمة الجانبية في الجوال
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            }
+        }
+
+        // دوال النافذة المنبثقة
+        function openModal() {
+            document.getElementById('addModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        // دالة تغيير حالة توفر المنتج (متوفر / غير متوفر)
+        function toggleStatus(checkbox, id) {
+            const statusBadge = document.getElementById(`statusText-${id}`);
+            const card = checkbox.closest('.menu-card');
+            
+            if(checkbox.checked) {
+                statusBadge.innerHTML = '<i class="fa-solid fa-check-circle"></i> متوفر';
+                statusBadge.className = 'item-status';
+                card.style.opacity = '1';
+            } else {
+                statusBadge.innerHTML = '<i class="fa-solid fa-times-circle"></i> غير متوفر';
+                statusBadge.className = 'item-status out-of-stock';
+                card.style.opacity = '0.7'; // جعل البطاقة باهتة لتدل على نفاد الكمية
+            }
+        }
+    </script>
+</body>
+</html>

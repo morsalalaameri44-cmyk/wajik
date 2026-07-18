@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الشركاء والمتاجر - إدارة واجيك</title>
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;         /* تم التوحيد للون البرتقالي */
+            --primary-light: #FFF2EB;   
+            --bg-color: #F4F7FE;
+            --sidebar-bg: #FFFFFF;
+            --text-dark: #2B3674;
+            --text-gray: #A3AED0;
+            --card-bg: #FFFFFF;
+            --success: #05CD99;
+            --danger: #EE5D50;
+            --warning: #FFCE20;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            --border-radius: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--bg-color); display: flex; min-height: 100vh; color: var(--text-dark); overflow-x: hidden; }
+
+        /* =========================================
+           القائمة الجانبية (Sidebar)
+           ========================================= */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); box-shadow: 5px 0 20px rgba(0,0,0,0.02); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: 0.3s; }
+        .logo { font-size: 32px; font-weight: 900; color: var(--primary); text-align: center; margin-bottom: 40px; }
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 15px; }
+        .nav-item { padding: 14px 20px; border-radius: 14px; display: flex; align-items: center; gap: 15px; color: var(--text-gray); text-decoration: none; font-size: 15px; font-weight: 700; transition: 0.3s; }
+        .nav-item.active { background-color: var(--primary); color: white; box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3); } /* ظل برتقالي */
+        .nav-item:hover:not(.active) { background-color: var(--primary-light); color: var(--primary); }
+        
+        .close-sidebar-btn { display: none; position: absolute; top: 20px; left: 20px; font-size: 24px; color: var(--text-dark); cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: 0.3s; }
+
+        /* =========================================
+           المحتوى الرئيسي
+           ========================================= */
+        .main-content { flex: 1; margin-right: 260px; padding: 30px 40px; transition: 0.3s; width: 100%; }
+        
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .title-container { display: flex; align-items: center; gap: 15px; }
+        .menu-toggle-btn { display: none; font-size: 24px; cursor: pointer; background: none; border: none; }
+        .page-title h1 { font-size: 24px; font-weight: 800; }
+        
+        .add-btn { background-color: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .add-btn:active { transform: scale(0.95); }
+
+        /* =========================================
+           الفلاتر والإحصائيات
+           ========================================= */
+        .filters-container { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .filter-select { padding: 10px 15px; border: 1px solid #E0E5F2; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; background: white; font-weight: 700; color: var(--text-dark); cursor: pointer; }
+        .search-box { flex: 1; min-width: 250px; position: relative; }
+        .search-box input { width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #E0E5F2; border-radius: 10px; font-family: inherit; font-size: 14px; outline: none; transition: 0.3s; }
+        .search-box input:focus { border-color: var(--primary); }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+
+        /* =========================================
+           شبكة المتاجر (Grid)
+           ========================================= */
+        .stores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        .store-card { background: white; border-radius: var(--border-radius); padding: 20px; box-shadow: var(--shadow); position: relative; }
+        .store-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        
+        .store-profile { display: flex; gap: 15px; }
+        .store-logo { width: 50px; height: 50px; border-radius: 12px; background-size: cover; background-position: center; border: 1px solid #E0E5F2; }
+        .store-info h3 { font-size: 16px; font-weight: 800; margin-bottom: 5px; color: var(--text-dark); }
+        .store-info p { font-size: 12px; color: var(--text-gray); display: flex; align-items: center; gap: 5px; }
+        
+        /* مؤشر حالة المتجر */
+        .store-status { width: 12px; height: 12px; border-radius: 50%; }
+        .status-open { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-closed { background-color: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        .status-pending { background-color: var(--warning); box-shadow: 0 0 8px var(--warning); }
+
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; padding: 15px 0; border-top: 1px solid #F4F7FE; border-bottom: 1px solid #F4F7FE; }
+        .stat-item { text-align: center; }
+        .stat-item h4 { font-size: 18px; font-weight: 900; color: var(--primary); }
+        .stat-item p { font-size: 11px; color: var(--text-gray); font-weight: 700; margin-top: 3px; }
+
+        .store-actions { display: flex; gap: 10px; }
+        .btn-outline { flex: 1; padding: 10px; border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center; }
+        .btn-outline:hover { background: var(--primary-light); }
+        .btn-danger { width: 40px; background: rgba(238, 93, 80, 0.1); color: var(--danger); border: none; border-radius: 10px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        /* شارة العمولة (Commission Badge) */
+        .commission-badge { position: absolute; top: 20px; left: 20px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 800; }
+
+        /* التجاوب */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(100%); }
+            .sidebar.active { transform: translateX(0); }
+            .close-sidebar-btn, .menu-toggle-btn { display: block; }
+            .main-content { margin-right: 0; padding: 20px; }
+            .top-header { flex-direction: column; align-items: flex-start; }
+            .add-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <i class="fa-solid fa-xmark close-sidebar-btn" onclick="toggleSidebar()"></i>
+        <div class="logo">واجيك <span style="font-size: 14px; color: #757575;">الشركة</span></div>
+        <ul class="nav-links">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-tower-cell"></i> برج المراقبة والجدولة</a>
+            <a href="drivers_manage.html" class="nav-item"><i class="fa-solid fa-motorcycle"></i> إدارة الكباتن</a>
+            <a href="stores_manage.html" class="nav-item active"><i class="fa-solid fa-store"></i> الشركاء (المتاجر)</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-money-bill-trend-up"></i> الحسابات والعمولات</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-sliders"></i> إعدادات النظام</a>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        
+        <header class="top-header">
+            <div class="title-container">
+                <button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="page-title">
+                    <h1>إدارة الشركاء والمتاجر 🏪</h1>
+                </div>
+            </div>
+            <button class="add-btn"><i class="fa-solid fa-plus"></i> إضافة متجر جديد</button>
+        </header>
+
+        <!-- فلاتر البحث -->
+        <div class="filters-container">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="ابحث عن اسم المطعم...">
+            </div>
+            <select class="filter-select">
+                <option>جميع المتاجر</option>
+                <option>المفتوحة الآن</option>
+                <option>المغلقة</option>
+                <option>بانتظار الموافقة</option>
+            </select>
+            <select class="filter-select">
+                <option>حسب المنطقة</option>
+                <option>خورمكسر</option>
+                <option>المنصورة</option>
+                <option>كريتر</option>
+            </select>
+        </div>
+
+        <!-- شبكة المتاجر -->
+        <div class="stores-grid">
+            
+            <!-- متجر 1: مطعم المراسيم (مفتوح) -->
+            <div class="store-card">
+                <div class="commission-badge">عمولة: 10%</div>
+                <div class="store-header">
+                    <div class="store-profile">
+                        <div class="store-logo" style="background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=150&q=80');"></div>
+                        <div class="store-info">
+                            <h3>مطعم المراسيم</h3>
+                            <p><i class="fa-solid fa-location-dot"></i> خورمكسر</p>
+                        </div>
+                    </div>
+                    <div class="store-status status-open" title="مفتوح حالياً"></div>
+                </div>
+                <div class="store-stats">
+                    <div class="stat-item">
+                        <h4>1,240</h4>
+                        <p>إجمالي الطلبات</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4 style="color: var(--text-dark);">4.8 <i class="fa-solid fa-star" style="color:var(--warning); font-size:14px;"></i></h4>
+                        <p>التقييم</p>
+                    </div>
+                </div>
+                <div class="store-actions">
+                    <button class="btn-outline">عرض المنيو والتقارير</button>
+                    <button class="btn-danger" title="إيقاف المتجر مؤقتاً"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+
+            <!-- متجر 2: بروستد الشلال (مغلق) -->
+            <div class="store-card">
+                <div class="commission-badge">عمولة: 12%</div>
+                <div class="store-header">
+                    <div class="store-profile">
+                        <div class="store-logo" style="background-image: url('https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=150&q=80');"></div>
+                        <div class="store-info">
+                            <h3>بروستد الشلال</h3>
+                            <p><i class="fa-solid fa-location-dot"></i> المعلا</p>
+                        </div>
+                    </div>
+                    <div class="store-status status-closed" title="مغلق حالياً"></div>
+                </div>
+                <div class="store-stats">
+                    <div class="stat-item">
+                        <h4>856</h4>
+                        <p>إجمالي الطلبات</p>
+                    </div>
+                    <div class="stat-item">
+                        <h4 style="color: var(--text-dark);">4.5 <i class="fa-solid fa-star" style="color:var(--warning); font-size:14px;"></i></h4>
+                        <p>التقييم</p>
+                    </div>
+                </div>
+                <div class="store-actions">
+                    <button class="btn-outline">عرض المنيو والتقارير</button>
+                    <button class="btn-danger" title="إيقاف المتجر مؤقتاً"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+
+            <!-- متجر 3: طلب انضمام جديد (قيد المراجعة) -->
+            <div class="store-card" style="border: 2px solid var(--warning);">
+                <div class="commission-badge" style="background: rgba(255, 206, 32, 0.2); color: #B38F00;">طلب انضمام</div>
+                <div class="store-header">
+                    <div class="store-profile">
+                        <div class="store-logo" style="background-color: #F4F7FE; display:flex; justify-content:center; align-items:center; font-size:20px; color:var(--text-gray);"><i class="fa-solid fa-shop"></i></div>
+                        <div class="store-info">
+                            <h3>كافيه البن اليمني</h3>
+                            <p><i class="fa-solid fa-location-dot"></i> كريتر</p>
+                        </div>
+                    </div>
+                    <div class="store-status status-pending" title="قيد المراجعة"></div>
+                </div>
+                <div class="store-stats">
+                    <div class="stat-item" style="grid-column: span 2;">
+                        <p style="font-size:12px; line-height:1.5; color:var(--text-dark);">يرغب هذا المتجر في الانضمام للتطبيق. يرجى مراجعة بياناته (السجل التجاري، المنيو) للموافقة.</p>
+                    </div>
+                </div>
+                <div class="store-actions">
+                    <button class="btn-outline" style="background: var(--primary); color: white;">الموافقة وتفعيل المتجر</button>
+                    <button class="btn-danger" title="رفض الطلب"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            if (sidebar.classList.contains('active')) {
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            }
+        }
+    </script>
+</body>
+</html>

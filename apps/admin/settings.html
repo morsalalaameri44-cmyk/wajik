@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>الإعدادات المتقدمة - إدارة واجيك</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --primary-light: #FFF2EB;
+            --bg-color: #F4F7FE;
+            --sidebar-bg: #FFFFFF;
+            --text-dark: #2B3674;
+            --text-gray: #A3AED0;
+            --success: #05CD99;
+            --danger: #EE5D50;
+            --warning: #FFCE20;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            --border-radius: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); display: flex; min-height: 100vh; color: var(--text-dark); overflow-x: hidden; width: 100%; }
+
+        /* =========================================
+           القائمة الجانبية (Sidebar)
+           ========================================= */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); box-shadow: 5px 0 20px rgba(0,0,0,0.02); padding: 30px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; transition: transform 0.3s ease; }
+        .logo { font-size: 32px; font-weight: 900; color: var(--primary); text-align: center; margin-bottom: 40px; }
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .nav-item { padding: 14px 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; color: var(--text-gray); text-decoration: none; font-size: 15px; font-weight: 700; transition: 0.3s; }
+        .nav-item.active { background-color: var(--primary); color: white; box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3); }
+        .nav-item:hover:not(.active) { background-color: var(--primary-light); color: var(--primary); }
+        
+        .close-sidebar-btn { display: none; position: absolute; top: 20px; left: 20px; font-size: 24px; color: var(--text-dark); cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999; opacity: 0; transition: opacity 0.3s; }
+
+        /* =========================================
+           المحتوى الرئيسي والهيدر
+           ========================================= */
+        .main-content { flex: 1; margin-right: 260px; padding: 30px 40px; transition: margin 0.3s; width: calc(100% - 260px); }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 15px; }
+        .header-title-container { display: flex; align-items: center; gap: 15px; }
+        .menu-toggle-btn { display: none; font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text-dark); }
+        .page-title h1 { font-size: 24px; font-weight: 800; }
+        .page-title p { font-size: 14px; color: var(--text-gray); margin-top: 5px; }
+        
+        .save-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(242, 92, 5, 0.3); transition: 0.2s; white-space: nowrap; }
+        .save-btn:hover { transform: translateY(-2px); }
+        .save-btn:active { transform: scale(0.98); }
+
+        /* =========================================
+           شبكة الإعدادات (Grid Layout)
+           ========================================= */
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .settings-card { background: white; border-radius: var(--border-radius); padding: 25px; box-shadow: var(--shadow); border: 1px solid #E0E5F2; display: flex; flex-direction: column; overflow: hidden; }
+        .settings-card.full-width { grid-column: 1 / -1; }
+        
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #F0F2F8; padding-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .header-title-wrapper { display: flex; align-items: center; gap: 12px; }
+        .header-title-wrapper i { font-size: 18px; color: var(--primary); background: var(--primary-light); padding: 10px; border-radius: 10px; }
+        .header-title-wrapper h2 { font-size: 16px; font-weight: 800; }
+
+        /* =========================================
+           عناصر النماذج والتسجيل
+           ========================================= */
+        .form-group { margin-bottom: 18px; width: 100%; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; }
+        .form-group p { font-size: 11px; color: var(--text-gray); margin-bottom: 8px; line-height: 1.4; }
+        .input-wrapper { display: flex; align-items: center; position: relative; width: 100%; }
+        .input-wrapper input { width: 100%; padding: 12px 15px; border: 1px solid #E0E5F2; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; outline: none; background: #FAFCFF; color: var(--text-dark); transition: 0.3s; }
+        .input-wrapper input[type="time"] { padding: 10px 15px; }
+        .input-wrapper input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.1); }
+        .input-suffix { position: absolute; left: 15px; font-size: 12px; color: var(--text-gray); font-weight: 800; pointer-events: none; }
+
+        .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #FAFCFF; border: 1px solid #E0E5F2; border-radius: 10px; margin-bottom: 12px; gap: 15px; }
+        .toggle-info h4 { font-size: 13px; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .toggle-info p { font-size: 11px; color: var(--text-gray); line-height: 1.4; }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #E0E5F2; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .alert-box { padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 700; display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .alert-warning { background: rgba(255, 206, 32, 0.1); color: #B38F00; border: 1px solid rgba(255, 206, 32, 0.3); }
+
+        /* =========================================
+           إصلاح جدول الصلاحيات للسحب العرضي (Horizontal Scroll)
+           ========================================= */
+        .table-responsive { 
+            width: 100%; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; /* سحب ناعم جداً للايفون والاندرويد */
+            padding-bottom: 10px; /* مسافة لشريط التمرير */
+        }
+        
+        /* تجميل شريط التمرير (Scrollbar) للجدول ليكون واضحاً */
+        .table-responsive::-webkit-scrollbar { height: 6px; }
+        .table-responsive::-webkit-scrollbar-track { background: #F0F2F8; border-radius: 10px; }
+        .table-responsive::-webkit-scrollbar-thumb { background: #A3AED0; border-radius: 10px; }
+        .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .scroll-hint { display: none; font-size: 11px; color: var(--primary); margin-bottom: 10px; text-align: left; font-weight: 700; }
+
+        .users-table { width: 100%; border-collapse: collapse; text-align: right; min-width: 750px; /* ضمان عدم انكماش الجدول */ }
+        .users-table th { padding: 12px 15px; color: var(--text-gray); font-size: 12px; font-weight: 800; border-bottom: 2px solid #F0F2F8; white-space: nowrap; }
+        .users-table td { padding: 15px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #F4F7FE; vertical-align: middle; white-space: nowrap; }
+        
+        .role-badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: inline-block; margin-left: 5px; margin-bottom: 5px; white-space: nowrap; }
+        .role-super { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+        .role-finance { background: rgba(5, 205, 153, 0.1); color: var(--success); }
+        .role-dispatch { background: var(--primary-light); color: var(--primary); }
+
+        .btn-outline { padding: 8px 15px; border: 1px solid var(--primary); background: transparent; color: var(--primary); border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-outline:hover { background: var(--primary-light); }
+        .action-icon { width: 32px; height: 32px; border-radius: 8px; display: inline-flex; justify-content: center; align-items: center; cursor: pointer; border: none; font-size: 13px; margin-left: 5px; transition: 0.2s; }
+        .edit-icon { background: var(--primary-light); color: var(--primary); }
+        .delete-icon { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
+
+        /* =========================================
+           استعلامات الشاشة (Media Queries)
+           ========================================= */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(100%); }
+            .sidebar.active { transform: translateX(0); }
+            .close-sidebar-btn { display: block; }
+            .menu-toggle-btn { display: block; }
+            
+            .main-content { margin-right: 0; padding: 20px 15px; width: 100%; }
+            .top-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .header-title-container { width: 100%; }
+            .save-btn { width: 100%; padding: 15px; }
+            
+            .settings-grid { grid-template-columns: 1fr; gap: 20px; }
+            .settings-card { padding: 15px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            
+            /* إظهار ملاحظة السحب في الجوال للجدول */
+            .scroll-hint { display: block; }
+            
+            .time-inputs-container { flex-direction: column; gap: 10px !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar" id="sidebar">
+        <i class="fa-solid fa-xmark close-sidebar-btn" onclick="toggleSidebar()"></i>
+        <div class="logo">واجيك</div>
+        <ul class="nav-links">
+            <a href="index.html" class="nav-item"><i class="fa-solid fa-tower-cell"></i> برج المراقبة</a>
+            <a href="drivers_manage.html" class="nav-item"><i class="fa-solid fa-motorcycle"></i> إدارة الكباتن</a>
+            <a href="stores_manage.html" class="nav-item"><i class="fa-solid fa-store"></i> الشركاء والمتاجر</a>
+            <a href="accounting.html" class="nav-item"><i class="fa-solid fa-money-bill-trend-up"></i> الحسابات</a>
+            <a href="settings.html" class="nav-item active"><i class="fa-solid fa-sliders"></i> إعدادات النظام</a>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <!-- الهيدر -->
+        <header class="top-header">
+            <div class="header-title-container">
+                <button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+                <div class="page-title">
+                    <h1>إعدادات النظام الشاملة ⚙️</h1>
+                    <p>التحكم الكامل في الخوارزميات، التسعير، المستخدمين، والسياسات.</p>
+                </div>
+            </div>
+            <button class="save-btn" onclick="alert('تم حفظ التغييرات بنجاح!')"><i class="fa-solid fa-floppy-disk"></i> حفظ وتطبيق</button>
+        </header>
+
+        <div class="settings-grid">
+            
+            <!-- 1. المستخدمين والصلاحيات (الجدول القابل للسحب) -->
+            <div class="settings-card full-width">
+                <div class="card-header" style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="header-title-wrapper">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <h2>إدارة المستخدمين والصلاحيات</h2>
+                    </div>
+                    <button class="btn-outline"><i class="fa-solid fa-user-plus"></i> إضافة موظف</button>
+                </div>
+                
+                <p class="scroll-hint"><i class="fa-solid fa-arrows-left-right"></i> اسحب الجدول يميناً ويساراً لرؤية المزيد</p>
+                
+                <div class="table-responsive">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>الموظف</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الصلاحيات الممنوحة</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>المدير العام</strong></td>
+                                <td style="color:var(--text-gray);">admin@wajik.com</td>
+                                <td><span class="role-badge role-super">صلاحيات كاملة</span></td>
+                                <td><span style="color:var(--success); font-size:12px;"><i class="fa-solid fa-circle-check"></i> نشط</span></td>
+                                <td><button class="action-icon edit-icon"><i class="fa-solid fa-pen"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>أحمد (مالية)</strong></td>
+                                <td style="color:var(--text-gray);">finance@wajik.com</td>
+                                <td>
+                                    <span class="role-badge role-finance">التقارير المالية</span>
+                                    <span class="role-badge role-finance">تصفية العهد</span>
+                                </td>
+                                <td><span style="color:var(--success); font-size:12px;"><i class="fa-solid fa-circle-check"></i> نشط</span></td>
+                                <td>
+                                    <button class="action-icon edit-icon"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="action-icon delete-icon"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>سالم (عمليات)</strong></td>
+                                <td style="color:var(--text-gray);">dispatch@wajik.com</td>
+                                <td>
+                                    <span class="role-badge role-dispatch">المراقبة والجدولة</span>
+                                    <span class="role-badge role-dispatch">إدارة الكباتن</span>
+                                </td>
+                                <td><span style="color:var(--success); font-size:12px;"><i class="fa-solid fa-circle-check"></i> نشط</span></td>
+                                <td>
+                                    <button class="action-icon edit-icon"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="action-icon delete-icon"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. التسعير والضرائب والذروة -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <div class="header-title-wrapper">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                        <h2>التسعير، الضرائب، والذروة</h2>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>تكلفة التوصيل الأساسية (لأول 3 كم)</label>
+                    <div class="input-wrapper"><input type="number" value="1000"><span class="input-suffix">ر.ي</span></div>
+                </div>
+                <div class="form-group">
+                    <label>تكلفة الكيلومتر الإضافي</label>
+                    <div class="input-wrapper"><input type="number" value="250"><span class="input-suffix">ر.ي / كم</span></div>
+                </div>
+                <div class="form-group">
+                    <label>ضريبة القيمة المضافة (VAT)</label>
+                    <div class="input-wrapper"><input type="number" value="0"><span class="input-suffix">%</span></div>
+                </div>
+
+                <div class="alert-box alert-warning">
+                    <i class="fa-solid fa-bolt"></i> خوارزمية التسعير الديناميكي (الذروة)
+                </div>
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>تفعيل تسعيرة الذروة التلقائية</h4>
+                        <p>تُفعل تلقائياً عند قلة المناديب.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <!-- 3. التسويق وبرامج الولاء -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <div class="header-title-wrapper">
+                        <i class="fa-solid fa-gift"></i>
+                        <h2>التسويق وبرامج الولاء</h2>
+                    </div>
+                </div>
+                
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>الاسترداد النقدي (Cashback)</h4>
+                        <p>إعادة نسبة لمحفظة العميل بعد الطلب.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>نسبة الاسترداد النقدي</label>
+                    <div class="input-wrapper"><input type="number" value="2"><span class="input-suffix">%</span></div>
+                </div>
+
+                <div class="toggle-group">
+                    <div class="toggle-info">
+                        <h4>برنامج الإحالة (دعوة الأصدقاء)</h4>
+                        <p>مكافأة عند تسجيل مستخدم بكود إحالة.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>قيمة مكافأة الإحالة</label>
+                    <div class="input-wrapper"><input type="number" value="500"><span class="input-suffix">ر.ي</span></div>
+                </div>
+            </div>
+
+            <!-- 4. ساعات العمل والدعم الفني -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <div class="header-title-wrapper">
+                        <i class="fa-solid fa-headset"></i>
+                        <h2>ساعات العمل والدعم الفني</h2>
+                    </div>
+                </div>
+                
+                <div class="toggle-group" style="border-color: var(--primary); background: var(--primary-light);">
+                    <div class="toggle-info">
+                        <h4 style="color: var(--primary);">الجدولة التلقائية للإغلاق</h4>
+                        <p>يغلق ويفتح آلياً يومياً.</p>
+                    </div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                
+                <div class="time-inputs-container" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>وقت الفتح</label>
+                        <div class="input-wrapper"><input type="time" value="08:00"></div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>وقت الإغلاق</label>
+                        <div class="input-wrapper"><input type="time" value="02:00"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>رقم واتساب الدعم الفني</label>
+                    <div class="input-wrapper"><input type="tel" value="+967770000000" dir="ltr" style="text-align: right;"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('active');
+            
+            if (sidebar.classList.contains('active')) {
+                overlay.style.display = 'block';
+                setTimeout(() => { overlay.style.opacity = '1'; }, 10);
+            } else {
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.display = 'none'; }, 300);
+            }
+        }
+    </script>
+</body>
+</html>

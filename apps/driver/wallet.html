@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>محفظتي - واجيك كابتن</title>
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --bg-dark: #121212;
+            --surface: #1E1E1E;
+            --text-light: #FFFFFF;
+            --text-gray: #A0A0A0;
+            --success: #05CD99;
+            --danger: #EE5D50;
+            --warning: #FFCE20;
+            --info: #4318FF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
+            background-color: var(--bg-dark); position: relative;
+            display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px;
+        }
+
+        /* الهيدر */
+        .page-header {
+            padding: 25px 20px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--surface);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky; top: 0; z-index: 10;
+        }
+        .page-title { font-size: 20px; font-weight: 900; color: var(--text-light); }
+        .support-btn { color: var(--primary); font-size: 20px; background: none; border: none; cursor: pointer; }
+
+        /* قسم البطاقات المالية */
+        .wallet-cards { padding: 20px; }
+        
+        .main-balance-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #D14500 100%);
+            border-radius: 20px; padding: 25px; margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(242, 92, 5, 0.3);
+            position: relative; overflow: hidden;
+        }
+        .main-balance-card::after {
+            content: '\f555'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; left: -20px; bottom: -20px; font-size: 100px;
+            color: rgba(255,255,255,0.1); transform: rotate(-15deg);
+        }
+        .balance-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; }
+        .balance-amount { font-size: 32px; font-weight: 900; color: white; margin-bottom: 20px; }
+        
+        .withdraw-btn {
+            background: white; color: var(--primary); border: none;
+            padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .withdraw-btn:active { transform: scale(0.95); }
+
+        /* بطاقة المديونية (الكاش المحصل) */
+        .debt-card {
+            background-color: var(--surface); border-radius: 16px; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(238, 93, 80, 0.2);
+        }
+        .debt-info h4 { font-size: 14px; color: var(--text-gray); margin-bottom: 5px; }
+        .debt-info h2 { font-size: 20px; color: var(--danger); font-weight: 900; }
+        .settle-btn {
+            background: rgba(238, 93, 80, 0.1); color: var(--danger); border: none;
+            padding: 10px 15px; border-radius: 10px; font-weight: 800; font-size: 12px;
+        }
+
+        /* سجل العمليات (Transactions) */
+        .transactions-section { padding: 0 20px; }
+        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 15px; color: var(--text-light); }
+        
+        .transaction-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px; background: var(--surface); border-radius: 12px; margin-bottom: 10px;
+        }
+        .trans-left { display: flex; align-items: center; gap: 12px; }
+        .trans-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; justify-content: center; align-items: center; font-size: 16px;
+        }
+        .icon-delivery { background: rgba(5, 205, 153, 0.1); color: var(--success); }
+        .icon-withdraw { background: rgba(67, 24, 255, 0.1); color: var(--info); }
+        
+        .trans-details h4 { font-size: 14px; font-weight: 800; margin-bottom: 3px; }
+        .trans-details p { font-size: 11px; color: var(--text-gray); }
+        
+        .trans-amount { font-size: 14px; font-weight: 900; }
+        .amount-pos { color: var(--success); }
+        .amount-neg { color: var(--text-light); }
+
+        /* شريط التنقل السفلي */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 70px;
+            background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-around; align-items: center; z-index: 30;
+        }
+        .nav-link {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s;
+        }
+        .nav-link i { font-size: 20px; }
+        .nav-link.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- الهيدر -->
+        <header class="page-header">
+            <h1 class="page-title">محفظتي المالية</h1>
+            <button class="support-btn"><i class="fa-solid fa-headset"></i></button>
+        </header>
+
+        <!-- البطاقات المالية -->
+        <div class="wallet-cards">
+            <!-- أرباح الكابتن -->
+            <div class="main-balance-card">
+                <p class="balance-label">الرصيد المتاح (أرباحك الصافية)</p>
+                <div class="balance-amount">24,500 <span style="font-size: 16px;">ر.ي</span></div>
+                <button class="withdraw-btn" onclick="requestWithdraw()"><i class="fa-solid fa-building-columns"></i> طلب سحب الرصيد</button>
+            </div>
+
+            <!-- مديونية الكاش -->
+            <div class="debt-card">
+                <div class="debt-info">
+                    <h4>كاش محصل (مطالب بتوريده)</h4>
+                    <h2>45,500 <span style="font-size: 14px;">ر.ي</span></h2>
+                </div>
+                <button class="settle-btn" onclick="alert('لإتمام التوريد، يرجى إيداع المبلغ في حساب الشركة عبر الكريمي أو النجم، ثم رفع السند من هنا.')">تصفية العهدة</button>
+            </div>
+        </div>
+
+        <!-- سجل العمليات -->
+        <div class="transactions-section">
+            <h3 class="section-title">سجل العمليات الأخير</h3>
+            
+            <div class="transaction-item">
+                <div class="trans-left">
+                    <div class="trans-icon icon-delivery"><i class="fa-solid fa-motorcycle"></i></div>
+                    <div class="trans-details">
+                        <h4>عمولة توصيل طلب #WAJ-992</h4>
+                        <p>اليوم، 01:30 م • مطعم المراسيم</p>
+                    </div>
+                </div>
+                <div class="trans-amount amount-pos">+ 1,500 ر.ي</div>
+            </div>
+
+            <div class="transaction-item">
+                <div class="trans-left">
+                    <div class="trans-icon icon-delivery"><i class="fa-solid fa-motorcycle"></i></div>
+                    <div class="trans-details">
+                        <h4>عمولة توصيل طلب #WAJ-985</h4>
+                        <p>اليوم، 11:15 ص • بروستد الشلال</p>
+                    </div>
+                </div>
+                <div class="trans-amount amount-pos">+ 1,000 ر.ي</div>
+            </div>
+
+            <div class="transaction-item">
+                <div class="trans-left">
+                    <div class="trans-icon icon-withdraw"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                    <div class="trans-details">
+                        <h4>سحب رصيد (الكريمي)</h4>
+                        <p>أمس، 09:00 م • مكتمل</p>
+                    </div>
+                </div>
+                <div class="trans-amount amount-neg">- 15,000 ر.ي</div>
+            </div>
+        </div>
+
+        <!-- شريط التنقل السفلي المربوط بالروابط الصحيحة -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-link">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>الخريطة</span>
+            </a>
+            <a href="tasks.html" class="nav-link">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <span>مهامي</span>
+            </a>
+            <a href="wallet.html" class="nav-link active">
+                <i class="fa-solid fa-wallet"></i>
+                <span>محفظتي</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <script>
+        function requestWithdraw() {
+            alert("تم إرسال طلب سحب بمبلغ 24,500 ر.ي إلى الإدارة. سيتم تحويل المبلغ إلى حسابك المربوط قريباً.");
+        }
+    </script>
+</body>
+</html>
