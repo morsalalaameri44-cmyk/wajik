@@ -1,9 +1,49 @@
 // 1. إعداد الاتصال بقاعدة البيانات
 const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; // 🛑 تذكر وضع مفتاحك هنا
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// 2. جلب المتاجر من قاعدة البيانات
+// 2. دالة جلب الأقسام وعرضها في الواجهة بالتصميم الشبكي الجديد
+async function fetchAndDisplayCategories() {
+    try {
+        const { data: categories, error } = await supabaseClient
+            .from('categories')
+            .select('*');
+
+        if (error) throw error;
+
+        const container = document.querySelector('.categories-container');
+        
+        // تفريغ الحاوية الحالية وإبقاء زر "الكل" بتصميم الشبكة (Grid) الجديد
+        container.innerHTML = `
+            <div class="category-item all-btn active" data-category="الكل">
+                <i class="fa-solid fa-border-all"></i>
+                <p class="category-title">الكل</p>
+            </div>
+        `;
+
+        // المرور على الأقسام المجلوبة وإضافتها بالتصميم الجديد
+        if (categories && categories.length > 0) {
+            categories.forEach(category => {
+                const categoryHTML = `
+                    <div class="category-item" data-category="${category.name}">
+                        <img class="category-img" src="${category.image_url}" alt="${category.name}">
+                        <p class="category-title">${category.name}</p>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', categoryHTML);
+            });
+        }
+
+        // 🌟 خطوة هامة: تفعيل أزرار الأقسام "بعد" إضافتها للشاشة
+        setupCategoryListeners();
+
+    } catch (error) {
+        console.error('حدث خطأ أثناء جلب الأقسام:', error.message);
+    }
+}
+
+// 3. جلب المتاجر من قاعدة البيانات
 async function loadStores(categoryName = 'الكل', searchQuery = '') {
     const storesList = document.getElementById('storesList');
     
@@ -17,7 +57,7 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
     let query = supabaseClient.from('stores').select('*');
     
     if (categoryName !== 'الكل') {
-        query = query.eq('category', categoryName);
+        query = query.eq('category', categoryName); // تأكد أن لديك عمود اسمه 'category' في جدول stores
     }
 
     const { data, error } = await query;
@@ -27,7 +67,7 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
         return;
     }
 
-    // تصفية نتائج البحث (إذا كان المستخدم يكتب في مربع البحث)
+    // تصفية نتائج البحث
     let finalData = data;
     if (searchQuery !== '') {
         finalData = data.filter(store => 
@@ -47,16 +87,17 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
         return;
     }
 
-    // عرض المتاجر الحقيقية بنفس تصميمك الجميل
+    // عرض المتاجر
     finalData.forEach(store => {
         const storeName = store.name || store.store_name || 'متجر غير مسمى';
         const storeCategory = store.category || 'عام';
-        // يمكنك لاحقاً حفظ روابط صور حقيقية في قاعدة البيانات
-        const storeImage = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80'; 
+        
+        // استخدام صورة المطعم من قاعدة البيانات (logo_url) إذا توفرت، وإلا استخدام الصورة الافتراضية
+        const storeImage = store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80'; 
 
         const card = document.createElement("a");
         card.className = "store-card";
-        card.href = `store.html?id=${store.id}`; // لتمرير رقم المتجر للصفحة القادمة
+        card.href = `store.html?id=${store.id}`; 
         
         card.innerHTML = `
             <div class="store-img-wrapper" style="background-image: url('${storeImage}');"></div>
@@ -74,33 +115,39 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
     });
 }
 
-// 3. تفعيل الأزرار والبحث عند تشغيل الصفحة
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // تحميل المتاجر الافتراضية
-    loadStores('الكل');
-
-    // تفعيل أزرار الأقسام
+// 4. دالة تفعيل أزرار الأقسام (مفصولة ليتم استدعاؤها بعد الجلب)
+function setupCategoryListeners() {
     const categoryCards = document.querySelectorAll('.category-item');
     categoryCards.forEach(card => {
         card.addEventListener('click', () => {
             categoryCards.forEach(c => c.classList.remove('active'));
             card.classList.add('active');
             
-            // قراءة القسم المختار من خاصية data-category
             const selectedCategory = card.getAttribute('data-category');
             
-            // مسح مربع البحث عند تغيير القسم
             document.getElementById('searchInput').value = '';
             
             loadStores(selectedCategory);
         });
     });
+}
+
+// 5. تفعيل الأوامر عند تشغيل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // جلب الأقسام الحقيقية من قاعدة البيانات
+    fetchAndDisplayCategories();
+
+    // جلب المتاجر الافتراضية
+    loadStores('الكل');
 
     // تفعيل مربع البحث
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('keyup', () => {
-        const activeCategory = document.querySelector('.category-item.active').getAttribute('data-category');
+        // البحث عن القسم النشط حالياً، وإذا لم يجده يفترض أنه "الكل"
+        const activeCategoryItem = document.querySelector('.category-item.active');
+        const activeCategory = activeCategoryItem ? activeCategoryItem.getAttribute('data-category') : 'الكل';
+        
         loadStores(activeCategory, searchInput.value);
     });
 });
