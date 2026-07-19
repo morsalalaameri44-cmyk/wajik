@@ -114,62 +114,45 @@
         .section-title span { font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; transition: 0.2s; }
         .section-title span:active { opacity: 0.5; }
 
-        /* --- التصميم الجديد: نظام الشبكة الملونة للأقسام --- */
         .categories-container { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 12px; 
-            padding: 5px 20px 15px 20px; 
+            padding: 5px 10px 15px 10px; 
         }
         
         .category-item { 
             position: relative;
-            height: 105px;
-            border-radius: 18px;
+            height: 145px;
+            border-radius: 20px;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             padding-top: 12px;
             cursor: pointer; 
-            transition: 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
             overflow: hidden;
         }
 
-        .category-item:active { transform: scale(0.95); }
-
-        /* --- حركة بهلوانية (تأثير الجيلي) عند الضغط --- */
-        @keyframes jellyPop {
-            0% { transform: scale(1); }
-            30% { transform: scale(0.85); }
-            50% { transform: scale(1.08); }
-            70% { transform: scale(0.95); }
-            100% { transform: scale(1); }
+        /* 🌟 حركة الارتجاج لمدة 1 ثانية */
+        @keyframes shakeOneSecond {
+            0%, 100% { transform: rotate(0) scale(1); }
+            15%, 45%, 75% { transform: rotate(-8deg) scale(1.05); }
+            30%, 60%, 90% { transform: rotate(8deg) scale(1.05); }
         }
 
-        .category-item.pop-anim {
-            animation: jellyPop 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        /* ------------------------------------------- */
-
-        /* 🌟 التعديل هنا: إضافة 10 ألوان فخمة متدرجة للأقسام الجديدة */
-        .category-item:nth-child(10n+1) { background: linear-gradient(135deg, #FF9F1C, #F25C05); } /* مطاعم (برتقالي) */
-        .category-item:nth-child(10n+2) { background: linear-gradient(135deg, #FF7EB3, #FF758C); } /* حلويات (وردي) */
-        .category-item:nth-child(10n+3) { background: linear-gradient(135deg, #52B788, #2D6A4F); } /* خضروات (أخضر) */
-        .category-item:nth-child(10n+4) { background: linear-gradient(135deg, #48CAE4, #0077B6); } /* آيسكريم (أزرق فاتح) */
-        .category-item:nth-child(10n+5) { background: linear-gradient(135deg, #B5179E, #7209B7); } /* سوبرماركت (بنفسجي) */
-        .category-item:nth-child(10n+6) { background: linear-gradient(135deg, #439A86, #00725B); } /* صيدليات (تيل) */
-        .category-item:nth-child(10n+7) { background: linear-gradient(135deg, #D4A373, #A98467); } /* مكتبات (بني خشبي) */
-        .category-item:nth-child(10n+8) { background: linear-gradient(135deg, #8D99AE, #2B2D42); } /* إلكترونيات (رمادي كحلي) */
-        .category-item:nth-child(10n+9) { background: linear-gradient(135deg, #e07a5f, #3d405b); } /* عسل واعشاب (أردوازي) */
-        .category-item:nth-child(10n+0) { background: linear-gradient(135deg, #F4A261, #E76F51); } /* تحف (سلموني) */
+        .category-item:nth-child(10n+1) { background: linear-gradient(135deg, #FF9F1C, #F25C05); } 
+        .category-item:nth-child(10n+2) { background: linear-gradient(135deg, #FF7EB3, #FF758C); } 
+        .category-item:nth-child(10n+3) { background: linear-gradient(135deg, #52B788, #2D6A4F); } 
+        .category-item:nth-child(10n+4) { background: linear-gradient(135deg, #48CAE4, #0077B6); } 
+        .category-item:nth-child(10n+5) { background: linear-gradient(135deg, #B5179E, #7209B7); } 
+        .category-item:nth-child(10n+6) { background: linear-gradient(135deg, #439A86, #00725B); } 
+        .category-item:nth-child(10n+7) { background: linear-gradient(135deg, #D4A373, #A98467); } 
+        .category-item:nth-child(10n+8) { background: linear-gradient(135deg, #8D99AE, #2B2D42); } 
+        .category-item:nth-child(10n+9) { background: linear-gradient(135deg, #e07a5f, #3d405b); } 
+        .category-item:nth-child(10n+0) { background: linear-gradient(135deg, #F4A261, #E76F51); } 
         
-        /* القسم النشط */
-        .category-item.active { outline: 3px solid var(--text-dark); outline-offset: 2px; }
-
-        /* صورة القسم */
         .category-img { width: 55px; height: 55px; object-fit: contain; z-index: 1; transition: 0.3s; }
-        .category-item.active .category-img { transform: scale(1.1); }
 
         .stores-list { padding: 5px 20px; display: flex; flex-direction: column; gap: 15px; }
         
