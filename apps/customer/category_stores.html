@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>واجيك - المتاجر</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05; --bg-light: #F8F9FA; --text-dark: #1A1A1A;
+            --text-gray: #757575; --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: #E9ECEF; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
+            background-color: var(--bg-light); position: relative; display: flex; flex-direction: column;
+        }
+
+        /* =========================================
+           تأثير انقسام الأبواب المذهل (1 ثانية)
+           ========================================= */
+        #doors-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10000; pointer-events: none;
+        }
+
+        .door {
+            position: absolute; top: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-light);
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1); /* حركة الفتح 1 ثانية */
+        }
+        
+        /* قص الشاشة نصفين بواسطة Clip-Path */
+        .door-right { left: 0; clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
+        .door-left { left: 0; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
+
+        /* حركة الفتح */
+        .doors-open .door-right { transform: translateX(100vw); }
+        .doors-open .door-left { transform: translateX(-100vw); }
+
+        /* الأيقونة المستنسخة على الباب لتكملة المشهد */
+        .door-content {
+            width: 130px; height: 145px;
+            transform: scale(2.2); /* نفس حجم التكبير في الصفحة الأولى */
+            position: relative; display: flex; justify-content: center; border-radius: 20px;
+        }
+        .door-content img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 20px; z-index: 1;
+        }
+        .door-content p {
+            position: absolute; bottom: 10px; z-index: 2; width: 90%; background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #1A1A1A; font-size: 13px;
+            font-weight: 800; text-align: center; padding: 6px 4px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin: 0;
+        }
+
+        /* =========================================
+           تصميم الواجهة الداخلية
+           ========================================= */
+        .page-header { background-color: #FFFFFF; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: var(--card-shadow); z-index: 10; }
+        .back-btn { width: 40px; height: 40px; border-radius: 12px; background-color: var(--bg-light); display: flex; justify-content: center; align-items: center; font-size: 18px; color: var(--text-dark); text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 800; color: var(--text-dark); }
+        .stores-list-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .stores-list-container::-webkit-scrollbar { display: none; }
+        
+        .store-card { background-color: #FFFFFF; border-radius: 20px; padding: 12px; display: flex; gap: 15px; box-shadow: var(--card-shadow); border: 1px solid #FDFDFD; text-decoration: none; color: inherit; }
+        .store-img-wrapper { position: relative; width: 90px; height: 90px; border-radius: 16px; background-color: #F5F5F5; background-size: cover; background-position: center; flex-shrink: 0; }
+        .store-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .store-info h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .store-tags { font-size: 12px; color: var(--text-gray); margin-bottom: 8px; }
+        .store-meta { display: flex; gap: 12px; font-size: 12px; font-weight: 700; color: var(--text-dark); }
+        .meta-item i { color: var(--primary); margin-left:3px; }
+        .loading-state { text-align:center; padding:50px 20px; color:var(--text-gray); }
+        .loading-state i { font-size:40px; color:var(--primary); margin-bottom:15px; }
+    </style>
+</head>
+<body>
+
+    <!-- الباب السينمائي المنشق -->
+    <div id="doors-container">
+        <div class="door door-right">
+            <div class="door-content" id="dc-right">
+                <img id="door-img-right" src="">
+                <p id="door-title-right"></p>
+            </div>
+        </div>
+        <div class="door door-left">
+            <div class="door-content" id="dc-left">
+                <img id="door-img-left" src="">
+                <p id="door-title-left"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header class="page-header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-right"></i></a>
+            <h1 class="page-title" id="pageTitle">المتاجر</h1>
+        </header>
+
+        <main class="stores-list-container" id="categoryStoresList">
+            <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p style="font-weight:700; font-size:16px;">جاري جلب بيانات القسم...</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // سحب البيانات التي أرسلتها الواجهة الأولى لتركيب الباب
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentCategory = urlParams.get('category') || 'الكل';
+        const imgUrl = urlParams.get('img') || '';
+        const bgGradient = urlParams.get('bg') || 'linear-gradient(135deg, #FF9F1C, #F25C05)';
+
+        // تركيب الصورة والاسم واللون على البابين
+        document.getElementById('door-img-right').src = imgUrl;
+        document.getElementById('door-img-left').src = imgUrl;
+        document.getElementById('door-title-right').innerText = currentCategory;
+        document.getElementById('door-title-left').innerText = currentCategory;
+        document.getElementById('dc-right').style.backgroundImage = bgGradient;
+        document.getElementById('dc-left').style.backgroundImage = bgGradient;
+        document.getElementById('pageTitle').innerText = currentCategory === 'الكل' ? 'جميع المتاجر' : `متاجر ${currentCategory}`;
+
+        // الوقوف لمدة (1 ثانية) ثم فتح البابين
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.body.classList.add('doors-open');
+            }, 1000); // الثبات لمدة 1 ثانية قبل الانشقاق
+        });
+
+        // إعداد الاتصال لجلب المتاجر
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function fetchCategoryStores() {
+            const storesList = document.getElementById('categoryStoresList');
+            let query = supabaseClient.from('stores').select('*');
+            if (currentCategory !== 'الكل') query = query.ilike('category', `%${currentCategory}%`);
+
+            const { data, error } = await query;
+
+            if (error) {
+                storesList.innerHTML = `<div class="loading-state"><p style="color:red;">حدث خطأ في جلب البيانات!</p></div>`; return;
+            }
+
+            storesList.innerHTML = ''; 
+            if (!data || data.length === 0) {
+                storesList.innerHTML = `<div class="loading-state"><i class="fa-solid fa-store-slash" style="color:#CCC;"></i><p>لا توجد متاجر متاحة حالياً.</p></div>`; return;
+            }
+
+            data.forEach(store => {
+                const storeName = store.name || store.store_name || 'متجر غير مسمى';
+                const storeCategory = store.category || 'عام';
+                const storeImage = store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80'; 
+                const card = document.createElement("a");
+                card.className = "store-card";
+                card.href = `store.html?id=${store.id}`; 
+                
+                card.innerHTML = `
+                    <div class="store-img-wrapper" style="background-image: url('${storeImage}');"></div>
+                    <div class="store-info">
+                        <h4>${storeName}</h4><p class="store-tags">${storeCategory}</p>
+                        <div class="store-meta">
+                            <div class="meta-item rating"><i class="fa-solid fa-star" style="color:#FFB300"></i> 4.5</div>
+                            <div class="meta-item time"><i class="fa-solid fa-clock"></i> 30 دقيقة</div>
+                        </div>
+                    </div>`;
+                storesList.appendChild(card);
+            });
+        }
+        fetchCategoryStores();
+    </script>
+</body>
+</html>
