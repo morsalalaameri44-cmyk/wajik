@@ -1,92 +1,362 @@
-// ب. جلب منتجات/أصناف المتجر من جدول products
-const { data: products, error: prodError } = await supabaseClient
-    .from('products') 
-    .select('*')
-    .eq('store_id', storeId);
-
-const menuList = document.getElementById('menuList');
-const categoriesTabs = document.querySelector('.categories-tabs');
-
-// تفريغ القوائم للبدء من جديد
-menuList.innerHTML = '';
-categoriesTabs.innerHTML = ''; 
-
-if(prodError) throw prodError;
-
-if (products && products.length > 0) {
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>أصناف المتجر - واجيك</title>
     
-    // 1. خوارزمية تجميع المنتجات حسب الصنف (مقبلات، عصائر، الخ)
-    // نفترض أن لديك عمود في قاعدة البيانات باسم 'category' لتصنيف المنتج
-    const groupedProducts = products.reduce((groups, product) => {
-        const catName = product.category || 'أصناف متنوعة';
-        if (!groups[catName]) {
-            groups[catName] = [];
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #F25C05;
+            --primary-light: #FFF2EB;
+            --bg-light: #F8F9FA;
+            --bg-body-gradient: linear-gradient(180deg, #FDFDFD 0%, #FFFEEF 100%);
+            --text-dark: #1A1A1A;
+            --text-gray: #757575;
+            --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            --border-color: #F0F0F0;
         }
-        groups[catName].push(product);
-        return groups;
-    }, {});
 
-    let isFirstTab = true;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    // 2. بناء الأقسام والتبويبات العلوية ديناميكياً
-    for (const [categoryName, categoryProducts] of Object.entries(groupedProducts)) {
+        body {
+            background: var(--bg-body-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
+            background-color: transparent; position: relative; display: flex;
+            flex-direction: column; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ההيدر الزجاجي */
+        .header {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 100; background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.3); transition: 0.3s;
+        }
+
+        .back-btn, .share-btn {
+            width: 40px; height: 40px; background-color: #FFFFFF; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-dark); text-decoration: none; font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.2s; cursor: pointer;
+        }
+        .back-btn:active, .share-btn:active { transform: scale(0.9); }
+        .header h2 { font-size: 18px; font-weight: 900; color: var(--text-dark); letter-spacing: 0.5px; }
+
+        /* معلومات المتجر والغلاف */
+        .store-content { flex: 1; overflow-y: auto; padding-bottom: 100px; scroll-behavior: smooth; }
+        .store-cover {
+            height: 240px; background-color: #EFEFEF; background-size: cover; background-position: center; position: relative;
+        }
+        .store-cover::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+        }
+
+        .store-details-card {
+            background-color: white; border-radius: 24px; padding: 25px;
+            margin: -40px 20px 15px 20px; position: relative; z-index: 2; box-shadow: var(--card-shadow);
+        }
+        .store-details-card h1 { font-size: 22px; font-weight: 900; margin-bottom: 5px; color: var(--text-dark); }
+        .store-details-card p { font-size: 13px; color: var(--text-gray); font-weight: 500; margin-bottom: 20px; }
+
+        .store-stats {
+            display: flex; justify-content: space-between; background-color: #F8F9FA; padding: 15px; border-radius: 16px;
+        }
+        .stat-item { text-align: center; font-size: 12px; font-weight: 800; color: var(--text-dark); }
+        .stat-item i { color: var(--primary); margin-bottom: 8px; font-size: 18px; display: block;}
+
+        /* التصنيفات الأفقية (Tabs) */
+        .categories-tabs {
+            display: flex; gap: 10px; padding: 10px 20px; overflow-x: auto;
+            scroll-snap-type: x mandatory; margin-bottom: 10px; position: sticky; top: 75px; z-index: 90;
+            background: rgba(253, 253, 253, 0.9); backdrop-filter: blur(5px);
+        }
+        .cat-tab {
+            background-color: white; border: 1px solid var(--border-color); color: var(--text-gray);
+            padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 800;
+            white-space: nowrap; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .cat-tab.active {
+            background-color: var(--primary); color: white; border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(242, 92, 5, 0.2);
+        }
+
+        /* قائمة الأصناف */
+        .menu-section { padding: 0 20px; }
+        .menu-title { font-size: 18px; font-weight: 900; margin-bottom: 15px; color: var(--text-dark); }
+        .category-group { margin-bottom: 30px; } /* فاصل بين الأقسام */
+
+        .product-card {
+            background-color: white; border-radius: 20px; padding: 12px; margin-bottom: 15px;
+            display: flex; gap: 15px; box-shadow: var(--card-shadow); border: 1px solid transparent;
+            transition: 0.3s; position: relative; overflow: hidden;
+            animation: slideUp 0.4s ease forwards; opacity: 0; transform: translateY(20px);
+        }
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+        .product-card:active { transform: scale(0.98); border-color: var(--primary-light); }
+
+        .product-img {
+            width: 90px; height: 90px; border-radius: 14px; object-fit: cover;
+            background-color: #F5F5F5; flex-shrink: 0; border: 1px solid #EFEFEF;
+        }
+
+        .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .product-info h3 { font-size: 16px; font-weight: 900; margin-bottom: 4px; color: var(--text-dark); line-height: 1.3;}
+        .product-info p { font-size: 12px; color: var(--text-gray); margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
         
-        // أ. إنشاء التبويب العلوي (Pill) لهذا الصنف
-        const tab = document.createElement('div');
-        tab.className = `cat-tab ${isFirstTab ? 'active' : ''}`;
-        tab.innerText = categoryName;
-        // حركة ذكية للتمرير عند النقر على التبويب
-        tab.onclick = () => {
-            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.getElementById(`section-${categoryName}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
-        categoriesTabs.appendChild(tab);
-        isFirstTab = false;
+        .product-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .product-price { font-size: 16px; font-weight: 900; color: var(--primary); }
 
-        // ب. إنشاء قسم (Section) داخل القائمة يحتوي على عنوان الصنف
-        const sectionContainer = document.createElement('div');
-        sectionContainer.id = `section-${categoryName}`; // آيدي فريد للربط مع التبويب
-        sectionContainer.style.paddingTop = '20px'; // مسافة تنفس
+        .add-btn {
+            width: 36px; height: 36px; background-color: var(--primary-light); color: var(--primary);
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.2s;
+        }
+        .add-btn.added { animation: pulseAdd 0.4s ease; background-color: var(--primary); color: white;}
+        @keyframes pulseAdd { 0% { transform: scale(1); } 50% { transform: scale(1.2) rotate(90deg); } 100% { transform: scale(1) rotate(0deg); } }
 
-        const sectionTitle = document.createElement('h2');
-        sectionTitle.className = 'menu-title';
-        sectionTitle.innerText = categoryName;
-        sectionContainer.appendChild(sectionTitle);
+        /* شريط السلة العائم */
+        .floating-cart {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
+            color: white; border-radius: 20px; padding: 16px 20px; display: flex;
+            justify-content: space-between; align-items: center; cursor: pointer;
+            box-shadow: 0 10px 30px rgba(242, 92, 5, 0.3); transition: 0.3s;
+            text-decoration: none; z-index: 20; transform: translateY(100px); opacity: 0;
+        }
+        .floating-cart.visible { transform: translateY(0); opacity: 1; animation: floatGently 3s ease-in-out infinite; }
+        @keyframes floatGently { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .floating-cart:active { transform: scale(0.96) !important; }
+        .cart-info { display: flex; align-items: center; gap: 12px; }
+        .cart-count { background-color: white; color: var(--primary); width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 15px; }
+        .cart-total { font-size: 16px; font-weight: 900; }
+        .checkout-text { font-size: 15px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+        
+        .loading-state { text-align:center; padding:50px 20px; color:var(--text-gray); }
+        .loading-state i { font-size:40px; color:var(--primary); margin-bottom:15px; }
 
-        // ج. إضافة المنتجات تحت هذا القسم
-        categoryProducts.forEach((product, index) => {
-            const prodName = product.name || 'منتج غير مسمى';
-            const prodDesc = product.description || '';
-            const prodPrice = product.price ? product.price.toLocaleString() : '0';
-            const prodImg = product.image_url || 'https://via.placeholder.com/150?text=لا+توجد+صورة';
+    </style>
+</head>
+<body>
 
-            const card = document.createElement('div');
-            card.className = 'product-card';
+    <div class="app-container">
+        <!-- الهيدر الزجاجي -->
+        <header class="header">
+            <a href="javascript:history.back()" class="back-btn"><i class="fa-solid fa-arrow-right"></i></a>
+            <h2>قائمة الأصناف</h2>
+            <div class="share-btn" onclick="alert('تم نسخ رابط المتجر!')"><i class="fa-solid fa-share-nodes"></i></div>
+        </header>
+
+        <main class="store-content no-scrollbar" id="mainContent">
             
-            // تصميم كرت المنتج
-            card.innerHTML = `
-                <img src="${prodImg}" alt="${prodName}" class="product-img">
-                <div class="product-info">
-                    <h3>${prodName}</h3>
-                    ${prodDesc ? `<p>${prodDesc}</p>` : ''}
-                    <div class="product-bottom">
-                        <span class="product-price">${prodPrice} ر.ي</span>
-                        <button class="add-btn" onclick="addToCart(this, ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
-                    </div>
+            <!-- غلاف المتجر -->
+            <div class="store-cover" id="storeCoverImage"></div>
+
+            <!-- بطاقة بيانات المتجر -->
+            <div class="store-details-card">
+                <h1 id="storeNameDisplay">جاري التحميل...</h1>
+                <p id="storeCategoryDisplay">يرجى الانتظار، جاري جلب بيانات المتجر</p>
+                <div class="store-stats">
+                    <div class="stat-item"><i class="fa-solid fa-star"></i>4.9</div>
+                    <div class="stat-item"><i class="fa-solid fa-clock"></i>30 دقيقة</div>
+                    <div class="stat-item"><i class="fa-solid fa-truck-fast"></i>توصيل سريع</div>
                 </div>
-            `;
-            sectionContainer.appendChild(card);
+            </div>
+
+            <!-- حاوية التصنيفات الديناميكية -->
+            <div class="categories-tabs no-scrollbar" id="categoriesTabsContainer">
+                <!-- سيتم تفريغ هذا المحتوى وبناء الأزرار حسب الأصناف الموجودة في قاعدة البيانات -->
+            </div>
+
+            <!-- قائمة الأصناف الحقيقية -->
+            <div class="menu-section" id="menuList">
+                <div class="loading-state" id="loadingProducts">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p style="font-weight:700; font-size:16px;">جاري جلب الأصناف والتصنيفات...</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- شريط السلة العائم -->
+        <a href="checkout.html" class="floating-cart" id="floatingCart">
+            <div class="cart-info">
+                <span class="cart-count" id="cartCountDisplay">0</span>
+                <span class="cart-total" id="cartTotalDisplay">0 ر.ي</span>
+            </div>
+            <div class="checkout-text">
+                إتمام الطلب <i class="fa-solid fa-chevron-left"></i>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const storeId = urlParams.get('id');
+
+        let currentItemsCount = 0;
+        let currentTotal = 0;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if(!storeId) {
+                document.getElementById('storeNameDisplay').innerText = "خطأ: لم يتم تحديد المتجر";
+                document.getElementById('loadingProducts').innerHTML = "<p style='color:red;'>لا يمكن تحميل الأصناف.</p>";
+                return;
+            }
+
+            try {
+                // 1. جلب بيانات المتجر
+                const { data: store, error: storeError } = await supabaseClient
+                    .from('stores').select('*').eq('id', storeId).single();
+
+                if(store) {
+                    document.getElementById('storeNameDisplay').innerText = store.name || store.store_name || "متجر غير معروف";
+                    document.getElementById('storeCategoryDisplay').innerText = store.category || "عام";
+                    const coverUrl = store.cover_url || store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80';
+                    document.getElementById('storeCoverImage').style.backgroundImage = `url('${coverUrl}')`;
+                }
+
+                // 2. جلب المنتجات وتقسيمها
+                const { data: products, error: prodError } = await supabaseClient
+                    .from('products').select('*').eq('store_id', storeId);
+
+                const menuList = document.getElementById('menuList');
+                const tabsContainer = document.getElementById('categoriesTabsContainer');
+                
+                menuList.innerHTML = '';
+                tabsContainer.innerHTML = '';
+
+                if(prodError) throw prodError;
+
+                if (products && products.length > 0) {
+                    
+                    // خوارزمية تجميع المنتجات حسب قسمها
+                    const groupedProducts = products.reduce((groups, product) => {
+                        const catName = product.category || 'أصناف عامة';
+                        if (!groups[catName]) groups[catName] = [];
+                        groups[catName].push(product);
+                        return groups;
+                    }, {});
+
+                    let isFirstTab = true;
+
+                    for (const [categoryName, categoryProducts] of Object.entries(groupedProducts)) {
+                        const safeId = categoryName.replace(/\s+/g, '-');
+                        
+                        // بناء التبويب العلوي
+                        const tab = document.createElement('div');
+                        tab.className = `cat-tab ${isFirstTab ? 'active' : ''}`;
+                        tab.innerText = categoryName;
+                        tab.onclick = () => {
+                            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+                            tab.classList.add('active');
+                            const section = document.getElementById(`section-${safeId}`);
+                            if(section) {
+                                // تمرير ناعم للقسم المختار مع مراعاة ارتفاع الهيدر
+                                const y = section.getBoundingClientRect().top + document.getElementById('mainContent').scrollTop - 160;
+                                document.getElementById('mainContent').scrollTo({top: y, behavior: 'smooth'});
+                            }
+                        };
+                        tabsContainer.appendChild(tab);
+                        isFirstTab = false;
+
+                        // بناء القسم والمنتجات تحته
+                        const sectionContainer = document.createElement('div');
+                        sectionContainer.className = 'category-group';
+                        sectionContainer.id = `section-${safeId}`;
+
+                        const sectionTitle = document.createElement('h2');
+                        sectionTitle.className = 'menu-title';
+                        sectionTitle.innerText = categoryName;
+                        sectionContainer.appendChild(sectionTitle);
+
+                        categoryProducts.forEach((product, index) => {
+                            const prodName = product.name || 'منتج غير مسمى';
+                            const prodDesc = product.description || '';
+                            const prodPrice = product.price ? product.price.toLocaleString() : '0';
+                            const prodImg = product.image_url || 'https://via.placeholder.com/150?text=لا+توجد+صورة';
+
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            card.style.animationDelay = `${index * 0.05}s`;
+
+                            card.innerHTML = `
+                                <img src="${prodImg}" alt="${prodName}" class="product-img">
+                                <div class="product-info">
+                                    <h3>${prodName}</h3>
+                                    ${prodDesc ? `<p>${prodDesc}</p>` : ''}
+                                    <div class="product-bottom">
+                                        <span class="product-price">${prodPrice} ر.ي</span>
+                                        <button class="add-btn" onclick="addToCart(this, ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            `;
+                            sectionContainer.appendChild(card);
+                        });
+                        menuList.appendChild(sectionContainer);
+                    }
+                } else {
+                    tabsContainer.style.display = 'none'; // إخفاء التبويبات إذا كانت فارغة
+                    menuList.innerHTML = `
+                        <div class="loading-state">
+                            <i class="fa-solid fa-box-open" style="color:#CCC;"></i>
+                            <p style="font-weight:700; font-size:16px;">لا توجد أصناف مضافة في هذا المتجر حالياً.</p>
+                        </div>`;
+                }
+            } catch (err) {
+                console.error("خطأ في جلب البيانات:", err);
+                document.getElementById('loadingProducts').innerHTML = "<p style='color:red;'>حدث خطأ أثناء تحميل البيانات.</p>";
+            }
         });
 
-        // د. إضافة القسم بالكامل إلى القائمة الرئيسية
-        menuList.appendChild(sectionContainer);
-    }
+        // دالة إضافة المنتج للسلة
+        window.addToCart = function(btnElement, itemPrice) {
+            btnElement.classList.add('added');
+            btnElement.innerHTML = '<i class="fa-solid fa-check"></i>'; 
+            
+            setTimeout(() => {
+                btnElement.classList.remove('added');
+                btnElement.innerHTML = '<i class="fa-solid fa-plus"></i>'; 
+            }, 600);
 
-} else {
-    menuList.innerHTML = `
-        <div class="loading-state">
-            <i class="fa-solid fa-box-open" style="color:#CCC;"></i>
-            <p style="font-weight:700; font-size:16px;">لا توجد أصناف مضافة في هذا المتجر حالياً.</p>
-        </div>`;
-}
+            currentItemsCount++;
+            currentTotal += itemPrice;
+
+            document.getElementById('cartCountDisplay').innerText = currentItemsCount;
+            document.getElementById('cartTotalDisplay').innerText = currentTotal.toLocaleString() + ' ر.ي';
+
+            const cartBar = document.getElementById('floatingCart');
+            if(!cartBar.classList.contains('visible')) {
+                cartBar.classList.add('visible');
+            }
+        }
+    </script>
+</body>
+</html>
