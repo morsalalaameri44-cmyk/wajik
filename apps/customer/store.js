@@ -45,7 +45,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ההيدر الزجاجي */
+        /* الهيدر الزجاجي */
         .header {
             position: absolute; top: 0; left: 0; width: 100%; padding: 20px;
             display: flex; align-items: center; justify-content: space-between;
@@ -105,7 +105,7 @@
         /* قائمة الأصناف */
         .menu-section { padding: 0 20px; }
         .menu-title { font-size: 18px; font-weight: 900; margin-bottom: 15px; color: var(--text-dark); }
-        .category-group { margin-bottom: 30px; } /* فاصل بين الأقسام */
+        .category-group { margin-bottom: 30px; }
 
         .product-card {
             background-color: white; border-radius: 20px; padding: 12px; margin-bottom: 15px;
@@ -257,9 +257,9 @@
 
                 if (products && products.length > 0) {
                     
-                    // خوارزمية تجميع المنتجات حسب قسمها
+                    // التعديل السحري هنا: استخدام category_name من قاعدة البيانات
                     const groupedProducts = products.reduce((groups, product) => {
-                        const catName = product.category || 'أصناف عامة';
+                        const catName = product.category_name || 'أصناف عامة';
                         if (!groups[catName]) groups[catName] = [];
                         groups[catName].push(product);
                         return groups;
@@ -279,7 +279,6 @@
                             tab.classList.add('active');
                             const section = document.getElementById(`section-${safeId}`);
                             if(section) {
-                                // تمرير ناعم للقسم المختار مع مراعاة ارتفاع الهيدر
                                 const y = section.getBoundingClientRect().top + document.getElementById('mainContent').scrollTop - 160;
                                 document.getElementById('mainContent').scrollTo({top: y, behavior: 'smooth'});
                             }
@@ -323,7 +322,7 @@
                         menuList.appendChild(sectionContainer);
                     }
                 } else {
-                    tabsContainer.style.display = 'none'; // إخفاء التبويبات إذا كانت فارغة
+                    tabsContainer.style.display = 'none'; 
                     menuList.innerHTML = `
                         <div class="loading-state">
                             <i class="fa-solid fa-box-open" style="color:#CCC;"></i>
