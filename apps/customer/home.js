@@ -6,7 +6,6 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 // 2. دالة جلب الأقسام وعرضها مرتبة في الواجهة
 async function fetchAndDisplayCategories() {
     try {
-        // جلب الأقسام "مرتبة" تصاعدياً حسب عمود sort_order
         const { data: categories, error } = await supabaseClient
             .from('categories')
             .select('*')
@@ -19,11 +18,13 @@ async function fetchAndDisplayCategories() {
 
         if (categories && categories.length > 0) {
             categories.forEach(category => {
-                // 🌟 التعديل هنا: تم السماح للنص بالنزول لسطر جديد (white-space: normal) وتوسيطه بشكل جميل
+                // تنظيف الاسم من المسافات الزائدة في البداية والنهاية
+                const cleanCatName = category.name.trim(); 
+                
                 const categoryHTML = `
-                    <div class="category-item" data-category="${category.name}" style="position: relative; display: flex; justify-content: center;">
-                        <img class="category-img" src="${category.image_url}" alt="${category.name}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 18px; z-index: 1;">
-                        <p class="category-title" style="position: absolute; bottom: 8px; z-index: 2; width: 92%; background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); color: #1A1A1A; font-size: 10.5px; font-weight: 800; text-align: center; padding: 4px 6px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0; white-space: normal; line-height: 1.3;">${category.name}</p>
+                    <div class="category-item" data-category="${cleanCatName}" style="position: relative; display: flex; justify-content: center;">
+                        <img class="category-img" src="${category.image_url}" alt="${cleanCatName}" onerror="this.src='https://via.placeholder.com/100?text=قسم'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 18px; z-index: 1;">
+                        <p class="category-title" style="position: absolute; bottom: 8px; z-index: 2; width: 92%; background-color: rgba(255, 255, 255, 0.85); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); color: #1A1A1A; font-size: 10.5px; font-weight: 800; text-align: center; padding: 4px 6px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0; white-space: normal; line-height: 1.3;">${cleanCatName}</p>
                     </div>
                 `;
                 container.insertAdjacentHTML('beforeend', categoryHTML);
@@ -41,6 +42,11 @@ async function fetchAndDisplayCategories() {
 async function loadStores(categoryName = 'الكل', searchQuery = '') {
     const storesList = document.getElementById('storesList');
     
+    // تنظيف اسم القسم من المسافات لتجنب أخطاء عدم التطابق
+    const cleanCategoryName = categoryName.trim();
+    
+    console.log(`جاري البحث عن متاجر في قسم: "${cleanCategoryName}"`); // للمساعدة في التتبع
+
     storesList.innerHTML = `
         <div style="text-align:center; padding:40px 10px; color:var(--text-gray);">
             <i class="fa-solid fa-spinner fa-spin" style="font-size:30px; margin-bottom:10px; color:var(--primary);"></i>
@@ -49,22 +55,27 @@ async function loadStores(categoryName = 'الكل', searchQuery = '') {
 
     let query = supabaseClient.from('stores').select('*');
     
-    if (categoryName !== 'الكل') {
-        query = query.eq('category', categoryName);
+    // استخدام ilike للبحث بمرونة أكبر وتجاهل حساسيات المسافات إن أمكن
+    if (cleanCategoryName !== 'الكل') {
+        query = query.ilike('category', `%${cleanCategoryName}%`);
     }
 
     const { data, error } = await query;
 
     if (error) {
+        console.error("خطأ جلب المتاجر:", error);
         storesList.innerHTML = `<p style="text-align:center;color:red;">خطأ في جلب البيانات.</p>`;
         return;
     }
 
+    console.log("المتاجر التي تم إيجادها:", data); // طباعة المتاجر في الكونسول لتتأكد من البيانات
+
     let finalData = data;
     if (searchQuery !== '') {
+        const cleanSearch = searchQuery.trim().toLowerCase();
         finalData = data.filter(store => 
-            (store.name && store.name.includes(searchQuery)) || 
-            (store.store_name && store.store_name.includes(searchQuery))
+            (store.name && store.name.toLowerCase().includes(cleanSearch)) || 
+            (store.store_name && store.store_name.toLowerCase().includes(cleanSearch))
         );
     }
 
