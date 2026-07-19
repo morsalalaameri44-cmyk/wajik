@@ -143,7 +143,7 @@ function setupInterfaceInteractions() {
     });
 
     document.getElementById('bannerBtn1').addEventListener('click', () => {
-        loadStores('تموينات');
+        loadStores('سوبر ماركت');
     });
 
     document.getElementById('bannerBtn2').addEventListener('click', () => {
