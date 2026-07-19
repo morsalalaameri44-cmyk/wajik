@@ -10,20 +10,36 @@
     
     <style>
         :root {
-            --primary: #F25C05; --bg-light: #F8F9FA; --text-dark: #1A1A1A;
-            --text-gray: #757575; --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            --primary: #F25C05;
+            --primary-light: #FFF2EB;
+            --bg-light: #F8F9FA;
+            --text-dark: #1A1A1A;
+            --text-gray: #757575;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            --bg-body-gradient: linear-gradient(180deg, #FDFDFD 0%, #FFFEEF 100%);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background-color: #E9ECEF; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent;}
+        body { 
+            background: var(--bg-body-gradient); 
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; 
+            position: relative;
+        }
+
+        body::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(var(--primary) 1px, transparent 1px);
+            background-size: 100px 100px; opacity: 0.02; z-index: 1; pointer-events: none;
+        }
 
         .app-container {
             width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
-            background-color: var(--bg-light); position: relative; display: flex; flex-direction: column;
+            background-color: transparent; position: relative; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.1); z-index: 2;
         }
 
         /* =========================================
-           تأثير انقسام الأبواب المذهل (1 ثانية)
+           تأثير انقسام الأبواب الأصلي والمذهل (تمت إعادته)
            ========================================= */
         #doors-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10000; pointer-events: none;
@@ -31,12 +47,12 @@
 
         .door {
             position: absolute; top: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-light);
+            background: var(--bg-body-gradient);
             display: flex; justify-content: center; align-items: center;
-            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1); /* حركة الفتح 1 ثانية */
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
         }
         
-        /* قص الشاشة نصفين بواسطة Clip-Path */
+        /* قص الشاشة نصفين ببراعة */
         .door-right { left: 0; clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%); }
         .door-left { left: 0; clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%); }
 
@@ -44,82 +60,240 @@
         .doors-open .door-right { transform: translateX(100vw); }
         .doors-open .door-left { transform: translateX(-100vw); }
 
-        /* الأيقونة المستنسخة على الباب لتكملة المشهد */
         .door-content {
-            width: 130px; height: 145px;
-            transform: scale(2.2); /* نفس حجم التكبير في الصفحة الأولى */
+            width: 130px; height: 145px; transform: scale(2.2);
             position: relative; display: flex; justify-content: center; border-radius: 20px;
         }
-        .door-content img {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 20px; z-index: 1;
-        }
+        .door-content img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 20px; z-index: 1; }
         .door-content p {
             position: absolute; bottom: 10px; z-index: 2; width: 90%; background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); color: #1A1A1A; font-size: 13px;
-            font-weight: 800; text-align: center; padding: 6px 4px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin: 0;
+            backdrop-filter: blur(5px); color: #1A1A1A; font-size: 13px; font-weight: 800; text-align: center; padding: 6px 4px; border-radius: 12px; margin: 0;
         }
 
         /* =========================================
-           تصميم الواجهة الداخلية
+           الهيدر وقائمة المتاجر الاحترافية
            ========================================= */
-        .page-header { background-color: #FFFFFF; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: var(--card-shadow); z-index: 10; }
-        .back-btn { width: 40px; height: 40px; border-radius: 12px; background-color: var(--bg-light); display: flex; justify-content: center; align-items: center; font-size: 18px; color: var(--text-dark); text-decoration: none; }
-        .page-title { flex: 1; font-size: 18px; font-weight: 800; color: var(--text-dark); }
-        .stores-list-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .stores-list-container::-webkit-scrollbar { display: none; }
+        .page-header { background-color: #FFFFFF; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); z-index: 10; }
+        .back-btn { width: 40px; height: 40px; border-radius: 12px; background-color: var(--bg-light); display: flex; justify-content: center; align-items: center; font-size: 18px; color: var(--text-dark); text-decoration: none; transition: 0.2s;}
+        .back-btn:active { transform: scale(0.9); }
+        .page-title { flex: 1; font-size: 19px; font-weight: 900; color: var(--text-dark); letter-spacing: 0.5px;}
+
+        /* =========================================
+           شريط تبديل العرض (شبكة/قائمة)
+           ========================================= */
+        .view-toggle-bar {
+            display: flex; justify-content: center; gap: 0px; padding: 0px 20px 10px 20px;
+            background-color: #FFFFFF; box-shadow: 0 2px 10px rgba(0,0,0,0.02); z-index: 9;
+            position: relative;
+        }
         
-        .store-card { background-color: #FFFFFF; border-radius: 20px; padding: 12px; display: flex; gap: 15px; box-shadow: var(--card-shadow); border: 1px solid #FDFDFD; text-decoration: none; color: inherit; }
-        .store-img-wrapper { position: relative; width: 90px; height: 90px; border-radius: 16px; background-color: #F5F5F5; background-size: cover; background-position: center; flex-shrink: 0; }
+        .view-toggle-bar::before {
+            content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.2;
+        }
+
+        .view-btn {
+            background-color: #F8F9FA; border: none; padding: 12px 20px;
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-gray); font-size: 14px; font-weight: 800;
+        }
+        
+        .view-btn-list { border-radius: 20px 0 0 20px; }
+        .view-btn-grid { border-radius: 0 20px 20px 0; }
+
+        .view-btn.active { background-color: var(--primary); color: white; box-shadow: 0 4px 15px rgba(242, 92, 5, 0.15); }
+        .view-btn.active i { color: white; }
+        .view-btn i { font-size: 16px; color: var(--text-gray); transition: 0.3s;}
+        .view-btn:active { transform: scale(0.95); }
+
+        /* =========================================
+           قائمة المتاجر الاحترافية الجديدة
+           ========================================= */
+        .stores-list-container { 
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; 
+            position: relative; z-index: 8;
+        }
+        
+        .stores-list-container::before {
+            content: ''; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 80%;
+            background: radial-gradient(var(--primary-light) 0%, transparent 60%); opacity: 0.05; z-index: -1; pointer-events: none;
+        }
+
+        .stores-list-container::-webkit-scrollbar { display: none; }
+
+        /* تنسيق القائمة (List View) الافتراضي */
+        .store-card { 
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFFEF7 100%);
+            border-radius: 24px; padding: 14px; display: flex; gap: 14px; align-items: center;
+            box-shadow: var(--card-shadow); border: 1px solid #F5F5F5; text-decoration: none; color: inherit; position: relative;
+            animation: slideUp 0.5s ease forwards; opacity: 0; transform: translateY(20px);
+        }
+        
+        @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+        .store-img-wrapper { 
+            position: relative; width: 95px; height: 95px; border-radius: 18px; 
+            background-color: var(--primary-light); background-size: cover; background-position: center; flex-shrink: 0; 
+            border: 2px solid #F8F9FA;
+        }
+
         .store-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
-        .store-info h4 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-        .store-tags { font-size: 12px; color: var(--text-gray); margin-bottom: 8px; }
-        .store-meta { display: flex; gap: 12px; font-size: 12px; font-weight: 700; color: var(--text-dark); }
-        .meta-item i { color: var(--primary); margin-left:3px; }
+        .store-info h4 { font-size: 17px; font-weight: 900; color: var(--text-dark); margin-bottom: 6px; line-height: 1.3;}
+        
+        .store-tags { 
+            font-size: 11px; color: var(--text-gray); font-weight: 800; 
+            background-color: #F0F2F5; padding: 4px 10px; border-radius: 8px; 
+            align-self: flex-start; margin-bottom: 10px;
+        }
+
+        .store-meta { display: flex; gap: 12px; font-size: 12px; font-weight: 800; color: var(--text-gray); align-items: center;}
+        .meta-item { display: flex; align-items: center; gap: 5px; }
+        .meta-item i { color: var(--primary); font-size: 13px;}
+
+        .store-actions { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 85px; }
+        
+        .rating-badge {
+            display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 900; color: var(--text-dark);
+            background: #FFF9E6; padding: 4px 8px; border-radius: 8px; border: 1px solid #FFE4A0;
+        }
+        .rating-badge i { color: #FFB300; }
+        
+        .rate-btn {
+            background-color: var(--primary-light); color: var(--primary); border: none; padding: 8px 14px;
+            border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .rate-btn:active { transform: scale(0.9); background-color: var(--primary); color: white; }
+
         .loading-state { text-align:center; padding:50px 20px; color:var(--text-gray); }
         .loading-state i { font-size:40px; color:var(--primary); margin-bottom:15px; }
+
+        /* =========================================
+           تنسيق الشبكة (Grid View) 
+           ========================================= */
+        .stores-list-container.grid-view {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stores-list-container.grid-view .store-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 15px;
+            align-items: center;
+        }
+
+        .stores-list-container.grid-view .store-img-wrapper {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 10px;
+        }
+
+        .stores-list-container.grid-view .store-actions {
+            flex-direction: row;
+            width: 100%;
+            height: auto;
+            margin-top: 15px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stores-list-container.grid-view .store-tags {
+            align-self: center;
+        }
+
+        .stores-list-container.grid-view .store-meta {
+            justify-content: center;
+        }
+
+        /* =========================================
+           نافذة التقييم المنبثقة
+           ========================================= */
+        .rating-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6);
+            z-index: 11000; display: none; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px);
+        }
+        .rating-modal-overlay.active { display: flex; opacity: 1; }
+        .rating-card {
+            background: #FFF; width: 85%; max-width: 350px; border-radius: 24px; padding: 25px; text-align: center;
+            transform: translateY(20px); transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .rating-modal-overlay.active .rating-card { transform: translateY(0); }
+        .rating-card h3 { font-size: 18px; font-weight: 900; margin-bottom: 5px; }
+        .rating-card p { font-size: 13px; color: var(--text-gray); font-weight: 500; margin-bottom: 20px; }
+        
+        .stars-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; direction: ltr;}
+        .stars-container i { font-size: 35px; color: #E0E0E0; cursor: pointer; transition: 0.2s; }
+        .stars-container i.active { color: #FFB300; transform: scale(1.1); }
+        
+        .rating-actions { display: flex; gap: 10px; }
+        .btn-submit-rate { flex: 1; padding: 14px; border: none; border-radius: 12px; background: var(--primary); color: #FFF; font-weight: 800; font-size: 15px; cursor: pointer; }
+        .btn-cancel-rate { flex: 1; padding: 14px; border: none; border-radius: 12px; background: #F5F5F5; color: var(--text-gray); font-weight: 800; font-size: 15px; cursor: pointer; }
+
     </style>
 </head>
 <body>
 
-    <!-- الباب السينمائي المنشق -->
+    <!-- الباب السينمائي المنشق (مصحح 100%) -->
     <div id="doors-container">
         <div class="door door-right">
-            <div class="door-content" id="dc-right">
-                <img id="door-img-right" src="">
-                <p id="door-title-right"></p>
-            </div>
+            <div class="door-content" id="dc-right"><img id="door-img-right" src=""><p id="door-title-right"></p></div>
         </div>
         <div class="door door-left">
-            <div class="door-content" id="dc-left">
-                <img id="door-img-left" src="">
-                <p id="door-title-left"></p>
-            </div>
+            <div class="door-content" id="dc-left"><img id="door-img-left" src=""><p id="door-title-left"></p></div>
         </div>
     </div>
 
+    <!-- واجهة التطبيق -->
     <div class="app-container">
         <header class="page-header">
             <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-right"></i></a>
             <h1 class="page-title" id="pageTitle">المتاجر</h1>
         </header>
 
+        <!-- شريط تبديل العرض الجديد -->
+        <div class="view-toggle-bar">
+            <button class="view-btn view-btn-list active" onclick="switchView('list')"><i class="fa-solid fa-list-ul"></i> قائمة</button>
+            <button class="view-btn view-btn-grid" onclick="switchView('grid')"><i class="fa-solid fa-grid-2"></i> شبكة</button>
+        </div>
+
         <main class="stores-list-container" id="categoryStoresList">
             <div class="loading-state">
                 <i class="fa-solid fa-spinner fa-spin"></i>
-                <p style="font-weight:700; font-size:16px;">جاري جلب بيانات القسم...</p>
+                <p style="font-weight:700; font-size:16px; margin-top: 10px;">جاري جلب بيانات القسم...</p>
             </div>
         </main>
     </div>
 
+    <!-- نافذة التقييم المنبثقة -->
+    <div class="rating-modal-overlay" id="ratingModal">
+        <div class="rating-card">
+            <h3 id="rateStoreName">اسم المتجر</h3>
+            <p>ما هو تقييمك لتجربتك مع هذا المتجر؟</p>
+            <div class="stars-container" id="starsContainer">
+                <i class="fa-solid fa-star" data-value="1"></i>
+                <i class="fa-solid fa-star" data-value="2"></i>
+                <i class="fa-solid fa-star" data-value="3"></i>
+                <i class="fa-solid fa-star" data-value="4"></i>
+                <i class="fa-solid fa-star" data-value="5"></i>
+            </div>
+            <div class="rating-actions">
+                <button class="btn-cancel-rate" onclick="closeRatingModal()">إلغاء</button>
+                <button class="btn-submit-rate" onclick="submitRating()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // سحب البيانات التي أرسلتها الواجهة الأولى لتركيب الباب
+        // 1. استخراج المتغيرات من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const currentCategory = urlParams.get('category') || 'الكل';
-        const imgUrl = urlParams.get('img') || '';
+        const imgUrl = urlParams.get('img') || ''; 
         const bgGradient = urlParams.get('bg') || 'linear-gradient(135deg, #FF9F1C, #F25C05)';
 
-        // تركيب الصورة والاسم واللون على البابين
+        // تركيب بيانات الباب السينمائي
         document.getElementById('door-img-right').src = imgUrl;
         document.getElementById('door-img-left').src = imgUrl;
         document.getElementById('door-title-right').innerText = currentCategory;
@@ -128,18 +302,33 @@
         document.getElementById('dc-left').style.backgroundImage = bgGradient;
         document.getElementById('pageTitle').innerText = currentCategory === 'الكل' ? 'جميع المتاجر' : `متاجر ${currentCategory}`;
 
-        // الوقوف لمدة (1 ثانية) ثم فتح البابين
+        // فتح الأبواب بعد ثانية 
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.body.classList.add('doors-open');
-            }, 1000); // الثبات لمدة 1 ثانية قبل الانشقاق
+            }, 1000); 
         });
 
-        // إعداد الاتصال لجلب المتاجر
+        // دالة تبديل العرض (القائمة / الشبكة)
+        function switchView(viewType) {
+            const listContainer = document.getElementById('categoryStoresList');
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if(viewType === 'list') {
+                document.querySelector('.view-btn-list').classList.add('active');
+                listContainer.classList.remove('grid-view');
+            } else {
+                document.querySelector('.view-btn-grid').classList.add('active');
+                listContainer.classList.add('grid-view');
+            }
+        }
+
+        // 2. إعداد قاعدة البيانات
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
         const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+        // 3. جلب المتاجر
         async function fetchCategoryStores() {
             const storesList = document.getElementById('categoryStoresList');
             let query = supabaseClient.from('stores').select('*');
@@ -156,27 +345,76 @@
                 storesList.innerHTML = `<div class="loading-state"><i class="fa-solid fa-store-slash" style="color:#CCC;"></i><p>لا توجد متاجر متاحة حالياً.</p></div>`; return;
             }
 
-            data.forEach(store => {
+            data.forEach((store, index) => {
                 const storeName = store.name || store.store_name || 'متجر غير مسمى';
-                const storeCategory = store.category || 'عام';
-                const storeImage = store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80'; 
+                const storeCategory = store.category || currentCategory;
+                
+                const defaultFallbackImage = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=200&q=80';
+                const storeImage = store.logo_url && store.logo_url.trim() !== '' ? store.logo_url : (imgUrl || defaultFallbackImage); 
+
                 const card = document.createElement("a");
                 card.className = "store-card";
                 card.href = `store.html?id=${store.id}`; 
+                card.style.animationDelay = `${(index * 0.1) + 0.1}s`;
                 
                 card.innerHTML = `
                     <div class="store-img-wrapper" style="background-image: url('${storeImage}');"></div>
                     <div class="store-info">
-                        <h4>${storeName}</h4><p class="store-tags">${storeCategory}</p>
+                        <h4>${storeName}</h4>
+                        <span class="store-tags">${storeCategory}</span>
                         <div class="store-meta">
-                            <div class="meta-item rating"><i class="fa-solid fa-star" style="color:#FFB300"></i> 4.5</div>
                             <div class="meta-item time"><i class="fa-solid fa-clock"></i> 30 دقيقة</div>
+                            <div class="meta-item delivery"><i class="fa-solid fa-truck"></i> سريع</div>
                         </div>
-                    </div>`;
+                    </div>
+                    <div class="store-actions">
+                        <div class="rating-badge"><i class="fa-solid fa-star"></i> 4.5</div>
+                        <button class="rate-btn" onclick="openRatingModal(event, '${storeName}')">قَيِّم المتجر</button>
+                    </div>
+                `;
                 storesList.appendChild(card);
             });
         }
         fetchCategoryStores();
+
+        // 4. برمجة نافذة التقييم التفاعلية
+        let currentRating = 0;
+        
+        window.openRatingModal = function(event, storeName) {
+            event.preventDefault(); 
+            document.getElementById('rateStoreName').innerText = storeName;
+            document.getElementById('ratingModal').classList.add('active');
+            resetStars();
+        }
+
+        window.closeRatingModal = function() {
+            document.getElementById('ratingModal').classList.remove('active');
+        }
+
+        window.submitRating = function() {
+            if(currentRating === 0) {
+                alert("يرجى اختيار عدد النجوم أولاً!");
+                return;
+            }
+            alert("تم إرسال تقييمك (" + currentRating + " نجوم) بنجاح. شكراً لك!");
+            closeRatingModal();
+        }
+
+        const stars = document.querySelectorAll('.stars-container i');
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const ratingValue = parseInt(this.getAttribute('data-value'));
+                currentRating = ratingValue;
+                resetStars();
+                for(let i = 0; i < ratingValue; i++) {
+                    stars[i].classList.add('active');
+                }
+            });
+        });
+
+        function resetStars() {
+            stars.forEach(s => s.classList.remove('active'));
+        }
     </script>
 </body>
 </html>
