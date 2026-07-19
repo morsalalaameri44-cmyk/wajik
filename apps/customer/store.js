@@ -1,106 +1,92 @@
-// 1. إعداد الاتصال بقاعدة البيانات
-const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-// 🛑 ضع المفتاح الخاص بك هنا
-const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+// ب. جلب منتجات/أصناف المتجر من جدول products
+const { data: products, error: prodError } = await supabaseClient
+    .from('products') 
+    .select('*')
+    .eq('store_id', storeId);
 
-// --- 🛒 نظام سلة المشتريات المطور ---
-let cartCount = 0; 
-let cartTotal = 0; 
-let cartItems = []; // 📦 مصفوفة (قائمة) لحفظ أسماء الوجبات وأسعارها
+const menuList = document.getElementById('menuList');
+const categoriesTabs = document.querySelector('.categories-tabs');
 
-// دالة إضافة الوجبة للسلة (الآن تأخذ الاسم والسعر معاً)
-window.addToCart = function(name, price) {
-    cartCount += 1;
-    cartTotal += price;
+// تفريغ القوائم للبدء من جديد
+menuList.innerHTML = '';
+categoriesTabs.innerHTML = ''; 
+
+if(prodError) throw prodError;
+
+if (products && products.length > 0) {
     
-    // تسجيل الوجبة في القائمة
-    cartItems.push({ name: name, price: price });
-    
-    // تحديث الشاشة
-    document.getElementById('cartCountDisplay').innerText = cartCount;
-    document.getElementById('cartTotalDisplay').innerText = cartTotal + ' ر.ي';
-    
-    // حفظ السلة في ذاكرة المتصفح لننقلها لصفحة الدفع لاحقاً
-    localStorage.setItem('wajik_cart', JSON.stringify(cartItems));
-    localStorage.setItem('wajik_total', cartTotal);
-    
-    const cartElement = document.getElementById('floatingCart');
-    if (cartCount > 0) {
-        cartElement.style.display = 'flex';
+    // 1. خوارزمية تجميع المنتجات حسب الصنف (مقبلات، عصائر، الخ)
+    // نفترض أن لديك عمود في قاعدة البيانات باسم 'category' لتصنيف المنتج
+    const groupedProducts = products.reduce((groups, product) => {
+        const catName = product.category || 'أصناف متنوعة';
+        if (!groups[catName]) {
+            groups[catName] = [];
+        }
+        groups[catName].push(product);
+        return groups;
+    }, {});
+
+    let isFirstTab = true;
+
+    // 2. بناء الأقسام والتبويبات العلوية ديناميكياً
+    for (const [categoryName, categoryProducts] of Object.entries(groupedProducts)) {
+        
+        // أ. إنشاء التبويب العلوي (Pill) لهذا الصنف
+        const tab = document.createElement('div');
+        tab.className = `cat-tab ${isFirstTab ? 'active' : ''}`;
+        tab.innerText = categoryName;
+        // حركة ذكية للتمرير عند النقر على التبويب
+        tab.onclick = () => {
+            document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(`section-${categoryName}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        categoriesTabs.appendChild(tab);
+        isFirstTab = false;
+
+        // ب. إنشاء قسم (Section) داخل القائمة يحتوي على عنوان الصنف
+        const sectionContainer = document.createElement('div');
+        sectionContainer.id = `section-${categoryName}`; // آيدي فريد للربط مع التبويب
+        sectionContainer.style.paddingTop = '20px'; // مسافة تنفس
+
+        const sectionTitle = document.createElement('h2');
+        sectionTitle.className = 'menu-title';
+        sectionTitle.innerText = categoryName;
+        sectionContainer.appendChild(sectionTitle);
+
+        // ج. إضافة المنتجات تحت هذا القسم
+        categoryProducts.forEach((product, index) => {
+            const prodName = product.name || 'منتج غير مسمى';
+            const prodDesc = product.description || '';
+            const prodPrice = product.price ? product.price.toLocaleString() : '0';
+            const prodImg = product.image_url || 'https://via.placeholder.com/150?text=لا+توجد+صورة';
+
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            
+            // تصميم كرت المنتج
+            card.innerHTML = `
+                <img src="${prodImg}" alt="${prodName}" class="product-img">
+                <div class="product-info">
+                    <h3>${prodName}</h3>
+                    ${prodDesc ? `<p>${prodDesc}</p>` : ''}
+                    <div class="product-bottom">
+                        <span class="product-price">${prodPrice} ر.ي</span>
+                        <button class="add-btn" onclick="addToCart(this, ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+            `;
+            sectionContainer.appendChild(card);
+        });
+
+        // د. إضافة القسم بالكامل إلى القائمة الرئيسية
+        menuList.appendChild(sectionContainer);
     }
-};
-// ------------------------------------
 
-// 2. دالة جلب وعرض بيانات المطعم والوجبات
-async function loadStoreDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const storeId = urlParams.get('id');
-
-    if (!storeId) {
-        alert('لم يتم تحديد المطعم!');
-        window.location.href = 'home.html';
-        return;
-    }
-
-    // تنظيف السلة القديمة عند فتح مطعم جديد
-    localStorage.removeItem('wajik_cart');
-    localStorage.removeItem('wajik_total');
-
-    // جلب بيانات المطعم
-    const { data: storeData, error: storeError } = await supabaseClient
-        .from('stores')
-        .select('*')
-        .eq('id', storeId)
-        .single(); 
-
-    if (storeError || !storeData) {
-        document.getElementById('storeNameDisplay').innerText = 'حدث خطأ';
-        return;
-    }
-
-    document.getElementById('storeNameDisplay').innerText = storeData.name || storeData.store_name || 'متجر غير مسمى';
-    document.getElementById('storeCategoryDisplay').innerText = `قسم ${storeData.category || 'عام'} - توصيل داخل عدن`;
-    
-    // جلب الوجبات
-    const menuList = document.getElementById('menuList');
-    
-    const { data: products, error: productsError } = await supabaseClient
-        .from('products')
-        .select('*')
-        .eq('store_id', storeId);
-
-    if (productsError) {
-        menuList.innerHTML = '<h2 class="menu-title">الأطباق الرئيسية</h2><p style="text-align:center; color:red;">عذراً، حدث خطأ.</p>';
-        return;
-    }
-
-    menuList.innerHTML = '<h2 class="menu-title">الأطباق الرئيسية</h2>';
-
-    if (products.length === 0) {
-        menuList.innerHTML += '<p style="text-align:center; color:var(--text-gray); padding: 20px;">لا توجد وجبات مضافة.</p>';
-        return;
-    }
-
-    // رسم الوجبات
-    products.forEach(product => {
-        const productName = product.name || 'وجبة غير مسماة';
-        const productDesc = product.description || '';
-        const productPrice = product.price || 0;
-
-        // 🟢 التعديل الأهم هنا: نرسل اسم الوجبة بين علامتي تنصيص لكي يتعرف عليها الكود
-        const productCard = `
-        <div class="menu-item">
-            <div class="item-info">
-                <h3>${productName}</h3>
-                <p>${productDesc}</p>
-                <div class="item-price">${productPrice} ر.ي</div>
-            </div>
-            <button class="add-btn" onclick="addToCart('${productName}', ${productPrice})"><i class="fa-solid fa-plus"></i></button>
-        </div>
-        `;
-        menuList.innerHTML += productCard;
-    });
+} else {
+    menuList.innerHTML = `
+        <div class="loading-state">
+            <i class="fa-solid fa-box-open" style="color:#CCC;"></i>
+            <p style="font-weight:700; font-size:16px;">لا توجد أصناف مضافة في هذا المتجر حالياً.</p>
+        </div>`;
 }
-
-document.addEventListener('DOMContentLoaded', loadStoreDetails);
