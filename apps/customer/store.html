@@ -184,9 +184,7 @@
             </div>
 
             <!-- حاوية التصنيفات الديناميكية -->
-            <div class="categories-tabs no-scrollbar" id="categoriesTabsContainer">
-                <!-- سيتم تفريغ هذا المحتوى وبناء الأزرار حسب الأصناف الموجودة في قاعدة البيانات -->
-            </div>
+            <div class="categories-tabs no-scrollbar" id="categoriesTabsContainer"></div>
 
             <!-- قائمة الأصناف الحقيقية -->
             <div class="menu-section" id="menuList">
@@ -224,6 +222,20 @@
         let currentItemsCount = 0;
         let currentTotal = 0;
 
+        // دالة ذكية لاختيار صورة افتراضية حسب تصنيف المتجر
+        function getDefaultCoverByCategory(category) {
+            const cat = category ? category.toLowerCase() : '';
+            if (cat.includes('مطعم') || cat.includes('مطاعم')) return 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80'; // طعام
+            if (cat.includes('سوبر ماركت') || cat.includes('بقالة')) return 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'; // بقالة
+            if (cat.includes('صيدل') || cat.includes('أدوية')) return 'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=600&q=80'; // صيدلية
+            if (cat.includes('تحف') || cat.includes('هدايا')) return 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=600&q=80'; // هدايا وتحف
+            if (cat.includes('مكتب')) return 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80'; // كتب ومكتبات
+            if (cat.includes('إلكترون') || cat.includes('جوال')) return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80'; // إلكترونيات
+            
+            // صورة افتراضية محايدة (واجهة متجر عامة) لأي تصنيف آخر
+            return 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80'; 
+        }
+
         window.addEventListener('DOMContentLoaded', async () => {
             if(!storeId) {
                 document.getElementById('storeNameDisplay').innerText = "خطأ: لم يتم تحديد المتجر";
@@ -237,10 +249,20 @@
                     .from('stores').select('*').eq('id', storeId).single();
 
                 if(store) {
+                    const storeCategory = store.category || "عام";
                     document.getElementById('storeNameDisplay').innerText = store.name || store.store_name || "متجر غير معروف";
-                    document.getElementById('storeCategoryDisplay').innerText = store.category || "عام";
-                    const coverUrl = store.cover_url || store.logo_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80';
-                    document.getElementById('storeCoverImage').style.backgroundImage = `url('${coverUrl}')`;
+                    document.getElementById('storeCategoryDisplay').innerText = storeCategory;
+                    
+                    // استخدام الغلاف من الداتا، أو الشعار، وإذا لم يوجد، استخدام الدالة الذكية
+                    let finalCoverUrl = store.cover_url;
+                    if (!finalCoverUrl || finalCoverUrl.trim() === '') {
+                        finalCoverUrl = store.logo_url;
+                    }
+                    if (!finalCoverUrl || finalCoverUrl.trim() === '') {
+                        finalCoverUrl = getDefaultCoverByCategory(storeCategory);
+                    }
+
+                    document.getElementById('storeCoverImage').style.backgroundImage = `url('${finalCoverUrl}')`;
                 }
 
                 // 2. جلب المنتجات وتقسيمها
@@ -257,7 +279,7 @@
 
                 if (products && products.length > 0) {
                     
-                    // التعديل السحري هنا: استخدام category_name من قاعدة البيانات
+                    // التجميع بناء على category_name
                     const groupedProducts = products.reduce((groups, product) => {
                         const catName = product.category_name || 'أصناف عامة';
                         if (!groups[catName]) groups[catName] = [];
@@ -300,7 +322,9 @@
                             const prodName = product.name || 'منتج غير مسمى';
                             const prodDesc = product.description || '';
                             const prodPrice = product.price ? product.price.toLocaleString() : '0';
-                            const prodImg = product.image_url || 'https://via.placeholder.com/150?text=لا+توجد+صورة';
+                            
+                            // توفير صورة منتج محايدة في حال لم توجد صورة
+                            const prodImg = product.image_url || 'https://via.placeholder.com/150/F8F9FA/757575?text=بدون+صورة';
 
                             const card = document.createElement('div');
                             card.className = 'product-card';
