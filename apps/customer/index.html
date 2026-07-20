@@ -31,14 +31,14 @@
         #splash-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            z-index: 100; transition: opacity 0.8s ease; 
+            z-index: 100; transition: opacity 0.6s ease; 
         }
         
         /* حلقة التوهج النيوني الخلفية */
         .logo-glow-ring { 
             position: absolute; width: 300px; height: 300px; border-radius: 50%; 
             background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); 
-            animation: pulseRing 2s ease-in-out infinite; z-index: 1; 
+            animation: pulseRing 1.5s ease-in-out infinite; z-index: 1; 
         }
 
         @keyframes pulseRing { 
@@ -46,11 +46,11 @@
             50% { transform: scale(1.2); opacity: 0.9; filter: blur(25px); } 
         }
 
-        /* 🌟 الواجهة الأولى: الشعار يرتج ويبرز */
+        /* 🌟 الواجهة الأولى: تم تسريع الحركة لتناسب الثانيتين */
         .splash-logo { 
             width: 240px; position: relative; z-index: 2; 
-            animation: popAndVibrate 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
-                       engineVibration 0.3s ease-in-out 1.8s infinite; 
+            animation: popAndVibrate 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
+                       engineVibration 0.3s ease-in-out 1s infinite; 
             filter: drop-shadow(0 0 25px var(--primary-glow)); 
         }
 
@@ -69,13 +69,14 @@
             80% { transform: translate(1px, 1px) rotate(0.3deg); }
         }
 
+        /* تم تسريع ظهور النص ليتناسب مع الثانيتين */
         .slogan-card { 
             position: relative; z-index: 2; margin-top: 35px; 
             background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); 
             border: 1px solid rgba(242, 92, 5, 0.5); padding: 10px 28px; 
             border-radius: 35px; opacity: 0; 
             box-shadow: 0 0 25px rgba(242, 92, 5, 0.3);
-            animation: fadeInSlogan 1.2s ease 1s forwards; 
+            animation: fadeInSlogan 0.8s ease 0.8s forwards; 
         }
 
         .slogan-text { 
@@ -89,18 +90,17 @@
         }
 
         /* =========================================
-           الواجهة الثانية: شاشة البدء (بدون ارتجاج، الشعار ثابت وكبير)
+           الواجهة الثانية: شاشة البدء
            ========================================= */
         #auth-screen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; justify-content: space-between; align-items: center; 
             padding: 50px 25px; z-index: 50; opacity: 0; visibility: hidden; 
-            transition: opacity 0.8s ease; 
+            transition: opacity 0.6s ease; 
         }
 
         .auth-logo-section { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
         
-        /* 🌟 الواجهة الثانية: الشعار ثابت تماماً وأكبر حجماً ووضوحاً */
         .auth-logo { 
             width: 250px; 
             filter: drop-shadow(0 0 25px var(--primary-glow)); 
@@ -112,7 +112,6 @@
 
         .auth-actions { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
 
-        /* 🌟 زر "ابدأ" السحري والإدماني */
         .btn-magical-start {
             width: 100%;
             background: linear-gradient(135deg, #FF7B35 0%, #F25C05 50%, #D44100 100%);
@@ -146,7 +145,7 @@
 <body>
     <div class="app-container">
         
-        <!-- الواجهة الأولى: شاشة البداية مع الارتجاج -->
+        <!-- الواجهة الأولى: شاشة البداية -->
         <div id="splash-screen">
             <div class="logo-glow-ring"></div>
             <img src="1000167488-removebg-preview.png" alt="Speed Go" class="splash-logo">
@@ -155,7 +154,7 @@
             </div>
         </div>
 
-        <!-- الواجهة الثانية: شاشة البدء بالشعار الثابت والأكبر -->
+        <!-- الواجهة الثانية: شاشة البدء -->
         <div id="auth-screen">
             <div class="auth-logo-section">
                 <img src="1000167488-removebg-preview.png" alt="Speed Go" class="auth-logo">
@@ -167,7 +166,6 @@
             </div>
 
             <div class="auth-actions">
-                <!-- زر ابدأ السحري الخرافي -->
                 <button class="btn-magical-start" onclick="window.location.href='home.html'">
                     ابدأ الآن <i class="fa-solid fa-bolt" style="font-size: 16px; color: #FFE359;"></i>
                 </button>
@@ -178,7 +176,7 @@
     </div>
 
     <script>
-        // الانتقال التلقائي بعد 4.8 ثانية (تقليل 25% من 6.4)
+        // الانتقال التلقائي بعد ثانيتين (2000 مللي ثانية)
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -190,7 +188,7 @@
                 auth.style.visibility = 'visible';
                 auth.style.opacity = '1';
                 
-            }, 4800); 
+            }, 2000); 
         });
     </script>
 </body>
