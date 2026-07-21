@@ -3,193 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speed Go - طلباتك أوامر</title>
+    <title>تسجيل الدخول - واجيك</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { 
-            --primary: #F25C05; 
-            --primary-glow: rgba(242, 92, 5, 0.8); 
-            --dark-bg: #070709; 
-            --text-light: #FFFFFF; 
+        :root {
+            --primary: #F25C05;
+            --primary-glow: rgba(242, 92, 5, 0.4);
+            --bg-dark: #0F172A;
+            --white: #FFFFFF;
+            --text-gray: #94A3B8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background-color: var(--dark-bg); 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; overflow: hidden; color: var(--text-light); 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+
+        body {
+            background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1080&q=80');
+            background-size: cover; background-position: center;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; position: relative;
         }
 
-        .app-container { 
-            width: 100%; max-width: 420px; height: 100vh; position: relative; 
-            display: flex; flex-direction: column; overflow: hidden; 
-            background: radial-gradient(circle at center, #1c0b02 0%, var(--dark-bg) 75%); 
-        }
-        
-        #splash-screen { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            z-index: 100; transition: opacity 0.6s ease; 
-        }
-        
-        /* حلقة التوهج النيوني الخلفية */
-        .logo-glow-ring { 
-            position: absolute; width: 300px; height: 300px; border-radius: 50%; 
-            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); 
-            animation: pulseRing 1.5s ease-in-out infinite; z-index: 1; 
+        body::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.95) 100%);
+            z-index: 1;
         }
 
-        @keyframes pulseRing { 
-            0%, 100% { transform: scale(0.85); opacity: 0.5; filter: blur(15px); } 
-            50% { transform: scale(1.2); opacity: 0.9; filter: blur(25px); } 
+        .auth-container {
+            width: 100%; max-width: 400px; padding: 30px; position: relative; z-index: 2;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;
+            margin: 20px;
         }
 
-        /* 🌟 الواجهة الأولى: تم تسريع الحركة لتناسب الثانيتين */
-        .splash-logo { 
-            width: 240px; position: relative; z-index: 2; 
-            animation: popAndVibrate 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
-                       engineVibration 0.3s ease-in-out 1s infinite; 
-            filter: drop-shadow(0 0 25px var(--primary-glow)); 
+        .logo-box {
+            width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
+            border-radius: 25px; display: flex; justify-content: center; align-items: center;
+            font-size: 35px; color: white; margin: 0 auto 20px auto;
+            box-shadow: 0 10px 25px var(--primary-glow); transform: rotate(-5deg);
         }
 
-        @keyframes popAndVibrate { 
-            0% { transform: scale(0.4) rotate(-5deg); opacity: 0; } 
-            60% { transform: scale(1.12) rotate(2deg); opacity: 1; } 
-            80% { transform: scale(0.95) rotate(-1deg); } 
-            100% { transform: scale(1) rotate(0deg); opacity: 1; } 
+        .auth-container h1 { font-size: 26px; font-weight: 900; color: var(--white); margin-bottom: 5px; }
+        .auth-container p { font-size: 14px; color: var(--text-gray); margin-bottom: 30px; }
+
+        /* التبديل بين الدخول والتسجيل */
+        .tabs { display: flex; background: rgba(0,0,0,0.2); border-radius: 16px; margin-bottom: 25px; padding: 5px; }
+        .tab {
+            flex: 1; padding: 12px; border-radius: 12px; color: var(--text-gray);
+            font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.3s;
         }
+        .tab.active { background: var(--white); color: var(--bg-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        @keyframes engineVibration {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(-1.5px, 1.5px) rotate(-0.5deg); }
-            40% { transform: translate(1.5px, -1.5px) rotate(0.5deg); }
-            60% { transform: translate(-1px, -0.5px) rotate(-0.3deg); }
-            80% { transform: translate(1px, 1px) rotate(0.3deg); }
+        /* الحقول */
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 16px; }
+        .auth-input {
+            width: 100%; padding: 16px 45px 16px 16px; border-radius: 16px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 14px; outline: none; transition: 0.3s;
         }
+        .auth-input::placeholder { color: var(--text-gray); }
+        .auth-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); box-shadow: 0 0 0 4px rgba(242,92,5,0.2); }
 
-        /* تم تسريع ظهور النص ليتناسب مع الثانيتين */
-        .slogan-card { 
-            position: relative; z-index: 2; margin-top: 35px; 
-            background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(12px); 
-            border: 1px solid rgba(242, 92, 5, 0.5); padding: 10px 28px; 
-            border-radius: 35px; opacity: 0; 
-            box-shadow: 0 0 25px rgba(242, 92, 5, 0.3);
-            animation: fadeInSlogan 0.8s ease 0.8s forwards; 
+        /* الأزرار */
+        .btn-primary {
+            width: 100%; padding: 18px; border-radius: 16px; border: none;
+            background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
+            color: white; font-size: 16px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 10px 25px var(--primary-glow); margin-top: 10px; transition: 0.2s;
         }
+        .btn-primary:active { transform: scale(0.96); box-shadow: 0 5px 15px var(--primary-glow); }
 
-        .slogan-text { 
-            color: #FF9E59; font-weight: 900; font-size: 19px; 
-            text-shadow: 0 0 12px rgba(242, 92, 5, 0.8); 
-            letter-spacing: 1px;
+        .divider {
+            display: flex; align-items: center; margin: 25px 0; color: var(--text-gray); font-size: 13px; font-weight: 700;
         }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); margin: 0 10px; }
 
-        @keyframes fadeInSlogan { 
-            to { opacity: 1; transform: translateY(-5px); } 
+        .btn-guest {
+            width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: white; font-size: 15px; font-weight: 800;
+            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;
+            text-decoration: none;
         }
+        .btn-guest:active { background: rgba(255,255,255,0.1); transform: scale(0.96); }
 
-        /* =========================================
-           الواجهة الثانية: شاشة البدء
-           ========================================= */
-        #auth-screen { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; flex-direction: column; justify-content: space-between; align-items: center; 
-            padding: 50px 25px; z-index: 50; opacity: 0; visibility: hidden; 
-            transition: opacity 0.6s ease; 
-        }
-
-        .auth-logo-section { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
-        
-        .auth-logo { 
-            width: 250px; 
-            filter: drop-shadow(0 0 25px var(--primary-glow)); 
-            margin-bottom: 10px;
-        }
-
-        .auth-title { font-size: 30px; font-weight: 900; color: #FFFFFF; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
-        .auth-subtitle { color: var(--primary); font-size: 12px; font-weight: 800; letter-spacing: 3px; margin-bottom: 20px; }
-
-        .auth-actions { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-
-        .btn-magical-start {
-            width: 100%;
-            background: linear-gradient(135deg, #FF7B35 0%, #F25C05 50%, #D44100 100%);
-            color: white; border: none; padding: 18px; border-radius: 20px;
-            font-size: 18px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 10px 30px rgba(242, 92, 5, 0.5), inset 0 2px 5px rgba(255,255,255,0.3);
-            position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-
-        .btn-magical-start::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
-            transform: rotate(45deg); animation: magicalShimmer 3s linear infinite;
-        }
-
-        @keyframes magicalShimmer {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
-
-        .btn-magical-start:hover { transform: scale(1.03); box-shadow: 0 15px 35px rgba(242, 92, 5, 0.7); }
-        .btn-magical-start:active { transform: scale(0.96); box-shadow: 0 5px 15px rgba(242, 92, 5, 0.4); }
-
-        .welcome-hint {
-            font-size: 13px; color: #8C8C9E; text-align: center; font-weight: 700;
-        }
-
+        /* رسائل الخطأ */
+        #errorMessage { color: #EF4444; font-size: 13px; font-weight: 700; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        
-        <!-- الواجهة الأولى: شاشة البداية -->
-        <div id="splash-screen">
-            <div class="logo-glow-ring"></div>
-            <img src="1000167488-removebg-preview.png" alt="Speed Go" class="splash-logo">
-            <div class="slogan-card">
-                <div class="slogan-text">طلباتك أوامر</div>
-            </div>
+
+    <div class="auth-container">
+        <div class="logo-box">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h1>واجيك</h1>
+        <p>أسرع دليفري في مدينتك</p>
+
+        <div class="tabs">
+            <div class="tab active" id="tabLogin" onclick="switchMode('login')">تسجيل الدخول</div>
+            <div class="tab" id="tabSignup" onclick="switchMode('signup')">حساب جديد</div>
         </div>
 
-        <!-- الواجهة الثانية: شاشة البدء -->
-        <div id="auth-screen">
-            <div class="auth-logo-section">
-                <img src="1000167488-removebg-preview.png" alt="Speed Go" class="auth-logo">
-                <h1 class="auth-title">Speed Go</h1>
-                <p class="auth-subtitle">FAST. SAFE. DELIVERED.</p>
-                <div class="slogan-card" style="opacity: 1; animation: none; padding: 6px 20px; margin-top: 0;">
-                    <div class="slogan-text" style="font-size: 15px;">طلباتك أوامر</div>
-                </div>
+        <div id="authForm">
+            <div class="input-group" id="nameGroup" style="display: none;">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="nameInput" class="auth-input" placeholder="اسمك الكريم">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="emailInput" class="auth-input" placeholder="البريد الإلكتروني">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="passwordInput" class="auth-input" placeholder="كلمة المرور">
             </div>
 
-            <div class="auth-actions">
-                <button class="btn-magical-start" onclick="window.location.href='home.html'">
-                    ابدأ الآن <i class="fa-solid fa-bolt" style="font-size: 16px; color: #FFE359;"></i>
-                </button>
-                <p class="welcome-hint">انطلق لتكتشف أسرع تجربة توصيل في مدينتك ⚡</p>
-            </div>
+            <p id="errorMessage"></p>
+
+            <button class="btn-primary" id="actionBtn" onclick="handleAuth()">دخول</button>
         </div>
 
+        <div class="divider">أو</div>
+
+        <!-- زر الدخول كزائر -->
+        <a href="home.html" class="btn-guest">
+            تصفح التطبيق كزائر <i class="fa-solid fa-arrow-left"></i>
+        </a>
     </div>
 
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        // الانتقال التلقائي بعد ثانيتين (2000 مللي ثانية)
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                const auth = document.getElementById('auth-screen');
-                
-                splash.style.opacity = '0';
-                splash.style.visibility = 'hidden';
-                
-                auth.style.visibility = 'visible';
-                auth.style.opacity = '1';
-                
-            }, 2000); 
-        });
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentMode = 'login';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            if (mode === 'login') {
+                document.getElementById('tabLogin').classList.add('active');
+                document.getElementById('tabSignup').classList.remove('active');
+                document.getElementById('nameGroup').style.display = 'none';
+                document.getElementById('actionBtn').innerText = 'دخول';
+            } else {
+                document.getElementById('tabSignup').classList.add('active');
+                document.getElementById('tabLogin').classList.remove('active');
+                document.getElementById('nameGroup').style.display = 'block';
+                document.getElementById('actionBtn').innerText = 'إنشاء حساب';
+            }
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const name = document.getElementById('nameInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+            const btn = document.getElementById('actionBtn');
+
+            if (!email || !password || (currentMode === 'signup' && !name)) {
+                errorMsg.innerText = "يرجى تعبئة جميع الحقول.";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المعالجة...';
+            errorMsg.style.display = 'none';
+
+            try {
+                if (currentMode === 'signup') {
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: { data: { full_name: name } }
+                    });
+                    if (error) throw error;
+                    window.location.href = 'home.html';
+                } else {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    if (error) throw error;
+                    window.location.href = 'home.html';
+                }
+            } catch (err) {
+                errorMsg.innerText = "حدث خطأ: تأكد من صحة البيانات.";
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = currentMode === 'login' ? 'دخول' : 'إنشاء حساب';
+            }
+        }
+
+        // التحقق مما إذا كان المستخدم مسجلاً بالفعل لتوجيهه مباشرة
+        window.onload = async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                window.location.href = 'home.html';
+            }
+        };
     </script>
 </body>
 </html>
