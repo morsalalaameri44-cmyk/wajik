@@ -222,6 +222,19 @@
         let currentItemsCount = 0;
         let currentTotal = 0;
 
+        // دالة لتهيئة عدادات السلة عند تحميل الصفحة من الذاكرة المحلية
+        function initCartCounters() {
+            const savedCart = JSON.parse(localStorage.getItem('wajik_cart')) || [];
+            currentItemsCount = savedCart.length;
+            currentTotal = savedCart.reduce((sum, item) => sum + item.price, 0);
+            
+            if(currentItemsCount > 0) {
+                document.getElementById('cartCountDisplay').innerText = currentItemsCount;
+                document.getElementById('cartTotalDisplay').innerText = currentTotal.toLocaleString() + ' ر.ي';
+                document.getElementById('floatingCart').classList.add('visible');
+            }
+        }
+
         // دالة ذكية لاختيار صورة افتراضية حسب تصنيف المتجر
         function getDefaultCoverByCategory(category) {
             const cat = category ? category.toLowerCase() : '';
@@ -237,6 +250,8 @@
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
+            initCartCounters(); // تفعيل العدادات المحفوظة مسبقاً إن وجدت
+
             if(!storeId) {
                 document.getElementById('storeNameDisplay').innerText = "خطأ: لم يتم تحديد المتجر";
                 document.getElementById('loadingProducts').innerHTML = "<p style='color:red;'>لا يمكن تحميل الأصناف.</p>";
@@ -326,6 +341,9 @@
                             // توفير صورة منتج محايدة في حال لم توجد صورة
                             const prodImg = product.image_url || 'https://via.placeholder.com/150/F8F9FA/757575?text=بدون+صورة';
 
+                            // تنظيف الاسم لتجنب أخطاء الأقواس المزدوجة في التمرير
+                            const safeProdName = prodName.replace(/'/g, "\\'");
+
                             const card = document.createElement('div');
                             card.className = 'product-card';
                             card.style.animationDelay = `${index * 0.05}s`;
@@ -337,7 +355,8 @@
                                     ${prodDesc ? `<p>${prodDesc}</p>` : ''}
                                     <div class="product-bottom">
                                         <span class="product-price">${prodPrice} ر.ي</span>
-                                        <button class="add-btn" onclick="addToCart(this, ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
+                                        <!-- 🟢 تم تعديل الدالة لترسل اسم وسعر المنتج معاً للحفظ -->
+                                        <button class="add-btn" onclick="addToCart(this, '${safeProdName}', ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
                                     </div>
                                 </div>
                             `;
@@ -359,8 +378,9 @@
             }
         });
 
-        // دالة إضافة المنتج للسلة
-        window.addToCart = function(btnElement, itemPrice) {
+        // 🟢 دالة الإضافة المعدلة لتحفظ البيانات في الذاكرة لتقرأها صفحة السلة
+        window.addToCart = function(btnElement, itemName, itemPrice) {
+            // تأثير الحركة
             btnElement.classList.add('added');
             btnElement.innerHTML = '<i class="fa-solid fa-check"></i>'; 
             
@@ -369,6 +389,12 @@
                 btnElement.innerHTML = '<i class="fa-solid fa-plus"></i>'; 
             }, 600);
 
+            // حفظ المنتج في الذاكرة المحلية لربط الواجهات
+            let currentCart = JSON.parse(localStorage.getItem('wajik_cart')) || [];
+            currentCart.push({ name: itemName, price: itemPrice });
+            localStorage.setItem('wajik_cart', JSON.stringify(currentCart));
+
+            // تحديث العدادات السفلية
             currentItemsCount++;
             currentTotal += itemPrice;
 
