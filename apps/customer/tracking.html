@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تتبع الطلب - واجيك</title>
     
-    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --primary: #F25C05;
-            --primary-light: #FFF2EB;
-            --bg-light: #F8F9FA;
-            --text-dark: #1A1A1A;
-            --text-gray: #757575;
-            --success: #2A9D8F;
-            --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-            --border-color: #EFEFEF;
+            --primary-glow: rgba(242, 92, 5, 0.2);
+            --bg-body: #F4F6F9;
+            --white: #FFFFFF;
+            --text-dark: #121212;
+            --text-gray: #7A8089;
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.2);
+            --card-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+            --border-light: #F0F2F5;
         }
 
         * {
@@ -30,7 +31,7 @@
         }
 
         body {
-            background-color: #E9ECEF;
+            background-color: var(--bg-body);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -38,276 +39,151 @@
         }
 
         .app-container {
-            width: 100%;
-            max-width: 420px;
-            height: 100vh;
-            max-height: 900px;
-            background-color: var(--bg-light);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
+            background-color: var(--bg-body); position: relative;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* =========================================
-           1. الهيدر (Header)
-           ========================================= */
+        /* الهيدر */
         .header {
-            background-color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border-light);
         }
-
-        .back-btn {
-            width: 35px;
-            height: 35px;
-            background-color: var(--bg-light);
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-dark);
-            text-decoration: none;
-            font-size: 16px;
+        .header-title { display: flex; align-items: center; gap: 8px; }
+        .header h2 { font-size: 18px; font-weight: 900; color: var(--text-dark); }
+        .live-dot {
+            width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;
+            animation: pulseLive 1.5s infinite;
         }
-
-        .header h2 {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--text-dark);
-        }
-
-        .order-id {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--primary);
-            background-color: var(--primary-light);
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-
-        /* =========================================
-           2. محتوى الصفحة القابل للتمرير
-           ========================================= */
-        .tracking-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        /* خريطة افتراضية محاكاة للواقع */
-        .map-mockup {
-            width: 100%;
-            height: 180px;
-            background-color: #E0E0E0;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: var(--card-shadow);
-        }
-
-        .map-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0.4;
-            background-image: radial-gradient(#999 1px, transparent 0), radial-gradient(#999 1px, transparent 0);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-        }
-
-        .pulse-dot {
-            width: 14px;
-            height: 14px;
-            background-color: var(--primary);
-            border-radius: 50%;
-            position: relative;
-            z-index: 2;
-        }
-        .pulse-dot::after {
-            content: '';
-            position: absolute;
-            width: 100%; height: 100%;
-            top: 0; left: 0;
-            background-color: var(--primary);
-            border-radius: 50%;
-            animation: pulse 1.8s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(4); opacity: 0; }
-        }
-
-        /* بطاقة الوقت المتبقي */
-        .time-card {
-            background-color: white;
-            border-radius: 18px;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-            border: 1px solid #FAFFAF;
-        }
-
-        .time-info h3 { font-size: 22px; font-weight: 900; color: var(--text-dark); }
-        .time-info p { font-size: 13px; color: var(--text-gray); font-weight: 500; margin-top: 2px; }
-        .time-card i { font-size: 32px; color: var(--primary); }
-
-        /* حبل التتبع الحركي (Status Stepper) */
-        .status-container {
-            background-color: white;
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 20px;
-        }
-
-        .status-step {
-            display: flex;
-            gap: 15px;
-            position: relative;
-            padding-bottom: 25px;
-        }
-
-        .status-step:last-child { padding-bottom: 0; }
-
-        /* الخط الواصل بين النقاط */
-        .status-step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: 17px;
-            top: 35px;
-            width: 2px;
-            height: calc(100% - 30px);
-            background-color: #E0E0E0;
-        }
-
-        .status-step.completed:not(:last-child)::after {
-            background-color: var(--success);
-        }
-
-        .step-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: #F0F0F0;
-            color: var(--text-gray);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            z-index: 2;
-            transition: 0.3s;
-        }
-
-        .status-step.active .step-icon {
-            background-color: var(--primary-light);
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .status-step.completed .step-icon {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .step-text {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .step-text h4 { font-size: 14px; font-weight: 800; color: var(--text-dark); }
-        .step-text p { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
-
-        .status-step.completed .step-text h4 { color: var(--success); }
-        .status-step.active .step-text h4 { color: var(--primary); }
-
-        /* بطاقة كابتن التوصيل */
-        .captain-card {
-            background-color: white;
-            border-radius: 18px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .captain-avatar {
-            width: 50px;
-            height: 50px;
-            background-color: #E9ECEF;
-            border-radius: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            color: var(--text-gray);
-        }
-
-        .captain-info { flex: 1; }
-        .captain-info h4 { font-size: 14px; font-weight: 800; color: var(--text-dark); }
-        .captain-info p { font-size: 11px; color: var(--text-gray); font-weight: 500; margin-top: 2px; }
-
-        .captain-actions { display: flex; gap: 8px; }
-        .action-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background-color: #FFF;
-            color: var(--text-dark);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .action-btn.call {
-            background-color: var(--success);
-            color: white;
-            border: none;
-        }
-
-        /* =========================================
-           3. الزر السفلي لإنهاء الرحلة
-           ========================================= */
-        .footer-action {
-            padding: 15px 20px 25px 20px;
-            background-color: white;
-            border-top: 1px solid var(--border-color);
+        @keyframes pulseLive { 0% { box-shadow: 0 0 0 0 var(--success-glow); } 70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+        
+        .order-id-badge {
+            background: rgba(242, 92, 5, 0.1); color: var(--primary);
+            padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 900;
         }
 
         .home-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-            box-shadow: 0 4px 12px rgba(242, 92, 5, 0.2);
+            width: 40px; height: 40px; background-color: #F8FAFC; border-radius: 14px;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-dark); text-decoration: none; font-size: 18px; transition: 0.2s;
+        }
+        .home-btn:active { transform: scale(0.9); }
+
+        .tracking-content { flex: 1; overflow-y: auto; padding: 20px 20px 100px 20px; }
+
+        /* الخريطة الوهمية المتحركة */
+        .map-card {
+            background-color: #EAEAEA; border-radius: 24px; height: 180px;
+            margin-bottom: 20px; position: relative; overflow: hidden;
+            border: 2px solid var(--white); box-shadow: var(--card-shadow);
+            background-image: radial-gradient(#D1D5DB 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
+        .map-route {
+            position: absolute; top: 50%; left: 20%; right: 20%; height: 3px;
+            background-image: linear-gradient(to right, var(--primary) 50%, transparent 50%);
+            background-size: 15px 3px; background-repeat: repeat-x;
+            transform: translateY(-50%); opacity: 0.5;
+        }
+        .map-pin-home {
+            position: absolute; right: 15%; top: 50%; transform: translate(50%, -50%);
+            color: var(--success); font-size: 28px; z-index: 2;
+            filter: drop-shadow(0 4px 6px rgba(16,185,129,0.4));
+        }
+        .map-bike {
+            position: absolute; left: 15%; top: 50%; transform: translate(-50%, -60%);
+            font-size: 35px; color: var(--primary); z-index: 3;
+            filter: drop-shadow(0 5px 10px rgba(242,92,5,0.4)); transition: left 1.5s ease-in-out;
+        }
+        .bike-moving { animation: bounceBike 0.5s infinite alternate; }
+        @keyframes bounceBike { from { transform: translate(-50%, -60%); } to { transform: translate(-50%, -65%); } }
+
+        /* بطاقة الوقت المقدر */
+        .eta-card {
+            background: var(--white); border-radius: 20px; padding: 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: var(--card-shadow); margin-bottom: 20px; border: 1px solid var(--border-light);
+        }
+        .eta-info h3 { font-size: 24px; font-weight: 900; color: var(--text-dark); margin-bottom: 5px; }
+        .eta-info p { font-size: 13px; color: var(--text-gray); font-weight: 500; }
+        .eta-icon {
+            width: 55px; height: 55px; background: rgba(242, 92, 5, 0.1); color: var(--primary);
+            border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 26px;
+        }
+
+        /* المسار الزمني (Vertical Timeline) */
+        .timeline-card {
+            background: var(--white); border-radius: 24px; padding: 25px;
+            box-shadow: var(--card-shadow); margin-bottom: 20px; border: 1px solid var(--border-light);
+        }
+
+        .timeline-item {
+            display: flex; gap: 15px; position: relative; padding-bottom: 30px;
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+        
+        .timeline-line {
+            position: absolute; right: 19px; top: 40px; bottom: 0; width: 2px;
+            background-color: #E5E7EB; z-index: 1;
+        }
+        .timeline-item:last-child .timeline-line { display: none; }
+        .timeline-line.filled { background-color: var(--primary); }
+        .timeline-line.success { background-color: var(--success); }
+
+        .timeline-icon {
+            width: 40px; height: 40px; border-radius: 50%; background: #F3F4F6;
+            color: #9CA3AF; display: flex; justify-content: center; align-items: center;
+            font-size: 16px; z-index: 2; position: relative; border: 2px solid var(--white);
+            transition: 0.3s; flex-shrink: 0;
+        }
+        .timeline-content { flex: 1; padding-top: 5px; }
+        .timeline-content h4 { font-size: 15px; font-weight: 900; color: #9CA3AF; margin-bottom: 4px; transition: 0.3s; }
+        .timeline-content p { font-size: 12px; color: #9CA3AF; line-height: 1.5; transition: 0.3s; }
+
+        /* الحالات النشطة */
+        .timeline-item.active .timeline-icon { background: var(--primary); color: white; box-shadow: 0 0 15px var(--primary-glow); animation: pulseStep 2s infinite; }
+        .timeline-item.active .timeline-content h4 { color: var(--primary); }
+        .timeline-item.active .timeline-content p { color: var(--text-gray); }
+
+        /* الحالات المكتملة */
+        .timeline-item.completed .timeline-icon { background: var(--success); color: white; }
+        .timeline-item.completed .timeline-content h4 { color: var(--success); }
+        .timeline-item.completed .timeline-content p { color: var(--text-gray); }
+
+        @keyframes pulseStep { 0% { box-shadow: 0 0 0 0 var(--primary-glow); } 70% { box-shadow: 0 0 0 10px rgba(242,92,5,0); } 100% { box-shadow: 0 0 0 0 rgba(242,92,5,0); } }
+
+        /* التفاصيل أسفل الشاشة */
+        .order-summary {
+            background: #F8FAFC; border-radius: 20px; padding: 15px; margin-top: 20px;
+            border: 1px dashed #D1D5DB; display: flex; justify-content: space-between; align-items: center;
+        }
+        .order-summary h4 { font-size: 13px; font-weight: 800; color: var(--text-gray); }
+        .order-summary .total { font-size: 18px; font-weight: 900; color: var(--text-dark); }
+
+        /* شريط سفلي للعودة */
+        .floating-footer {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
+            padding: 15px 20px 25px 20px; border-top: 1px solid rgba(0,0,0,0.05); z-index: 100;
+        }
+        .main-btn {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
+            color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 900;
+            cursor: pointer; box-shadow: 0 8px 25px rgba(242, 92, 5, 0.3); transition: 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 10px; text-decoration: none;
+        }
+        .main-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 5, 0.2); }
+
+        /* حالة الخطأ/التحميل */
+        .full-center {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 60vh; text-align: center;
         }
     </style>
 </head>
@@ -315,251 +191,241 @@
 
     <div class="app-container">
         
-        <!-- الهيدر -->
         <header class="header">
-            <a href="home.html" class="back-btn"><i class="fa-solid fa-house"></i></a>
-            <h2>حالة الطلب الحية</h2>
-            <span class="order-id">#WAJ-992</span>
+            <div class="header-title">
+                <div class="live-dot" id="liveIndicator"></div>
+                <h2>حالة الطلب الحية</h2>
+            </div>
+            <div class="order-id-badge" id="headerOrderId">جاري...</div>
+            <a href="home.html" class="home-btn"><i class="fa-solid fa-house"></i></a>
         </header>
 
-        <!-- محتوى التتبع -->
-        <main class="tracking-content no-scrollbar">
+        <main class="tracking-content no-scrollbar" id="mainContent">
             
-            <!-- محاكاة الخريطة الحية -->
-            <div class="map-mockup">
-                <div class="map-bg"></div>
-                <div class="pulse-dot"></div>
-                <i class="fa-solid fa-motorcycle" style="position: absolute; color: var(--primary); font-size: 24px; top: 40%; right: 35%; z-index: 3;"></i>
-                <i class="fa-solid fa-location-pin" style="position: absolute; color: var(--success); font-size: 24px; top: 50%; left: 45%; z-index: 3;"></i>
+            <!-- شاشة التحميل الأولية -->
+            <div class="full-center" id="loadingState">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+                <h3 style="font-weight: 800; color: var(--text-dark);">نبحث عن طلبك...</h3>
             </div>
 
-            <!-- بطاقة الوقت المقدر التنازلي -->
-            <div class="time-card">
-                <div class="time-info">
-                    <h3>35 دقيقة</h3>
-                    <p>الوقت المقدر لوصول طلبك الساخن</p>
-                </div>
-                <i class="fa-solid fa-stopwatch-20"></i>
-            </div>
-
-            <!-- خط تتبع الحالات الزمني (Stepper) -->
-            <div class="status-container">
+            <!-- محتوى التتبع (مخفي حتى يتم الجلب) -->
+            <div id="trackingUI" style="display: none;">
                 
-                <!-- الحالة 1: مكتملة -->
-                <div class="status-step completed">
-                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="step-text">
-                        <h4>تم استلام طلبك بنجاح</h4>
-                        <p>05:45 م - استلمنا الطلب وجاري مراجعته</p>
+                <!-- الخريطة -->
+                <div class="map-card">
+                    <div class="map-route"></div>
+                    <i class="fa-solid fa-location-dot map-pin-home"></i>
+                    <i class="fa-solid fa-motorcycle map-bike" id="mapBike"></i>
+                </div>
+
+                <!-- الوقت المقدر -->
+                <div class="eta-card">
+                    <div class="eta-info">
+                        <h3 id="etaTime">-- دقيقة</h3>
+                        <p id="etaText">الوقت المقدر لوصول طلبك الساخن</p>
                     </div>
+                    <div class="eta-icon"><i class="fa-solid fa-stopwatch"></i></div>
                 </div>
 
-                <!-- الحالة 2: نشطة حالياً -->
-                <div class="status-step active">
-                    <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                    <div class="step-text">
-                        <h4>جاري تحضير الطعام</h4>
-                        <p>المطبخ يقوم بتجهيز أطباقك الفاخرة الآن</p>
+                <!-- المسار الزمني -->
+                <div class="timeline-card">
+                    
+                    <!-- خطوة 1: تم الاستلام -->
+                    <div class="timeline-item" id="step-new">
+                        <div class="timeline-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="timeline-line" id="line-1"></div>
+                        <div class="timeline-content">
+                            <h4>تم استلام طلبك بنجاح</h4>
+                            <p>استلمنا الطلب وجاري مراجعته من قبل المطعم.</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- الحالة 3: قائمة الانتظار -->
-                <div class="status-step">
-                    <div class="step-icon"><i class="fa-solid fa-motorcycle"></i></div>
-                    <div class="step-text">
-                        <h4>الكابتن في الطريق للمطعم</h4>
-                        <p>سيقوم الكابتن باستلام الطلب فور تجهيزه</p>
+                    <!-- خطوة 2: قيد التجهيز -->
+                    <div class="timeline-item" id="step-processing">
+                        <div class="timeline-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                        <div class="timeline-line" id="line-2"></div>
+                        <div class="timeline-content">
+                            <h4>جاري تحضير الطعام</h4>
+                            <p>المطبخ يقوم بتجهيز أطباقك الفاخرة الآن.</p>
+                        </div>
                     </div>
-                </div>
 
-                <!-- الحالة 4: قائمة الانتظار الأخيرة -->
-                <div class="status-step">
-                    <div class="step-icon"><i class="fa-solid fa-house-chimney-user"></i></div>
-                    <div class="step-text">
-                        <h4>تم التوصيل بالسلامة</h4>
-                        <p>بالهناء والشفاء! نتمنى لك وجبة شهية</p>
+                    <!-- خطوة 3: في الطريق -->
+                    <div class="timeline-item" id="step-delivering">
+                        <div class="timeline-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                        <div class="timeline-line" id="line-3"></div>
+                        <div class="timeline-content">
+                            <h4>الكابتن في الطريق إليك</h4>
+                            <p>استلم الكابتن الطلب وهو في طريقه إلى موقعك.</p>
+                        </div>
                     </div>
+
+                    <!-- خطوة 4: تم التوصيل -->
+                    <div class="timeline-item" id="step-completed">
+                        <div class="timeline-icon"><i class="fa-solid fa-house-chimney"></i></div>
+                        <div class="timeline-content">
+                            <h4>تم التوصيل بالسلامة</h4>
+                            <p>بالهناء والشفاء! نتمنى لك وجبة شهية.</p>
+                        </div>
+                    </div>
+
                 </div>
 
-            </div>
+                <!-- ملخص الطلب -->
+                <div class="order-summary">
+                    <h4>إجمالي الحساب الدفع عند الاستلام</h4>
+                    <div class="total" id="orderTotalValue">-- ر.ي</div>
+                </div>
 
-            <!-- بطاقة كابتن التوصيل -->
-            <div class="captain-card">
-                <div class="captain-avatar">
-                    <i class="fa-solid fa-user-ninja"></i>
-                </div>
-                <div class="captain-info">
-                    <h4>صالح محمد</h4>
-                    <p>كابتن توصيل واجيك المعتمد • دراجة نارية</p>
-                </div>
-                <div class="captain-actions">
-                    <a href="#" class="action-btn"><i class="fa-solid fa-comment-dots"></i></a>
-                    <a href="tel:777777777" class="action-btn call"><i class="fa-solid fa-phone"></i></a>
-                </div>
             </div>
 
         </main>
 
-        <!-- الزر السفلي -->
-        <footer class="footer-action">
-            <a href="home.html" class="home-btn">العودة للشاشة الرئيسية</a>
-        </footer>
+        <div class="floating-footer">
+            <a href="home.html" class="main-btn">العودة للشاشة الرئيسية</a>
+        </div>
 
     </div>
 
-    <!-- Supabase SDK -->
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-    // Supabase client setup
-    const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-    const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        // إعداد الاتصال
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-    let supabaseChannel = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
 
-    function getQueryParam(name) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(name);
-    }
+        let currentSubscription = null;
 
-    function setOrderIdDisplay(id) {
-        const el = document.querySelector('.order-id');
-        if (el) el.innerText = `#${id}`;
-    }
+        // دالة تحديث الواجهة بناءً على حالة الطلب
+        function updateUIBasedOnStatus(status, totalAmount) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('trackingUI').style.display = 'block';
 
-    function computeETA(order) {
-        // Prefer explicit ETA fields if present
-        const keys = ['eta_minutes', 'estimated_minutes', 'estimated_time', 'eta'];
-        for (const k of keys) {
-            if (order[k]) return parseInt(order[k], 10);
+            if(totalAmount) {
+                document.getElementById('orderTotalValue').innerText = totalAmount.toLocaleString() + ' ر.ي';
+            }
+
+            // إعادة ضبط جميع الخطوات
+            const steps = ['new', 'processing', 'delivering', 'completed'];
+            steps.forEach(s => {
+                document.getElementById(`step-${s}`).className = 'timeline-item';
+            });
+            document.getElementById('line-1').className = 'timeline-line';
+            document.getElementById('line-2').className = 'timeline-line';
+            document.getElementById('line-3').className = 'timeline-line';
+
+            const bike = document.getElementById('mapBike');
+            const etaTime = document.getElementById('etaTime');
+            const liveIndicator = document.getElementById('liveIndicator');
+
+            // المنطق السحري لتحديث الشريط الزمني والخريطة والوقت
+            switch(status) {
+                case 'new':
+                    document.getElementById('step-new').classList.add('active');
+                    bike.style.left = '15%'; bike.classList.remove('bike-moving');
+                    etaTime.innerText = '45 دقيقة';
+                    break;
+                case 'processing':
+                    document.getElementById('step-new').classList.add('completed');
+                    document.getElementById('line-1').classList.add('filled');
+                    document.getElementById('step-processing').classList.add('active');
+                    bike.style.left = '30%'; bike.classList.add('bike-moving');
+                    etaTime.innerText = '25 دقيقة';
+                    break;
+                case 'delivering':
+                    document.getElementById('step-new').classList.add('completed');
+                    document.getElementById('line-1').classList.add('filled');
+                    document.getElementById('step-processing').classList.add('completed');
+                    document.getElementById('line-2').classList.add('filled');
+                    document.getElementById('step-delivering').classList.add('active');
+                    bike.style.left = '60%'; bike.classList.add('bike-moving');
+                    etaTime.innerText = '10 دقائق';
+                    break;
+                case 'completed':
+                    document.getElementById('step-new').classList.add('completed');
+                    document.getElementById('line-1').classList.add('success');
+                    document.getElementById('step-processing').classList.add('completed');
+                    document.getElementById('line-2').classList.add('success');
+                    document.getElementById('step-delivering').classList.add('completed');
+                    document.getElementById('line-3').classList.add('success');
+                    document.getElementById('step-completed').classList.add('completed');
+                    bike.style.left = '85%'; bike.classList.remove('bike-moving');
+                    etaTime.innerText = 'تم الوصول';
+                    document.getElementById('etaText').innerText = 'بالهناء والشفاء!';
+                    liveIndicator.style.display = 'none'; // إيقاف النبض الأخضر لأن الطلب انتهى
+                    break;
+                case 'cancelled':
+                    document.getElementById('loadingState').style.display = 'flex';
+                    document.getElementById('trackingUI').style.display = 'none';
+                    document.getElementById('loadingState').innerHTML = `
+                        <i class="fa-solid fa-circle-xmark" style="font-size: 50px; color: #EF4444; margin-bottom: 15px;"></i>
+                        <h3 style="font-weight: 900; color: #EF4444;">تم إلغاء الطلب</h3>
+                        <p style="color: var(--text-gray); margin-top:10px;">نعتذر، تم إلغاء هذا الطلب من قبل الإدارة.</p>
+                    `;
+                    liveIndicator.style.backgroundColor = '#EF4444';
+                    break;
+            }
         }
 
-        // Otherwise default estimate: 35 minutes from creation
-        if (order.created_at) {
-            const created = new Date(order.created_at);
-            const defaultTotal = 35; // minutes
-            const elapsed = Math.floor((Date.now() - created.getTime()) / 60000);
-            const remaining = defaultTotal - elapsed;
-            return remaining > 0 ? remaining : 0;
-        }
-        return null;
-    }
+        async function fetchAndSubscribeOrder() {
+            if (!orderId) {
+                document.getElementById('loadingState').innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+                    <h3 style="font-weight: 800;">رقم الطلب غير متاح</h3>`;
+                return;
+            }
 
-    function updateTimeCard(remainingMinutes) {
-        const timeH3 = document.querySelector('.time-info h3');
-        const timeP = document.querySelector('.time-info p');
-        if (!timeH3 || !timeP) return;
-        if (remainingMinutes === null) {
-            timeH3.innerText = '---';
-            timeP.innerText = 'الوقت التقريبي غير متوفر';
-            return;
-        }
-        if (remainingMinutes <= 0) {
-            timeH3.innerText = 'قريباً';
-            timeP.innerText = 'المندوب سيصل قريباً';
-            return;
-        }
-        timeH3.innerText = `${remainingMinutes} دقيقة`;
-        timeP.innerText = 'الوقت المقدر لوصول طلبك';
-    }
+            // عرض رقم الطلب في الهيدر
+            document.getElementById('headerOrderId').innerText = `WAJ-${orderId.substring(0,4).toUpperCase()}`;
 
-    function updateCaptainCard(order) {
-        const nameEl = document.querySelector('.captain-info h4');
-        const descEl = document.querySelector('.captain-info p');
-        const callLink = document.querySelector('.captain-actions a.call');
-        if (order && order.driver_name) {
-            if (nameEl) nameEl.innerText = order.driver_name;
-        }
-        if (order && order.driver_vehicle) {
-            if (descEl) descEl.innerText = `${order.driver_vehicle}`;
-        }
-        if (order && order.driver_phone) {
-            if (callLink) callLink.href = `tel:${order.driver_phone}`;
-        }
-    }
+            try {
+                // جلب بيانات الطلب الأولية
+                const { data: order, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .eq('id', orderId)
+                    .single();
 
-    function setStepper(status) {
-        const steps = document.querySelectorAll('.status-step');
-        let stepIndex = 0;
-        if (!status || status === 'new') stepIndex = 1;
-        else if (status === 'preparing') stepIndex = 2;
-        else if (status === 'unassigned' || status === 'assigned' || status === 'on_the_way') stepIndex = 3;
-        else if (status === 'completed') stepIndex = 4;
+                if (error || !order) throw error;
 
-        steps.forEach((s, i) => {
-            s.classList.remove('completed', 'active');
-            if (i < stepIndex - 1) s.classList.add('completed');
-            else if (i === stepIndex - 1) s.classList.add('active');
+                // تحديث الواجهة لأول مرة
+                updateUIBasedOnStatus(order.status, order.total_amount);
+
+                // 🟢 السحر: الاشتراك الفوري لتحديثات قاعدة البيانات (Real-time)
+                currentSubscription = supabaseClient
+                    .channel(`public:orders:id=eq.${orderId}`)
+                    .on('postgres_changes', { 
+                        event: 'UPDATE', 
+                        schema: 'public', 
+                        table: 'orders', 
+                        filter: `id=eq.${orderId}` 
+                    }, payload => {
+                        console.log('تم تغيير حالة الطلب لايف!', payload.new);
+                        // تحديث الواجهة تلقائياً بمجرد تغيير المشرف للحالة!
+                        updateUIBasedOnStatus(payload.new.status, payload.new.total_amount);
+                    })
+                    .subscribe();
+
+            } catch (err) {
+                console.error("Error fetching order:", err);
+                document.getElementById('loadingState').innerHTML = `
+                    <i class="fa-solid fa-circle-exclamation" style="font-size: 40px; color: #EF4444; margin-bottom: 15px;"></i>
+                    <h3 style="font-weight: 800;">عذراً، لم نتمكن من إيجاد الطلب</h3>
+                    <p style="color: var(--text-gray); margin-top:10px;">يرجى التأكد من الرابط والمحاولة مجدداً.</p>`;
+            }
+        }
+
+        // تنظيف الاشتراك عند مغادرة الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (currentSubscription) supabaseClient.removeChannel(currentSubscription);
         });
-    }
 
-    function showCanceledView() {
-        const container = document.querySelector('.tracking-content');
-        if (container) container.innerHTML = `<div style="padding:40px; text-align:center;"><h3 style="color:#DC2626;">تم إلغاء الطلب</h3><p style="color:#64748B;">نعتذر، هذا الطلب أُلغي. تواصل مع الدعم لمزيد من التفاصيل.</p></div>`;
-    }
-
-    async function loadOrder() {
-        const orderId = getQueryParam('orderId');
-        if (!orderId) return;
-        setOrderIdDisplay(orderId);
-
-        // fetch order
-        const { data, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).maybeSingle();
-        if (error) {
-            console.error('خطأ في جلب الطلب:', error);
-            return;
-        }
-        if (data) {
-            if (data.status === 'canceled') {
-                showCanceledView();
-            } else {
-                setStepper(data.status);
-                const remaining = computeETA(data);
-                updateTimeCard(remaining);
-                updateCaptainCard(data);
-            }
-        }
-
-        // realtime subscription for updates
-        try {
-            if (supabaseChannel) {
-                supabaseChannel.unsubscribe();
-                supabaseChannel = null;
-            }
-            supabaseChannel = supabaseClient
-                .channel(`order-channel-${orderId}`)
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, payload => {
-                    const newStatus = payload.new.status;
-                    if (newStatus === 'canceled') {
-                        showCanceledView();
-                        if (supabaseChannel) { supabaseChannel.unsubscribe(); supabaseChannel = null; }
-                        return;
-                    }
-                    setStepper(newStatus);
-                    const remaining = computeETA(payload.new);
-                    updateTimeCard(remaining);
-                    updateCaptainCard(payload.new);
-                })
-                .subscribe();
-        } catch (e) {
-            console.warn('Realtime subscription failed or not available:', e.message || e);
-        }
-    }
-
-    // update ETA every minute if page is open
-    setInterval(async () => {
-        const orderId = getQueryParam('orderId');
-        if (!orderId) return;
-        const { data } = await supabaseClient.from('orders').select('id,created_at,status').eq('id', orderId).maybeSingle();
-        if (data && data.status !== 'canceled') {
-            const remaining = computeETA(data);
-            updateTimeCard(remaining);
-        }
-    }, 60000);
-
-    window.addEventListener('DOMContentLoaded', loadOrder);
-</script>
-
-    </body>
-    </html>
+        window.onload = fetchAndSubscribeOrder;
+    </script>
+</body>
+</html>
