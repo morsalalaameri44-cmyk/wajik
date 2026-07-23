@@ -339,11 +339,16 @@ window.saveOrderEdits = async function(orderId) {
 // 4. نظام إسناد المناديب المشترك (رادار تتبع + قائمة يدوية)
 // ==========================================
 window.openDriverModal = async function(orderId) {
+    const existingModal = document.getElementById('dispatchModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
     const modal = document.createElement('div');
     modal.id = 'dispatchModal';
     modal.innerHTML = `
         <style>
-            #dispatchMap { width: 100%; height: 250px; border-radius: 16px; margin-top: 15px; margin-bottom: 15px; border: 2px solid #E2E8F0; z-index: 1;}
+            #dispatchMap { width: 100%; height: 250px; border-radius: 16px; margin-top: 15px; margin-bottom: 15px; border: 2px solid #E2E8F0; z-index: 1; background: #F1F5F9;}
             .leaflet-popup-content-wrapper { text-align: right; font-family: 'Tajawal', sans-serif; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
             .leaflet-popup-content { margin: 15px; }
             .assign-map-btn { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; font-family: inherit; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 10px rgba(242,92,5,0.3); }
@@ -389,22 +394,30 @@ window.openDriverModal = async function(orderId) {
 };
 
 async function initDispatchSystem(orderId) {
-    const adenCenter = [12.8222, 45.0381];
-    const map = L.map('dispatchMap').setView(adenCenter, 12);
-    
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-    }).addTo(map);
-
-    const driverIcon = L.divIcon({
-        html: '<div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:3px solid white; box-shadow:0 4px 15px rgba(242,92,5,0.5); font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>',
-        className: 'custom-driver-icon',
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
-        popupAnchor: [0, -20]
-    });
-
     try {
+        const adenCenter = [12.8222, 45.0381];
+        
+        const mapContainer = L.DomUtil.get('dispatchMap');
+        if(mapContainer != null){
+            mapContainer._leaflet_id = null;
+        }
+
+        const map = L.map('dispatchMap').setView(adenCenter, 12);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        }).addTo(map);
+
+        setTimeout(() => { map.invalidateSize(); }, 250);
+
+        const driverIcon = L.divIcon({
+            html: '<div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:3px solid white; box-shadow:0 4px 15px rgba(242,92,5,0.5); font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>',
+            className: 'custom-driver-icon',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20]
+        });
+
         const { data: drivers, error } = await window.supabaseClient.from('drivers').select('*').eq('status', 'متاح');
         if (error) throw error;
 
@@ -412,7 +425,7 @@ async function initDispatchSystem(orderId) {
 
         if (!drivers || drivers.length === 0) {
             document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> لا يوجد كباتن متاحين حالياً!</span>`;
-            manualList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-weight:bold; background:#FEE2E2; border-radius:12px;">يرجى إضافة كباتن متاحين من قائمة إدارة المناديب</div>`;
+            manualList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-weight:bold; background:#FEE2E2; border-radius:12px;">يرجى إضافة كباتن متاحين من صفحة إدارة المناديب</div>`;
             return;
         }
 
@@ -455,9 +468,9 @@ async function initDispatchSystem(orderId) {
         manualList.innerHTML = listHTML;
 
     } catch (err) {
-        console.error("خطأ في جلب الكباتن:", err);
-        document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger);">فشل الاتصال بالنظام.</span>`;
-        document.getElementById('manualDriversList').innerHTML = `<span style="color:red; text-align:center; display:block;">حدث خطأ في عرض القائمة</span>`;
+        console.error("خطأ في جلب الكباتن أو الخريطة:", err);
+        document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger); font-size:13px;"><i class="fa-solid fa-bug"></i> حدث خطأ: ${err.message || 'مشكلة في تحميل الخريطة'}</span>`;
+        document.getElementById('manualDriversList').innerHTML = `<span style="color:red; text-align:center; display:block; padding:10px; font-family:monospace; font-size:12px; direction:ltr;">${err.message || err}</span>`;
     }
 }
 
