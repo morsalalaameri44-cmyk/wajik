@@ -34,9 +34,9 @@
         .nav-link:hover, .nav-link.active { background-color: var(--sidebar-hover); color: white; border-right-color: var(--primary); }
         .nav-link i { width: 20px; font-size: 16px; text-align: center; }
         
-        .badge { margin-right: auto; background-color: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+        .badge { margin-right: auto; background-color: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; display: none; }
         
-        /* تنسيق بروفایل الموظف وزر الخروج */
+        /* تنسيق بروفايل الموظف وزر الخروج */
         .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px; }
         .user-profile-top { display: flex; align-items: center; gap: 12px; }
         .avatar { width: 38px; height: 38px; background: #CBD5E1; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--text-dark); font-weight: 800; }
@@ -58,37 +58,6 @@
         .icon-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .workspace { flex: 1; padding: 20px; overflow-y: auto; background-color: #F1F5F9; }
 
-        /* تصميمات البطاقات والجداول */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
-        
-        .order-card-pro {
-            background: #FFFFFF; border-radius: 16px; padding: 20px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); border: 1px solid #E2E8F0;
-            display: flex; flex-direction: column; gap: 15px; position: relative; overflow: hidden;
-        }
-        .order-card-pro::before { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; }
-        .status-new::before { background: var(--info); }
-        .status-processing::before { background: var(--warning); }
-        .status-delivering::before { background: var(--primary); }
-
-        .order-header-pro { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; }
-        .order-id-pro { font-weight: 900; font-size: 18px; color: #0F172A; }
-        .badge-pro { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
-        .badge-new { background: #EFF6FF; color: #2563EB; }
-        .badge-processing { background: #FEF3C7; color: #D97706; }
-        .badge-delivering { background: rgba(242,92,5,0.1); color: var(--primary); }
-
-        .info-row-pro { display: flex; align-items: center; gap: 12px; color: #475569; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-        .info-row-pro i { color: #64748B; width: 24px; text-align: center; }
-
-        .order-summary-box { background: #F1F5F9; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .order-total-pro { font-weight: 900; color: #059669; font-size: 17px; }
-
-        .btn-pro { flex: 1; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; color: #FFF; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .btn-accept { background: var(--warning); }
-        .btn-deliver { background: var(--info); }
-        .btn-pro:active { transform: scale(0.97); }
-
         /* التجاوب للجوال */
         @media (max-width: 768px) {
             .sidebar { position: fixed; right: -260px; height: 100%; }
@@ -97,7 +66,6 @@
             .menu-toggle-btn { display: block; }
             .close-sidebar-btn { display: block; }
             .workspace { padding: 15px; }
-            .grid-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -105,7 +73,6 @@
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- القائمة الجانبية -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <button class="close-sidebar-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
@@ -133,14 +100,23 @@
                     <i class="fa-solid fa-motorcycle"></i> إدارة المناديب
                 </a>
             </div>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">النظام والمالية</div>
+                <a class="nav-link" id="nav-accounting" onclick="navigateTo('accounting', 'المحاسبة والخزنة')">
+                    <i class="fa-solid fa-wallet"></i> المحاسبة والخزنة
+                </a>
+                <a class="nav-link" id="nav-settings" onclick="navigateTo('settings', 'إعدادات النظام')">
+                    <i class="fa-solid fa-gear"></i> إعدادات النظام
+                </a>
+            </div>
         </nav>
         
-        <!-- بروفايل المدير مع حماية الجلسة واسم الموظف وزر الخروج -->
         <div class="user-profile">
             <div class="user-profile-top">
                 <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
                 <div class="user-info">
-                    <h4 id="adminNameDisplay">جاري التحقق...</h4>
+                    <h4 id="adminNameDisplay">مدير النظام</h4>
                     <p>موظف عمليات معتمد</p>
                 </div>
             </div>
@@ -150,7 +126,6 @@
         </div>
     </aside>
 
-    <!-- منطقة المحتوى الرئيسية -->
     <main class="main-content">
         <header class="top-navbar">
             <div class="header-right">
@@ -165,9 +140,13 @@
         <div class="workspace" id="workspaceContent"></div>
     </main>
 
-    <!-- Supabase Library -->
+    <!-- 1. Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- 2. استدعاء ملفات العمليات المباشرة (بطريقة صلبة تمنع التأخير) -->
+    <script src="js/views/live_orders.js"></script>
+
+    <!-- 3. كود تشغيل المنظومة -->
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
@@ -180,41 +159,41 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // --- نظام الحماية والمصادقة (Auth Guard) ---
         async function checkAuth() {
-            const { data: { session }, error } = await window.supabaseClient.auth.getSession();
-            if (error || !session) {
-                // إذا لم يكن المدير مسجلاً، يتم توجيهه فورا لصفحة تسجيل الدخول
-                window.location.replace('login.html');
+            try {
+                const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+                if (error || !session) {
+                    window.location.replace('login.html');
+                    return false;
+                }
+                const email = session.user.email;
+                const displayName = email.split('@')[0];
+                const nameEl = document.getElementById('adminNameDisplay');
+                if(nameEl) nameEl.innerText = displayName;
+                return true;
+            } catch (err) {
+                console.error("خطأ في التحقق من الدخول:", err);
                 return false;
             }
-            
-            // استخراج اسم المستخدم من البريد الإلكتروني وعرضه في القائمة الجانبية
-            const email = session.user.email;
-            const displayName = email.split('@')[0];
-            const nameEl = document.getElementById('adminNameDisplay');
-            if(nameEl) nameEl.innerText = displayName;
-            
-            return true;
         }
 
-        // دالة تسجيل الخروج للموظف
         async function logoutAdmin() {
-            await window.supabaseClient.auth.signOut();
-            window.location.replace('login.html');
+            try {
+                await window.supabaseClient.auth.signOut();
+                window.location.replace('login.html');
+            } catch (err) {
+                console.error(err);
+            }
         }
 
-        // نظام التوجيه (Router) البسيط والذكي
         function navigateTo(viewName, title) {
             currentView = viewName;
             document.getElementById('pageTitle').innerText = title;
             
-            // تحديث الأزرار النشطة في القائمة
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             const activeLink = document.getElementById(`nav-${viewName}`);
             if(activeLink) activeLink.classList.add('active');
 
-            // إغلاق القائمة الجانبية في الجوال عند الاختيار
             if(window.innerWidth <= 768) toggleSidebar();
 
             loadViewContent();
@@ -224,20 +203,33 @@
             loadViewContent();
         }
 
-        async function loadViewContent() {
+        function loadViewContent() {
             const container = document.getElementById('workspaceContent');
-            container.innerHTML = '<div style="text-align:center; padding:50px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:30px; color:var(--primary);"></i><p style="margin-top:10px; color:var(--text-gray);">جاري التحميل...</p></div>';
-
+            
             if (currentView === 'live_orders') {
-                if (window.renderLiveOrders) window.renderLiveOrders(container);
-            } else if (currentView === 'stores') {
-                if (window.renderStores) window.renderStores(container);
-            } else if (currentView === 'drivers') {
-                if (window.renderDrivers) window.renderDrivers(container);
+                if (typeof window.renderLiveOrders === 'function') {
+                    window.renderLiveOrders(container);
+                } else {
+                    container.innerHTML = `
+                        <div style="background:#FEE2E2; border:1px solid #FCA5A5; padding:30px; text-align:center; border-radius:16px; margin:20px;">
+                            <i class="fa-solid fa-triangle-exclamation fa-3x" style="color:#EF4444; margin-bottom:15px;"></i>
+                            <h3 style="color:#991B1B; font-weight:900;">تحذير: ملف (live_orders.js) غير متصل!</h3>
+                            <p style="color:#7F1D1D; margin-top:10px;">يرجى التأكد من حفظ الملف في مسار <b>js/views/</b> وتحديث الصفحة.</p>
+                        </div>`;
+                }
+            } else {
+                // توجيه لباقي الصفحات عبر الروابط
+                container.innerHTML = `
+                    <div style="text-align:center; padding:50px; color:#64748B;">
+                        <i class="fa-solid fa-link fa-3x" style="margin-bottom:15px; color:#CBD5E1;"></i>
+                        <h2>القسم متاح عبر الرابط المباشر</h2>
+                        <p style="margin-top:10px;">يرجى النقر على الرابط من القائمة الجانبية أو الدخول للملف المخصص لتشغيله.</p>
+                        <a href="${currentView}_manage.html" style="display:inline-block; margin-top:15px; background:var(--primary); color:white; padding:10px 20px; border-radius:10px; text-decoration:none; font-weight:bold;">الذهاب إلى القسم</a>
+                    </div>
+                `;
             }
         }
 
-        // عداد الطلبات الجديدة في القائمة الجانبية
         async function updateNewOrdersBadge() {
             try {
                 const { count, error } = await window.supabaseClient
@@ -245,35 +237,30 @@
                     .select('*', { count: 'exact', head: true })
                     .eq('status', 'new');
                 
-                if (!error) {
-                    const badge = document.getElementById('newOrdersCount');
+                const badge = document.getElementById('newOrdersCount');
+                if (!error && badge) {
                     badge.innerText = count || 0;
                     badge.style.display = count > 0 ? 'inline-block' : 'none';
                 }
             } catch(e) { console.error(e); }
         }
 
-        // تشغيل التحقق الأمني عند تحميل الصفحة
         window.onload = async () => {
             const isAuthenticated = await checkAuth();
-            if (!isAuthenticated) return; // توقف التنفيذ إذا لم يكن مسجلاً
+            if (!isAuthenticated) return; 
 
             loadViewContent();
             updateNewOrdersBadge();
 
-            // الاستماع الفوري للتغييرات لتحديث العداد تلقائياً
-            window.supabaseClient
-                .channel('admin_badge_channel')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-                    updateNewOrdersBadge();
-                })
-                .subscribe();
+            try {
+                window.supabaseClient
+                    .channel('admin_badge_channel')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                        updateNewOrdersBadge();
+                    })
+                    .subscribe();
+            } catch(e) { console.error(e); }
         };
     </script>
-
-    <!-- استدعاء ملفات الأقسام -->
-    <script src="js/views/live_orders.js"></script>
-    <script src="js/views/stores.js"></script>
-    <script src="js/views/drivers.js"></script>
 </body>
 </html>
