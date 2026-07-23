@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>حسابي - Speed Go كابتن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --danger: #EE5D50; --warning: #FFCE20; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: #000; display: flex; justify-content: center; min-height: 100vh; color: var(--text-light); }
+        .app-container { width: 100%; max-width: 420px; background-color: var(--bg-dark); display: flex; flex-direction: column; padding-bottom: 80px; }
+        
+        .header-profile { padding: 30px 20px; text-align: center; background: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .avatar { width: 90px; height: 90px; background: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 40px; color: white; margin: 0 auto 15px auto; border: 4px solid var(--bg-dark); box-shadow: 0 0 20px rgba(242, 92, 5, 0.3); }
+        .driver-name { font-size: 20px; font-weight: 900; margin-bottom: 5px; }
+        .rating { color: var(--warning); font-size: 14px; font-weight: 800; }
+        
+        .info-list { padding: 20px; }
+        .info-item { background: var(--surface); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .info-item i { width: 30px; text-align: center; font-size: 18px; color: var(--primary); }
+        .info-item div h4 { font-size: 12px; color: var(--text-gray); font-weight: 700; margin-bottom: 3px; }
+        .info-item div p { font-size: 15px; font-weight: 800; }
+
+        .logout-btn { background: rgba(238, 93, 80, 0.1); color: var(--danger); border: 1px solid rgba(238, 93, 80, 0.2); width: calc(100% - 40px); margin: 10px 20px; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; }
+        .logout-btn:active { transform: scale(0.98); }
+
+        .header-nav { display: flex; padding: 20px; align-items: center; background: var(--surface); }
+        .back-btn { color: var(--text-light); font-size: 20px; text-decoration: none; margin-left: 15px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header-nav">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-right"></i></a>
+            <h2 style="font-size: 18px; font-weight: 900;">إعدادات الحساب</h2>
+        </div>
+
+        <div class="header-profile">
+            <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+            <div class="driver-name" id="driverName">جاري التحميل...</div>
+            <div class="rating"><i class="fa-solid fa-star"></i> 4.9 (تقييم ممتاز)</div>
+        </div>
+
+        <div class="info-list">
+            <div class="info-item">
+                <i class="fa-solid fa-motorcycle"></i>
+                <div><h4>نوع المركبة</h4><p>دراجة نارية</p></div>
+            </div>
+            <div class="info-item">
+                <i class="fa-solid fa-id-card"></i>
+                <div><h4>رقم اللوحة</h4><p>أ ي 1234</p></div>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج (إنهاء الوردية)</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = supabase.createClient('https://ldefaxirgruqulxhkaqh.supabase.co', 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4');
+        
+        window.onload = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if(user) document.getElementById('driverName').innerText = user.email.split('@')[0];
+            else window.location.href = 'login.html';
+        };
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
