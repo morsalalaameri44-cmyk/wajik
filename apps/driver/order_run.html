@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تنفيذ المهمة - واجيك كابتن</title>
+    <title>تنفيذ المهمة - Speed Go كابتن</title>
     
     <!-- الخطوط والأيقونات -->
-    <link href="https://fonts.googleapis.com/css2 family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -47,7 +47,7 @@
 
         /* خطوات التنفيذ (Timeline) */
         .timeline-container { padding: 25px 20px; background: var(--surface); margin-bottom: 15px; }
-        .step-row { display: flex; gap: 15px; position: relative; margin-bottom: 25px; }
+        .step-row { display: flex; gap: 15px; position: relative; margin-bottom: 25px; transition: 0.3s; }
         .step-row:last-child { margin-bottom: 0; }
         
         /* الخط العمودي الواصل بين الخطوات */
@@ -82,6 +82,9 @@
 
         .items-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; font-size: 13px; color: var(--text-gray); line-height: 1.6; }
 
+        /* حالة التحميل */
+        .loading-state { text-align: center; padding: 50px 20px; }
+
         /* زر الإجراء السفلي العائم المثبت */
         .action-bar { position: sticky; bottom: 0; background: var(--bg-dark); padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
         .main-action-btn {
@@ -95,96 +98,150 @@
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <!-- الهيدر العلوي -->
-        <header class="task-header">
-            <span class="task-title"><i class="fa-solid fa-motorcycle"></i> مهمة نشطة #WAJ-992</span>
-            <span class="price-badge">تحصيل: 10,500 ر.ي</span>
-        </header>
-
-        <!-- تايم لاين تتبع حالة الطلب الحية للمندوب -->
-        <section class="timeline-container">
-            <div class="step-row completed" id="step1">
-                <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                <div class="step-details">
-                    <h4>تم قبول الطلب</h4>
-                    <p>الموقع: خورمكسر - عدن</p>
-                </div>
-            </div>
-            
-            <div class="step-row active" id="step2">
-                <div class="step-icon">2</div>
-                <div class="step-details">
-                    <h4>في الطريق لنقطة الاستلام</h4>
-                    <p>المستهدف: مطعم المراسيم</p>
-                </div>
-            </div>
-
-            <div class="step-row" id="step3">
-                <div class="step-icon">3</div>
-                <div class="step-details">
-                    <h4>جاري تسليم الشحنة للزبون</h4>
-                    <p>الوجهة: أمجد (بجانب جولة البجعة)</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- كرت تفاصيل الوجهة الحالية (ديناميكي يتغير حسب المرحلة) -->
-        <section class="info-card" id="currentInfoCard">
-            <div class="card-meta">
-                <div>
-                    <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة الحالية: استلام الوجبة</p>
-                    <h3 class="target-name">مطعم المراسيم</h3>
-                </div>
-                <!-- اتصال GSM مباشر لتفادي مشاكل ضعف البيانات -->
-                <a href="tel:+967770000000" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
-            </div>
-            <div class="items-box">
-                <strong>الفاتورة المطلوبة:</strong><br>
-                1x نفر زربيان لحم<br>
-                1x نصف حبة دجاج مظبي<br>
-                <span style="color:var(--primary)">*ملاحظة: بدون بصل</span>
-            </div>
-        </section>
-
-        <!-- زر العمليات السفلي التفاعلي -->
-        <div class="action-bar">
-            <button class="main-action-btn" id="actionBtn" onclick="nextStage()">
-                <i class="fa-solid fa-location-dot"></i> وصلت للمطعم
-            </button>
+    <div class="app-container" id="mainContainer">
+        <div class="loading-state" id="loadingState">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+            <h3>جاري تحميل بيانات المهمة...</h3>
         </div>
 
+        <div id="contentView" style="display: none;">
+            <!-- الهيدر العلوي -->
+            <header class="task-header">
+                <span class="task-title" id="headerOrderId"><i class="fa-solid fa-motorcycle"></i> مهمة نشطة</span>
+                <span class="price-badge" id="headerTotal">تحصيل: --</span>
+            </header>
+
+            <!-- تايم لاين تتبع حالة الطلب الحية للمندوب -->
+            <section class="timeline-container">
+                <div class="step-row completed" id="step1">
+                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+                    <div class="step-details">
+                        <h4>تم قبول الطلب</h4>
+                        <p>توجّه نحو المطعم للاستلام</p>
+                    </div>
+                </div>
+                
+                <div class="step-row active" id="step2">
+                    <div class="step-icon">2</div>
+                    <div class="step-details">
+                        <h4>في الطريق لنقطة الاستلام</h4>
+                        <p>المستهدف: المطعم</p>
+                    </div>
+                </div>
+
+                <div class="step-row" id="step3">
+                    <div class="step-icon">3</div>
+                    <div class="step-details">
+                        <h4>التوجه لموقع العميل</h4>
+                        <p>بانتظار استلام الطلب من المطعم</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- كرت تفاصيل الوجهة الحالية (ديناميكي) -->
+            <section class="info-card" id="currentInfoCard">
+                <!-- يتم تعبئتها بواسطة جافاسكربت -->
+            </section>
+
+            <!-- زر العمليات السفلي التفاعلي -->
+            <div class="action-bar">
+                <button class="main-action-btn" id="actionBtn" onclick="nextStage()">
+                    <i class="fa-solid fa-location-dot"></i> وصلت للمطعم واستلمت الطلب
+                </button>
+            </div>
+        </div>
     </div>
 
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        // نظام إدارة مراحل التوصيل الميداني (لوجستيات حية)
+        // إعداد الاتصال بقاعدة البيانات الحقيقية
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+
+        let currentOrder = null;
         let currentStage = 1;
 
-        function nextStage() {
+        async function loadOrderDetails() {
+            if (!orderId) {
+                alert("رقم الطلب غير صحيح.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                const { data: order, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .eq('id', orderId)
+                    .single();
+
+                if (error) throw error;
+                currentOrder = order;
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('contentView').style.display = 'block';
+
+                // تعبئة البيانات
+                const shortId = order.id.toString().substring(0, 6).toUpperCase();
+                document.getElementById('headerOrderId').innerHTML = `<i class="fa-solid fa-motorcycle"></i> مهمة #${shortId}`;
+                document.getElementById('headerTotal').innerText = `تحصيل: ${order.total_amount.toLocaleString()} ر.ي`;
+
+                const itemsHTML = (order.order_items || []).map(i => `${i.qty || 1}x ${i.name}`).join('<br>');
+
+                document.getElementById('currentInfoCard').innerHTML = `
+                    <div class="card-meta">
+                        <div>
+                            <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة الحالية: استلام الوجبة</p>
+                            <h3 class="target-name">المطعم</h3>
+                        </div>
+                    </div>
+                    <div class="items-box">
+                        <strong>الأصناف المطلوب استلامها:</strong><br>
+                        ${itemsHTML}
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error("Error fetching order:", err);
+                alert("حدث خطأ في جلب بيانات المهمة.");
+                window.location.href = 'index.html';
+            }
+        }
+
+        async function nextStage() {
+            if (!currentOrder) return;
             const btn = document.getElementById('actionBtn');
             const card = document.getElementById('currentInfoCard');
             const s2 = document.getElementById('step2');
             const s3 = document.getElementById('step3');
 
             if (currentStage === 1) {
-                // الكابتن وصل المطعم وطلب استلام الأكل
+                // المرحلة الثانية: استلم الطلب ويتوجه للعميل
                 s2.className = "step-row completed";
-                s2.innerHTML = '<div class="step-icon"><i class="fa-solid fa-check"></i></div><div class="step-details"><h4>تم استلام الطلب من المطعم</h4><p>المراسيم - الوجبة جاهزة مع المندوب</p></div>';
+                s2.innerHTML = '<div class="step-icon"><i class="fa-solid fa-check"></i></div><div class="step-details"><h4>تم استلام الطلب من المطعم</h4><p>الوجبة جاهزة مع المندوب</p></div>';
                 
                 s3.className = "step-row active";
+                s3.innerHTML = `<div class="step-icon">3</div><div class="step-details"><h4>جاري تسليم الشحنة للزبون</h4><p>الوجهة: ${currentOrder.customer_name || 'العميل'}</p></div>`;
+                
+                const custName = currentOrder.customer_name || 'عميل Speed Go';
+                const custPhone = currentOrder.customer_phone || '';
                 
                 card.innerHTML = `
                     <div class="card-meta">
                         <div>
                             <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة التالية: التوصيل للزبون</p>
-                            <h3 class="target-name">العميل: أمجد</h3>
+                            <h3 class="target-name">العميل: ${custName}</h3>
                         </div>
-                        <a href="tel:+967770000000" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
+                        <a href="tel:${custPhone}" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
                     </div>
                     <div class="items-box" style="border-right: 3px solid var(--success)">
-                        <strong>العنوان المكتوب:</strong> خورمكسر - بجانب جولة البجعة - عمارة رقم 4<br>
-                        <strong>المطلوب تحصيله كاش:</strong> <span style="color:var(--success); font-weight:900;">10,500 ر.ي</span>
+                        <strong>المطلوب تحصيله كاش:</strong> <span style="color:var(--success); font-weight:900;">${currentOrder.total_amount.toLocaleString()} ر.ي</span>
                     </div>
                 `;
                 
@@ -194,7 +251,7 @@
                 currentStage = 2;
 
             } else if (currentStage === 2) {
-                // المندوب وصل للعميل وجاري تسليم الوجبة وتحصيل الكاش
+                // المرحلة الثالثة: وصل للعميل، يحصل الكاش
                 s3.className = "step-row completed";
                 s3.innerHTML = '<div class="step-icon"><i class="fa-solid fa-check"></i></div><div class="step-details"><h4>وصلت لموقع العميل</h4><p>جاري تسليم الطعام وتحصيل الكاش</p></div>';
                 
@@ -204,11 +261,31 @@
                 currentStage = 3;
 
             } else if (currentStage === 3) {
-                // اكتمال الدورة وإغلاق الفاتورة
-                alert("تهانينا يا كابتن! تم إغلاق الطلب #WAJ-992 بنجاح، وتمت إضافة عمولة التوصيل إلى محفظتك، وجاري تحويلك لطلب جديد.");
-                window.location.href = 'index.html'; // العودة لشاشة الخريطة والبحث
+                // إنهاء المهمة وتحديث قاعدة البيانات
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إغلاق المهمة...';
+                btn.disabled = true;
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('orders')
+                        .update({ status: 'completed' })
+                        .eq('id', currentOrder.id);
+
+                    if (error) throw error;
+
+                    alert("تهانينا يا كابتن! تم إغلاق الطلب بنجاح، وتمت إضافة عمولة التوصيل إلى محفظتك.");
+                    window.location.href = 'index.html'; 
+
+                } catch (err) {
+                    console.error("Error updating status:", err);
+                    alert("حدث خطأ أثناء إغلاق المهمة. تأكد من الاتصال.");
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> حاول مرة أخرى';
+                }
             }
         }
+
+        window.onload = loadOrderDetails;
     </script>
 </body>
 </html>
