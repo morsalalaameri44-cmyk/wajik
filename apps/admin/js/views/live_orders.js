@@ -336,53 +336,144 @@ window.saveOrderEdits = async function(orderId) {
 };
 
 // ==========================================
-// 4. نظام إسناد المناديب (Dispatch Modal)
+// 4. نظام إسناد المناديب المشترك (رادار تتبع + قائمة يدوية)
 // ==========================================
-window.openDriverModal = function(orderId) {
-    const drivers = [
-        { name: 'الكابتن صالح', status: 'متاح الآن', distance: '1.2 كم', color: '#059669' },
-        { name: 'مرسل العامري', status: 'متاح الآن', distance: '2.5 كم', color: '#059669' },
-        { name: 'عبدالله فاروق', status: 'في توصيلة (قريب)', distance: '4.0 كم', color: '#D97706' }
-    ];
-
-    let driversListHTML = drivers.map(d => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #E2E8F0; border-radius:12px; margin-bottom:10px; background:#F8FAFC;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:40px; height:40px; background:#EFF6FF; color:#2563EB; border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>
-                <div>
-                    <div style="font-weight:800; color:#0F172A; font-size:14px;">${d.name}</div>
-                    <div style="font-size:12px; color:#64748B;"><i class="fa-solid fa-location-dot"></i> يبعد ${d.distance} • <span style="color:${d.color}; font-weight:bold;">${d.status}</span></div>
-                </div>
-            </div>
-            <button onclick="assignDriver('${orderId}', '${d.name}')" style="background:#1E293B; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s;">إسناد</button>
-        </div>
-    `).join('');
-
+window.openDriverModal = async function(orderId) {
     const modal = document.createElement('div');
     modal.id = 'dispatchModal';
     modal.innerHTML = `
-        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
-            <div style="background:#fff; width:90%; max-width:450px; border-radius:20px; padding:24px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
-                <button onclick="document.getElementById('dispatchModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; color:#0F172A;">اختر المندوب للطلب #${orderId.toString().substring(0,6).toUpperCase()}</h3>
-                <div style="margin-top:15px; max-height:350px; overflow-y:auto; padding-right:5px;">
-                    ${driversListHTML}
+        <style>
+            #dispatchMap { width: 100%; height: 250px; border-radius: 16px; margin-top: 15px; margin-bottom: 15px; border: 2px solid #E2E8F0; z-index: 1;}
+            .leaflet-popup-content-wrapper { text-align: right; font-family: 'Tajawal', sans-serif; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+            .leaflet-popup-content { margin: 15px; }
+            .assign-map-btn { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 10px; font-family: inherit; font-size: 14px; transition: 0.2s; box-shadow: 0 4px 10px rgba(242,92,5,0.3); }
+            .assign-map-btn:active { transform: scale(0.96); }
+        </style>
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+            <div style="background:#fff; width:95%; max-width:600px; border-radius:24px; padding:24px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;">
+                <button onclick="document.getElementById('dispatchModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:24px; color:#64748B; cursor:pointer; z-index: 1000;"><i class="fa-solid fa-xmark"></i></button>
+                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; color:#0F172A; font-weight:900;">
+                    <i class="fa-solid fa-satellite-dish" style="color:var(--info);"></i> إسناد الطلب #${orderId.toString().substring(0,6).toUpperCase()}
+                </h3>
+                
+                <div id="dispatchMap"></div>
+                
+                <div id="mapStatus" style="text-align:center; padding-bottom:15px; border-bottom:1px solid #E2E8F0; margin-bottom:15px; color:#64748B; font-weight:800; font-size:14px;">
+                    <i class="fa-solid fa-spinner fa-spin" style="color:var(--primary);"></i> جاري المسح وجلب الكباتن...
+                </div>
+
+                <h4 style="margin:0 0 15px 0; color:#0F172A; font-size:15px;"><i class="fa-solid fa-list-ul"></i> الإسناد اليدوي المباشر</h4>
+                <div id="manualDriversList" style="max-height:200px; overflow-y:auto; padding-right:5px;">
+                    <div style="text-align:center; padding:20px; color:#94A3B8;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...</div>
                 </div>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
+
+    if (typeof L === 'undefined') {
+        await new Promise((resolve) => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = resolve;
+            document.head.appendChild(script);
+        });
+    }
+
+    initDispatchSystem(orderId);
 };
 
+async function initDispatchSystem(orderId) {
+    const adenCenter = [12.8222, 45.0381];
+    const map = L.map('dispatchMap').setView(adenCenter, 12);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(map);
+
+    const driverIcon = L.divIcon({
+        html: '<div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:3px solid white; box-shadow:0 4px 15px rgba(242,92,5,0.5); font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>',
+        className: 'custom-driver-icon',
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -20]
+    });
+
+    try {
+        const { data: drivers, error } = await window.supabaseClient.from('drivers').select('*').eq('status', 'متاح');
+        if (error) throw error;
+
+        const manualList = document.getElementById('manualDriversList');
+
+        if (!drivers || drivers.length === 0) {
+            document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> لا يوجد كباتن متاحين حالياً!</span>`;
+            manualList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-weight:bold; background:#FEE2E2; border-radius:12px;">يرجى إضافة كباتن متاحين من قائمة إدارة المناديب</div>`;
+            return;
+        }
+
+        document.getElementById('mapStatus').innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-circle-check"></i> تم رصد ${drivers.length} كباتن متاحين. اختر من الخريطة أو القائمة.</span>`;
+
+        let listHTML = '';
+
+        drivers.forEach(d => {
+            const simulatedLat = 12.8222 + (Math.random() - 0.5) * 0.08;
+            const simulatedLng = 45.0381 + (Math.random() - 0.5) * 0.08;
+            
+            const finalLat = d.lat || simulatedLat;
+            const finalLng = d.lng || simulatedLng;
+
+            const marker = L.marker([finalLat, finalLng], { icon: driverIcon }).addTo(map);
+            
+            const popupContent = `
+                <div style="min-width:180px;">
+                    <h4 style="margin:0 0 5px 0; color:#0F172A; font-weight:900; font-size:16px;">${d.name}</h4>
+                    <p style="margin:0 0 12px 0; color:#64748B; font-size:13px; font-weight:600;"><i class="fa-solid fa-phone"></i> ${d.phone || 'بدون رقم'} <br> <span style="color:var(--success);"><i class="fa-solid fa-circle" style="font-size:8px;"></i> جاهز</span></p>
+                    <button class="assign-map-btn" onclick="assignDriver('${orderId}', '${d.name}')"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب</button>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+
+            listHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #E2E8F0; border-radius:12px; margin-bottom:10px; background:#F8FAFC;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:40px; height:40px; background:#EFF6FF; color:#2563EB; border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>
+                        <div>
+                            <div style="font-weight:800; color:#0F172A; font-size:14px;">${d.name}</div>
+                            <div style="font-size:12px; color:#64748B;"><i class="fa-solid fa-phone"></i> ${d.phone || 'بدون رقم'}</div>
+                        </div>
+                    </div>
+                    <button onclick="assignDriver('${orderId}', '${d.name}')" style="background:#1E293B; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s;">إسناد</button>
+                </div>
+            `;
+        });
+
+        manualList.innerHTML = listHTML;
+
+    } catch (err) {
+        console.error("خطأ في جلب الكباتن:", err);
+        document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger);">فشل الاتصال بالنظام.</span>`;
+        document.getElementById('manualDriversList').innerHTML = `<span style="color:red; text-align:center; display:block;">حدث خطأ في عرض القائمة</span>`;
+    }
+}
+
 window.assignDriver = async function(orderId, driverName) {
-    document.getElementById('dispatchModal').remove();
+    const modal = document.getElementById('dispatchModal');
+    if (modal) modal.remove();
+    
     try {
         const { error } = await window.supabaseClient.from('orders').update({ status: 'delivering', driver_name: driverName }).eq('id', orderId);
         if (error) throw error;
+        
         const toast = document.createElement('div');
         toast.innerHTML = `<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-check"></i> تم إسناد الطلب للمندوب: ${driverName}</div>`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+        
         fetchAndRenderData();
     } catch (e) {
         alert('فشل إسناد المندوب: ' + (e.message || e));
