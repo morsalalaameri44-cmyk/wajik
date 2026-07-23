@@ -11,7 +11,8 @@ function navigateTo(viewId, title) {
     
     // تفعيل الزر في القائمة الجانبية
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-    document.getElementById('nav-' + viewId).classList.add('active');
+    const activeLink = document.getElementById('nav-' + viewId);
+    if(activeLink) activeLink.classList.add('active');
     
     // إغلاق القائمة في شاشات الجوال
     if(window.innerWidth <= 768) toggleSidebar();
@@ -22,7 +23,11 @@ function navigateTo(viewId, title) {
     
     // استدعاء دالة الرسم الخاصة بالقسم المختار
     if (viewId === 'live_orders') {
-        renderLiveOrders();
+        if(window.renderLiveOrders) window.renderLiveOrders(workspace);
+    } else if (viewId === 'stores') {
+        if(window.renderStores) window.renderStores(workspace);
+    } else if (viewId === 'drivers') {
+        if(window.renderDrivers) window.renderDrivers(workspace);
     } else {
         // شاشة مؤقتة للأقسام التي لم تبرمج بعد
         workspace.innerHTML = `
