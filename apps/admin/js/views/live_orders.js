@@ -88,7 +88,7 @@ window.openOrderDetails = function(orderId) {
                 <div style="background:#FFF; padding:20px; border-bottom:2px dashed #E2E8F0; text-align:center; position:relative;">
                     <button onclick="document.getElementById('customModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="width:50px; height:50px; background:rgba(242,92,5,0.1); color:var(--primary); border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:24px; margin:0 auto 10px auto;"><i class="fa-solid fa-receipt"></i></div>
-                    <h3 style="margin:0; color:#0F172A; font-size:18px; font-weight:900;">فاتورة الطلب #${order.id}</h3>
+                    <h3 style="margin:0; color:#0F172A; font-size:18px; font-weight:900;">فاتورة الطلب #${order.id.toString().substring(0,6).toUpperCase()}</h3>
                 </div>
 
                 <div style="padding:20px; overflow-y:auto;">
@@ -233,16 +233,14 @@ window.openEditModal = function(orderId) {
         <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
             <div style="background:#fff; width:90%; max-width:550px; border-radius:20px; padding:24px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; max-height: 90vh; overflow-y: auto;">
                 <button onclick="document.getElementById('editModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-                <h3 style="margin-top:0; color:var(--text-dark); border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px;"><i class="fa-solid fa-pen-to-square"></i> تعديل الطلب #${order.id}</h3>
+                <h3 style="margin-top:0; color:var(--text-dark); border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px;"><i class="fa-solid fa-pen-to-square"></i> تعديل الطلب #${order.id.toString().substring(0,6).toUpperCase()}</h3>
                 
                 <div style="display:flex; flex-direction:column;">
                     <label class="edit-label">حالة الطلب (تعديل إجباري)</label>
                     <select id="edit-status" class="edit-input" style="border-color:var(--primary); font-weight:bold;">
                         <option value="new" ${status==='new'?'selected':''}>طلب جديد</option>
-                        <option value="preparing" ${status==='preparing'?'selected':''}>قيد التجهيز</option>
-                        <option value="unassigned" ${status==='unassigned'?'selected':''}>جاهز (غير مسند)</option>
-                        <option value="assigned" ${status==='assigned'?'selected':''}>مسند للمندوب</option>
-                        <option value="on_the_way" ${status==='on_the_way'?'selected':''}>في الطريق</option>
+                        <option value="processing" ${status==='processing'?'selected':''}>قيد التجهيز</option>
+                        <option value="delivering" ${status==='delivering'?'selected':''}>مع الكابتن في الطريق</option>
                         <option value="completed" ${status==='completed'?'selected':''}>مكتمل</option>
                         <option value="canceled" ${status==='canceled'?'selected':''}>ملغي</option>
                     </select>
@@ -342,9 +340,9 @@ window.saveOrderEdits = async function(orderId) {
 // ==========================================
 window.openDriverModal = function(orderId) {
     const drivers = [
-        { name: 'عبدالله فاروق', status: 'متاح الآن', distance: '1.2 كم', color: '#059669' },
+        { name: 'الكابتن صالح', status: 'متاح الآن', distance: '1.2 كم', color: '#059669' },
         { name: 'مرسل العامري', status: 'متاح الآن', distance: '2.5 كم', color: '#059669' },
-        { name: 'يحيى مثنى', status: 'في توصيلة (قريب)', distance: '4.0 كم', color: '#D97706' }
+        { name: 'عبدالله فاروق', status: 'في توصيلة (قريب)', distance: '4.0 كم', color: '#D97706' }
     ];
 
     let driversListHTML = drivers.map(d => `
@@ -366,7 +364,7 @@ window.openDriverModal = function(orderId) {
         <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
             <div style="background:#fff; width:90%; max-width:450px; border-radius:20px; padding:24px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
                 <button onclick="document.getElementById('dispatchModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; color:#0F172A;">اختر المندوب للطلب #${orderId}</h3>
+                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; color:#0F172A;">اختر المندوب للطلب #${orderId.toString().substring(0,6).toUpperCase()}</h3>
                 <div style="margin-top:15px; max-height:350px; overflow-y:auto; padding-right:5px;">
                     ${driversListHTML}
                 </div>
@@ -379,7 +377,7 @@ window.openDriverModal = function(orderId) {
 window.assignDriver = async function(orderId, driverName) {
     document.getElementById('dispatchModal').remove();
     try {
-        const { error } = await window.supabaseClient.from('orders').update({ status: 'assigned', driver_name: driverName }).eq('id', orderId);
+        const { error } = await window.supabaseClient.from('orders').update({ status: 'delivering', driver_name: driverName }).eq('id', orderId);
         if (error) throw error;
         const toast = document.createElement('div');
         toast.innerHTML = `<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-check"></i> تم إسناد الطلب للمندوب: ${driverName}</div>`;
@@ -414,11 +412,10 @@ function getTimeElapsedHTML(createdAt) {
 // ==========================================
 // 5. البناء الهيكلي والتحديث اللحظي
 // ==========================================
-async function renderLiveOrders() {
-    const workspace = document.getElementById('workspaceContent');
+window.renderLiveOrders = async function(container) {
     
     if (!document.getElementById('ops-container')) {
-        workspace.innerHTML = `
+        container.innerHTML = `
             <style>
                 .search-bar { width: 100%; padding: 16px 20px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 20px; font-size: 15px; background: var(--card-bg); outline: none; transition: 0.2s; }
                 .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.1); }
@@ -431,7 +428,6 @@ async function renderLiveOrders() {
                 .status-pill { padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 800; }
                 .pill-new { background: rgba(242, 92, 5, 0.1); color: var(--primary); }
                 .pill-prep { background: #FEF3C7; color: #D97706; }
-                .pill-unassigned { background: #F1F5F9; color: #475569; }
                 .pill-assigned { background: #DBEAFE; color: #1D4ED8; }
                 .pill-completed { background: #D1FAE5; color: #059669; }
                 .pill-canceled { background: #FEE2E2; color: #DC2626; }
@@ -468,7 +464,7 @@ async function renderLiveOrders() {
     }
 
     fetchAndRenderData();
-}
+};
 
 async function fetchAndRenderData() {
     try {
@@ -487,9 +483,8 @@ function renderTabsAndList() {
     
     const cAll = orders.length;
     const cNew = orders.filter(o => o.status === 'new' || !o.status).length;
-    const cPrep = orders.filter(o => o.status === 'preparing').length;
-    const cUnassigned = orders.filter(o => o.status === 'unassigned').length;
-    const cAssigned = orders.filter(o => o.status === 'assigned' || o.status === 'on_the_way').length;
+    const cPrep = orders.filter(o => o.status === 'processing').length;
+    const cAssigned = orders.filter(o => o.status === 'delivering').length;
     const cComp = orders.filter(o => o.status === 'completed').length;
     const cCanc = orders.filter(o => o.status === 'canceled').length;
 
@@ -499,9 +494,8 @@ function renderTabsAndList() {
     document.getElementById('tabs-wrapper').innerHTML = `
         <button class="tab-btn ${window.opsState.tab === 'all' ? 'active' : ''}" onclick="switchTab('all')">الكل (${cAll})</button>
         <button class="tab-btn ${window.opsState.tab === 'new' ? 'active' : ''}" onclick="switchTab('new')">جديدة (${cNew})</button>
-        <button class="tab-btn ${window.opsState.tab === 'preparing' ? 'active' : ''}" onclick="switchTab('preparing')">تجهيز (${cPrep})</button>
-        <button class="tab-btn ${window.opsState.tab === 'unassigned' ? 'active' : ''}" onclick="switchTab('unassigned')">غير مسندة (${cUnassigned})</button>
-        <button class="tab-btn ${window.opsState.tab === 'assigned' ? 'active' : ''}" onclick="switchTab('assigned')">مسندة (${cAssigned})</button>
+        <button class="tab-btn ${window.opsState.tab === 'processing' ? 'active' : ''}" onclick="switchTab('processing')">تجهيز بالمطعم (${cPrep})</button>
+        <button class="tab-btn ${window.opsState.tab === 'delivering' ? 'active' : ''}" onclick="switchTab('delivering')">مع الكابتن (${cAssigned})</button>
         <button class="tab-btn ${window.opsState.tab === 'completed' ? 'active' : ''}" onclick="switchTab('completed')">مكتملة (${cComp})</button>
         <button class="tab-btn ${window.opsState.tab === 'canceled' ? 'active' : ''}" onclick="switchTab('canceled')">ملغية (${cCanc})</button>
     `;
@@ -519,9 +513,8 @@ function renderOrderCards() {
         const status = o.status || 'new';
         let tabMatch = (window.opsState.tab === 'all') || 
                        (window.opsState.tab === 'new' && status === 'new') ||
-                       (window.opsState.tab === 'preparing' && status === 'preparing') ||
-                       (window.opsState.tab === 'unassigned' && status === 'unassigned') ||
-                       (window.opsState.tab === 'assigned' && (status === 'assigned' || status === 'on_the_way')) ||
+                       (window.opsState.tab === 'processing' && status === 'processing') ||
+                       (window.opsState.tab === 'delivering' && status === 'delivering') ||
                        (window.opsState.tab === 'completed' && status === 'completed') ||
                        (window.opsState.tab === 'canceled' && status === 'canceled');
                        
@@ -557,14 +550,15 @@ function renderOrderCards() {
         }
 
         const id = order.id;
+        const shortId = id.toString().substring(0, 6).toUpperCase();
         const status = order.status || 'new';
         const timeStr = getTimeElapsedHTML(order.created_at);
         
-        // المعالجة الذكية لرقم الواتساب (متوافق مع أرقام اليمن وتطبيقات WebView)
+        // المعالجة الذكية لرقم الواتساب
         let cleanPhone = cPhone.replace(/\D/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
         if (cleanPhone.length > 0 && !cleanPhone.startsWith('967')) {
-            cleanPhone = '967' + cleanPhone; // إضافة المفتاح الدولي تلقائياً لليمن
+            cleanPhone = '967' + cleanPhone;
         }
         const waLink = `https://api.whatsapp.com/send?phone=${cleanPhone}`;
         
@@ -573,21 +567,16 @@ function renderOrderCards() {
         if (status === 'new') {
             statusText = 'طلب جديد'; statusClass = 'pill-new';
             actionUI = `
-                <button class="action-btn btn-primary" onclick="updateOrderStatus('${id}', 'preparing')"><i class="fa-solid fa-fire-burner"></i> توجيه للمطعم</button>
+                <button class="action-btn btn-primary" onclick="updateOrderStatus('${id}', 'processing')"><i class="fa-solid fa-fire-burner"></i> توجيه للمطعم</button>
                 <button class="action-btn btn-danger" style="flex: 0.3;" onclick="updateOrderStatus('${id}', 'canceled')" title="إلغاء"><i class="fa-solid fa-xmark"></i></button>`;
         } 
-        else if (status === 'preparing') {
+        else if (status === 'processing') {
             statusText = 'قيد التجهيز'; statusClass = 'pill-prep';
             actionUI = `
-                <button class="action-btn btn-outline" onclick="updateOrderStatus('${id}', 'unassigned')"><i class="fa-solid fa-box-open"></i> جاهز (غير مسند)</button>
-                <button class="action-btn btn-secondary" onclick="openDriverModal('${id}')"><i class="fa-solid fa-motorcycle"></i> إسناد لمندوب</button>`;
+                <button class="action-btn btn-secondary" onclick="openDriverModal('${id}')"><i class="fa-solid fa-motorcycle"></i> إسناد لكابتن التوصيل</button>`;
         } 
-        else if (status === 'unassigned') {
-            statusText = 'جاهز (غير مسند)'; statusClass = 'pill-unassigned';
-            actionUI = `<button class="action-btn btn-secondary" onclick="openDriverModal('${id}')"><i class="fa-solid fa-map-location-dot"></i> إسناد لمندوب</button>`;
-        } 
-        else if (status === 'assigned' || status === 'on_the_way') {
-            statusText = 'مسند (في الطريق)'; statusClass = 'pill-assigned';
+        else if (status === 'delivering') {
+            statusText = 'مع الكابتن (في الطريق)'; statusClass = 'pill-assigned';
             actionUI = `<button class="action-btn btn-success" onclick="updateOrderStatus('${id}', 'completed')"><i class="fa-solid fa-flag-checkered"></i> إقفال (تم التوصيل)</button>`;
         } 
         else {
@@ -599,7 +588,7 @@ function renderOrderCards() {
         html += `
             <div class="delivery-card">
                 <div style="display:flex; justify-content:space-between; margin-bottom:15px; border-bottom:1px dashed #E2E8F0; padding-bottom:12px;">
-                    <div style="font-size:18px; font-weight:900;">#${id} <span style="font-weight:normal; margin-right:10px;">${timeStr}</span></div>
+                    <div style="font-size:18px; font-weight:900;">#${shortId} <span style="font-weight:normal; margin-right:10px;">${timeStr}</span></div>
                     <div class="status-pill ${statusClass}">${statusText}</div>
                 </div>
                 
@@ -608,10 +597,10 @@ function renderOrderCards() {
                         <div style="width:40px; height:40px; background:rgba(242,92,5,0.05); color:var(--primary); border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:18px;"><i class="fa-solid fa-user"></i></div>
                         <div>
                             <div style="font-weight:800; font-size:15px;">${cName}</div>
-                            <div style="font-size:13.5px; color:#64748B;">${cPhone}</div>
+                            <div style="font-size:13.5px; color:#64748B;" dir="ltr">${cPhone}</div>
                         </div>
                     </div>
-                    <a href="${waLink}" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="${waLink}" target="_blank" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
 
                 <div style="background:#F8FAFC; border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
