@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سبيد جو أوبس - غرفة العمليات</title>
+    <title>Speed Go Ops - غرفة العمليات المركزية</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -35,10 +35,16 @@
         .nav-link i { width: 20px; font-size: 16px; text-align: center; }
         
         .badge { margin-right: auto; background-color: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
-        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; }
-        .avatar { width: 35px; height: 35px; background: #CBD5E1; border-radius: 50%; }
+        
+        /* تنسيق بروفایل الموظف وزر الخروج */
+        .user-profile { padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 12px; }
+        .user-profile-top { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 38px; height: 38px; background: #CBD5E1; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--text-dark); font-weight: 800; }
         .user-info h4 { color: white; font-size: 13px; font-weight: 700; }
         .user-info p { color: var(--sidebar-text); font-size: 11px; }
+        .logout-btn-admin { width: 100%; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .logout-btn-admin:hover { background: rgba(239, 68, 68, 0.2); }
+
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; display: none; opacity: 0; transition: 0.3s; }
 
         /* منطقة المحتوى */
@@ -48,145 +54,40 @@
         .menu-toggle-btn { display: none; background: none; border: none; font-size: 24px; color: var(--text-dark); cursor: pointer; }
         .page-title { font-size: 18px; font-weight: 800; color: var(--text-dark); }
         .top-actions { display: flex; gap: 10px; }
-        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background-color: var(--bg-color); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; color: var(--text-gray); cursor: pointer; transition: 0.2s; position: relative; }
+        .icon-btn { width: 40px; height: 40px; border-radius: 50%; background-color: var(--bg-color); border: 1px solid var(--border); display: flex; justify-content: center; align-items: center; color: var(--text-gray); cursor: pointer; transition: 0.2s; }
+        .icon-btn:hover { background: #E2E8F0; color: var(--text-dark); }
         .workspace { flex: 1; padding: 20px; overflow-y: auto; background-color: #F1F5F9; }
 
-        /* تصميمات عامة للبطاقات يتم استخدامها في الواجهات */
+        /* تصميمات البطاقات والجداول */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
-        .data-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.03); overflow: hidden; display: flex; flex-direction: column; }
-        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-
-        /* -- التنسيق الاحترافي لبطاقات الطلبات (Pro Version 2.0) -- */
+        
         .order-card-pro {
-            background: #FFFFFF;
-            border-radius: 16px;
-            padding: 24px; /* مساحة تنفس أكبر */
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-            border: 1px solid #E2E8F0;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 18px; /* تباعد أفضل بين الأقسام */
-            position: relative;
-            overflow: hidden;
+            background: #FFFFFF; border-radius: 16px; padding: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); border: 1px solid #E2E8F0;
+            display: flex; flex-direction: column; gap: 15px; position: relative; overflow: hidden;
         }
-
-        .order-card-pro:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-            border-color: #CBD5E1;
-        }
-
-        /* شريط جانبي صغير */
-        .order-card-pro::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 5px; /* زيادة السماكة قليلاً */
-            border-radius: 0 16px 16px 0;
-        }
+        .order-card-pro::before { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 5px; }
         .status-new::before { background: var(--info); }
-        .status-prep::before { background: var(--warning); }
-        .status-done::before { background: var(--success); }
+        .status-processing::before { background: var(--warning); }
+        .status-delivering::before { background: var(--primary); }
 
-        .order-header-pro {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #F1F5F9; /* خط تقسيم صلب وأنيق بدلاً من المتقطع */
-            padding-bottom: 16px;
-            margin-bottom: 4px;
-        }
-
-        .order-id-pro { font-weight: 900; font-size: 20px; color: #0F172A; }
-        
-        .badge-pro { 
-            padding: 6px 16px; 
-            border-radius: 20px; 
-            font-size: 12.5px; 
-            font-weight: 800; 
-            letter-spacing: 0.5px;
-        }
+        .order-header-pro { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; }
+        .order-id-pro { font-weight: 900; font-size: 18px; color: #0F172A; }
+        .badge-pro { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; }
         .badge-new { background: #EFF6FF; color: #2563EB; }
-        .badge-prep { background: #FEF3C7; color: #D97706; }
+        .badge-processing { background: #FEF3C7; color: #D97706; }
+        .badge-delivering { background: rgba(242,92,5,0.1); color: var(--primary); }
 
-        .order-body-pro { display: flex; flex-direction: column; gap: 14px; }
+        .info-row-pro { display: flex; align-items: center; gap: 12px; color: #475569; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .info-row-pro i { color: #64748B; width: 24px; text-align: center; }
 
-        .info-row-pro { 
-            display: flex; 
-            align-items: center; 
-            gap: 14px; 
-            color: #475569; 
-            font-size: 15px; 
-            font-weight: 600;
-        }
-        /* ضبط أيقونات المعلومات لتكون متوازية تماماً */
-        .info-row-pro i { 
-            color: #64748B; 
-            width: 28px; 
-            height: 28px; 
-            background: #F1F5F9; 
-            border-radius: 8px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 13px;
-        }
+        .order-summary-box { background: #F1F5F9; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .order-total-pro { font-weight: 900; color: #059669; font-size: 17px; }
 
-        .order-time-pro { color: #64748B; font-size: 13.5px; }
-
-        /* صندوق الإجمالي بتباين أفضل */
-        .order-summary-box {
-            background: #F1F5F9; /* لون أغمق قليلاً للتباين */
-            border-radius: 12px;
-            padding: 14px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-        .order-items-count { font-size: 13.5px; color: #64748B; font-weight: 700; }
-        .order-total-pro { font-weight: 900; color: #059669; font-size: 19px; }
-
-        .order-actions-pro { display: flex; gap: 10px; margin-top: 8px; }
-
-        /* تصميم الأزرار بظلال ملونة (Colored Shadows) */
-        .btn-pro { 
-            flex: 1; 
-            border: none; 
-            padding: 14px; 
-            border-radius: 12px; 
-            font-weight: 800; 
-            font-size: 15px;
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            color: #FFF; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px;
-        }
-        .btn-pro:active { transform: scale(0.96); }
-        
-        .btn-accept { 
-            background: #2563EB; 
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); /* ظل أزرق متناسق */
-        }
-        .btn-accept:hover { 
-            background: #1D4ED8;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); 
-        }
-        
-        .btn-assign { 
-            background: #F59E0B; 
-            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3); /* ظل برتقالي متناسق */
-        }
-        .btn-assign:hover { 
-            background: #D97706;
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4); 
-        }
+        .btn-pro { flex: 1; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer; color: #FFF; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-accept { background: var(--warning); }
+        .btn-deliver { background: var(--info); }
+        .btn-pro:active { transform: scale(0.97); }
 
         /* التجاوب للجوال */
         @media (max-width: 768px) {
@@ -210,15 +111,15 @@
             <button class="close-sidebar-btn" onclick="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
             <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
             <div>
-                <div class="brand-name">سبيد جو أوبس</div>
-                <div class="brand-sub">إدارة العمليات المركزية</div>
+                <div class="brand-name">Speed Go Ops</div>
+                <div class="brand-sub">غرفة العمليات المركزية</div>
             </div>
         </div>
 
         <nav class="nav-menu">
             <div class="nav-group">
                 <div class="nav-group-title">العمليات والطلبات</div>
-                <a class="nav-link" id="nav-live_orders" onclick="navigateTo('live_orders', 'الطلبات الحية')">
+                <a class="nav-link active" id="nav-live_orders" onclick="navigateTo('live_orders', 'الطلبات الحية')">
                     <i class="fa-solid fa-satellite-dish"></i> الطلبات الحية <span class="badge" id="newOrdersCount">0</span>
                 </a>
             </div>
@@ -234,12 +135,18 @@
             </div>
         </nav>
         
+        <!-- بروفايل المدير مع حماية الجلسة واسم الموظف وزر الخروج -->
         <div class="user-profile">
-            <div class="avatar"></div>
-            <div class="user-info">
-                <h4>مرسل العامري</h4>
-                <p>مدير العمليات</p>
+            <div class="user-profile-top">
+                <div class="avatar"><i class="fa-solid fa-user-shield"></i></div>
+                <div class="user-info">
+                    <h4 id="adminNameDisplay">جاري التحقق...</h4>
+                    <p>موظف عمليات معتمد</p>
+                </div>
             </div>
+            <button class="logout-btn-admin" onclick="logoutAdmin()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج
+            </button>
         </div>
     </aside>
 
@@ -248,31 +155,125 @@
         <header class="top-navbar">
             <div class="header-right">
                 <button class="menu-toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-                <div class="page-title" id="pageTitle">لوحة التحكم</div>
+                <div class="page-title" id="pageTitle">الطلبات الحية</div>
             </div>
             <div class="top-actions">
-                <button class="icon-btn" onclick="refreshCurrentView()"><i class="fa-solid fa-arrows-rotate"></i></button>
+                <button class="icon-btn" onclick="refreshCurrentView()" title="تحديث"><i class="fa-solid fa-arrows-rotate"></i></button>
             </div>
         </header>
 
-        <!-- هذه هي المساحة التي سيتم حقن الواجهات بداخلها -->
         <div class="workspace" id="workspaceContent"></div>
     </main>
 
-    <!-- 1. استدعاء مكتبة قاعدة البيانات -->
+    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- 2. تعريف الاتصال مباشرة داخل الملف لتجنب مشاكل المسارات في Acode -->
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
         window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentView = 'live_orders';
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // --- نظام الحماية والمصادقة (Auth Guard) ---
+        async function checkAuth() {
+            const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+            if (error || !session) {
+                // إذا لم يكن المدير مسجلاً، يتم توجيهه فورا لصفحة تسجيل الدخول
+                window.location.replace('login.html');
+                return false;
+            }
+            
+            // استخراج اسم المستخدم من البريد الإلكتروني وعرضه في القائمة الجانبية
+            const email = session.user.email;
+            const displayName = email.split('@')[0];
+            const nameEl = document.getElementById('adminNameDisplay');
+            if(nameEl) nameEl.innerText = displayName;
+            
+            return true;
+        }
+
+        // دالة تسجيل الخروج للموظف
+        async function logoutAdmin() {
+            await window.supabaseClient.auth.signOut();
+            window.location.replace('login.html');
+        }
+
+        // نظام التوجيه (Router) البسيط والذكي
+        function navigateTo(viewName, title) {
+            currentView = viewName;
+            document.getElementById('pageTitle').innerText = title;
+            
+            // تحديث الأزرار النشطة في القائمة
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const activeLink = document.getElementById(`nav-${viewName}`);
+            if(activeLink) activeLink.classList.add('active');
+
+            // إغلاق القائمة الجانبية في الجوال عند الاختيار
+            if(window.innerWidth <= 768) toggleSidebar();
+
+            loadViewContent();
+        }
+
+        function refreshCurrentView() {
+            loadViewContent();
+        }
+
+        async function loadViewContent() {
+            const container = document.getElementById('workspaceContent');
+            container.innerHTML = '<div style="text-align:center; padding:50px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:30px; color:var(--primary);"></i><p style="margin-top:10px; color:var(--text-gray);">جاري التحميل...</p></div>';
+
+            if (currentView === 'live_orders') {
+                if (window.renderLiveOrders) window.renderLiveOrders(container);
+            } else if (currentView === 'stores') {
+                if (window.renderStores) window.renderStores(container);
+            } else if (currentView === 'drivers') {
+                if (window.renderDrivers) window.renderDrivers(container);
+            }
+        }
+
+        // عداد الطلبات الجديدة في القائمة الجانبية
+        async function updateNewOrdersBadge() {
+            try {
+                const { count, error } = await window.supabaseClient
+                    .from('orders')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'new');
+                
+                if (!error) {
+                    const badge = document.getElementById('newOrdersCount');
+                    badge.innerText = count || 0;
+                    badge.style.display = count > 0 ? 'inline-block' : 'none';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // تشغيل التحقق الأمني عند تحميل الصفحة
+        window.onload = async () => {
+            const isAuthenticated = await checkAuth();
+            if (!isAuthenticated) return; // توقف التنفيذ إذا لم يكن مسجلاً
+
+            loadViewContent();
+            updateNewOrdersBadge();
+
+            // الاستماع الفوري للتغييرات لتحديث العداد تلقائياً
+            window.supabaseClient
+                .channel('admin_badge_channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                    updateNewOrdersBadge();
+                })
+                .subscribe();
+        };
     </script>
-    
-    <!-- 3. استدعاء ملفات الواجهات (Components) -->
+
+    <!-- استدعاء ملفات الأقسام -->
     <script src="js/views/live_orders.js"></script>
-    
-    <!-- 4. استدعاء محرك التطبيق الأساسي (Router) -->
-    <script src="js/app.js"></script>
+    <script src="js/views/stores.js"></script>
+    <script src="js/views/drivers.js"></script>
 </body>
 </html>
