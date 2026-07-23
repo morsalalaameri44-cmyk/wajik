@@ -71,6 +71,7 @@
             display: flex; justify-content: center; align-items: center;
             font-size: 18px; color: var(--text-light);
             border: 2px solid var(--primary);
+            text-decoration: none; /* لمنع ظهور خط تحت الرابط */
         }
 
         .status-toggle {
@@ -81,6 +82,8 @@
             display: flex; align-items: center; gap: 10px;
             font-size: 14px; font-weight: 800;
             border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; /* للإشارة إلى أنه قابل للنقر */
+            transition: 0.3s;
         }
 
         .status-dot {
@@ -88,6 +91,7 @@
             background-color: var(--success);
             border-radius: 50%;
             box-shadow: 0 0 10px var(--success);
+            transition: 0.3s;
         }
 
         /* =========================================
@@ -261,10 +265,12 @@
         
         <!-- الهيدر (حالة المندوب) -->
         <div class="driver-header">
-            <div class="profile-btn"><i class="fa-solid fa-user"></i></div>
-            <div class="status-toggle">
-                <div class="status-dot"></div>
-                متصل (متاح للطلبات)
+            <!-- توجيه الكابتن إلى إعدادات الحساب -->
+            <a href="profile.html" class="profile-btn"><i class="fa-solid fa-user"></i></a>
+            <!-- زر تبديل حالة الاتصال -->
+            <div class="status-toggle" id="statusToggle" onclick="toggleOnlineStatus()">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">متصل (متاح للطلبات)</span>
             </div>
         </div>
 
@@ -314,6 +320,38 @@
 
         const ordersContainer = document.getElementById('ordersContainer');
         const noOrdersMsg = document.getElementById('noOrdersMsg');
+        
+        let isOnline = true;
+        // إعداد ملف صوتي خفيف للتنبيه (صوت رنين رسالة)
+        const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        // دالة التبديل بين متصل وغير متصل
+        function toggleOnlineStatus() {
+            isOnline = !isOnline;
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+
+            if (isOnline) {
+                dot.style.backgroundColor = 'var(--success)';
+                dot.style.boxShadow = '0 0 10px var(--success)';
+                text.innerText = 'متصل (متاح للطلبات)';
+                fetchAvailableOrders(); // جلب الطلبات فور الاتصال
+            } else {
+                dot.style.backgroundColor = 'var(--text-gray)';
+                dot.style.boxShadow = 'none';
+                text.innerText = 'غير متصل (استراحة)';
+                // تفريغ الطلبات وإظهار رسالة الاستراحة
+                Array.from(ordersContainer.children).forEach(child => {
+                    if (child.id !== 'noOrdersMsg') {
+                        ordersContainer.removeChild(child);
+                    }
+                });
+                noOrdersMsg.innerHTML = `
+                    <i class="fa-solid fa-bed" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
+                    أنت الآن في وضع عدم الاتصال.`;
+                noOrdersMsg.style.display = 'block';
+            }
+        }
 
         // بناء بطاقة الطلب
         function buildOrderCard(order) {
@@ -357,6 +395,8 @@
 
         // جلب الطلبات الجاهزة للاستلام (حالتها processing)
         async function fetchAvailableOrders() {
+            if (!isOnline) return; // لا تجلب الطلبات إذا كان غير متصل
+
             try {
                 const { data: orders, error } = await supabaseClient
                     .from('orders')
@@ -375,10 +415,16 @@
 
                 if (orders && orders.length > 0) {
                     noOrdersMsg.style.display = 'none';
+                    // تشغيل تنبيه صوتي عند وجود طلبات
+                    notificationSound.play().catch(e => console.log("الصوت مقفل من المتصفح مؤقتاً"));
+                    
                     orders.forEach(order => {
                         ordersContainer.insertAdjacentHTML('beforeend', buildOrderCard(order));
                     });
                 } else {
+                    noOrdersMsg.innerHTML = `
+                        <i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
+                        لا توجد طلبات قريبة جاهزة للاستلام حالياً.`;
                     noOrdersMsg.style.display = 'block';
                 }
 
@@ -425,7 +471,14 @@
         }
 
         // عند تحميل الصفحة
-        window.onload = () => {
+        window.onload = async () => {
+            // التحقق من تسجيل الدخول
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
             fetchAvailableOrders();
             subscribeToNewOrders();
         };
