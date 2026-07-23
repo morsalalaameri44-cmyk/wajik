@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>محفظتي - واجيك كابتن</title>
+    <title>محفظتي - Speed Go كابتن</title>
     
     <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -82,8 +82,9 @@
         .debt-info h2 { font-size: 20px; color: var(--danger); font-weight: 900; }
         .settle-btn {
             background: rgba(238, 93, 80, 0.1); color: var(--danger); border: none;
-            padding: 10px 15px; border-radius: 10px; font-weight: 800; font-size: 12px;
+            padding: 10px 15px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s;
         }
+        .settle-btn:active { transform: scale(0.95); }
 
         /* سجل العمليات (Transactions) */
         .transactions-section { padding: 0 20px; }
@@ -92,7 +93,10 @@
         .transaction-item {
             display: flex; align-items: center; justify-content: space-between;
             padding: 15px; background: var(--surface); border-radius: 12px; margin-bottom: 10px;
+            animation: fadeIn 0.4s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .trans-left { display: flex; align-items: center; gap: 12px; }
         .trans-icon {
             width: 40px; height: 40px; border-radius: 10px;
@@ -110,7 +114,7 @@
 
         /* شريط التنقل السفلي */
         .bottom-nav {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 70px;
+            position: fixed; bottom: 0; left: 0; width: 100%; max-width: 420px; height: 70px;
             background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05);
             display: flex; justify-content: space-around; align-items: center; z-index: 30;
         }
@@ -120,6 +124,10 @@
         }
         .nav-link i { font-size: 20px; }
         .nav-link.active { color: var(--primary); }
+
+        /* حالة التحميل */
+        .loading-icon { display: inline-block; animation: spin 1s infinite linear; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -129,7 +137,7 @@
         <!-- الهيدر -->
         <header class="page-header">
             <h1 class="page-title">محفظتي المالية</h1>
-            <button class="support-btn"><i class="fa-solid fa-headset"></i></button>
+            <button class="support-btn" onclick="alert('للتواصل مع الدعم الفني، يرجى مراسلة الرقم: +967770000000')"><i class="fa-solid fa-headset"></i></button>
         </header>
 
         <!-- البطاقات المالية -->
@@ -137,7 +145,7 @@
             <!-- أرباح الكابتن -->
             <div class="main-balance-card">
                 <p class="balance-label">الرصيد المتاح (أرباحك الصافية)</p>
-                <div class="balance-amount">24,500 <span style="font-size: 16px;">ر.ي</span></div>
+                <div class="balance-amount" id="balanceAmount"><i class="fa-solid fa-circle-notch loading-icon" style="font-size: 24px;"></i></div>
                 <button class="withdraw-btn" onclick="requestWithdraw()"><i class="fa-solid fa-building-columns"></i> طلب سحب الرصيد</button>
             </div>
 
@@ -145,51 +153,24 @@
             <div class="debt-card">
                 <div class="debt-info">
                     <h4>كاش محصل (مطالب بتوريده)</h4>
-                    <h2>45,500 <span style="font-size: 14px;">ر.ي</span></h2>
+                    <h2 id="debtAmount"><i class="fa-solid fa-circle-notch loading-icon" style="font-size: 16px; color: var(--danger);"></i></h2>
                 </div>
-                <button class="settle-btn" onclick="alert('لإتمام التوريد، يرجى إيداع المبلغ في حساب الشركة عبر الكريمي أو النجم، ثم رفع السند من هنا.')">تصفية العهدة</button>
+                <button class="settle-btn" onclick="alert('لإتمام التوريد، يرجى إيداع المبلغ في حساب Speed Go عبر الكريمي أو النجم، ثم رفع السند للإدارة.')">تصفية العهدة</button>
             </div>
         </div>
 
         <!-- سجل العمليات -->
         <div class="transactions-section">
             <h3 class="section-title">سجل العمليات الأخير</h3>
-            
-            <div class="transaction-item">
-                <div class="trans-left">
-                    <div class="trans-icon icon-delivery"><i class="fa-solid fa-motorcycle"></i></div>
-                    <div class="trans-details">
-                        <h4>عمولة توصيل طلب #WAJ-992</h4>
-                        <p>اليوم، 01:30 م • مطعم المراسيم</p>
-                    </div>
+            <div id="transactionsList">
+                <div style="text-align: center; padding: 20px; color: var(--text-gray);">
+                    <i class="fa-solid fa-circle-notch loading-icon" style="font-size: 30px; color: var(--primary); margin-bottom: 15px;"></i>
+                    <p>جاري جلب البيانات المالية...</p>
                 </div>
-                <div class="trans-amount amount-pos">+ 1,500 ر.ي</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="trans-left">
-                    <div class="trans-icon icon-delivery"><i class="fa-solid fa-motorcycle"></i></div>
-                    <div class="trans-details">
-                        <h4>عمولة توصيل طلب #WAJ-985</h4>
-                        <p>اليوم، 11:15 ص • بروستد الشلال</p>
-                    </div>
-                </div>
-                <div class="trans-amount amount-pos">+ 1,000 ر.ي</div>
-            </div>
-
-            <div class="transaction-item">
-                <div class="trans-left">
-                    <div class="trans-icon icon-withdraw"><i class="fa-solid fa-money-bill-transfer"></i></div>
-                    <div class="trans-details">
-                        <h4>سحب رصيد (الكريمي)</h4>
-                        <p>أمس، 09:00 م • مكتمل</p>
-                    </div>
-                </div>
-                <div class="trans-amount amount-neg">- 15,000 ر.ي</div>
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي المربوط بالروابط الصحيحة -->
+        <!-- شريط التنقل السفلي -->
         <nav class="bottom-nav">
             <a href="index.html" class="nav-link">
                 <i class="fa-solid fa-map-location-dot"></i>
@@ -207,10 +188,90 @@
 
     </div>
 
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        function requestWithdraw() {
-            alert("تم إرسال طلب سحب بمبلغ 24,500 ر.ي إلى الإدارة. سيتم تحويل المبلغ إلى حسابك المربوط قريباً.");
+        // إعداد الاتصال بقاعدة البيانات
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentBalance = 0;
+
+        // دالة تنسيق التاريخ للعمليات
+        function formatTransactionDate(dateString) {
+            const date = new Date(dateString);
+            const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+            return date.toLocaleDateString('ar-SA', options).replace(',', ' •');
         }
+
+        async function loadWalletData() {
+            try {
+                // جلب الطلبات المكتملة لعمل إحصائية بالأرباح والديون
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .eq('status', 'completed')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                let totalEarnings = 0;
+                let totalDebt = 0;
+                let transactionsHTML = '';
+
+                if (orders && orders.length > 0) {
+                    orders.forEach(order => {
+                        // افتراض 1500 ريال كعمولة توصيل لكل طلب في حال عدم وجودها في قاعدة البيانات
+                        const earning = order.delivery_fee || 1500; 
+                        totalEarnings += earning;
+                        totalDebt += order.total_amount || 0;
+
+                        const shortId = order.id.toString().substring(0, 6).toUpperCase();
+                        
+                        transactionsHTML += `
+                        <div class="transaction-item">
+                            <div class="trans-left">
+                                <div class="trans-icon icon-delivery"><i class="fa-solid fa-motorcycle"></i></div>
+                                <div class="trans-details">
+                                    <h4>عمولة توصيل طلب #${shortId}</h4>
+                                    <p>${formatTransactionDate(order.created_at)}</p>
+                                </div>
+                            </div>
+                            <div class="trans-amount amount-pos">+ ${earning.toLocaleString()} ر.ي</div>
+                        </div>`;
+                    });
+                } else {
+                    transactionsHTML = `
+                    <div style="text-align: center; padding: 30px 20px; color: var(--text-gray);">
+                        <i class="fa-solid fa-receipt" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p>لا توجد عمليات مالية مسجلة حتى الآن.</p>
+                    </div>`;
+                }
+
+                currentBalance = totalEarnings;
+
+                // تحديث الواجهة بالأرقام الحقيقية
+                document.getElementById('balanceAmount').innerHTML = `${totalEarnings.toLocaleString()} <span style="font-size: 16px;">ر.ي</span>`;
+                document.getElementById('debtAmount').innerHTML = `${totalDebt.toLocaleString()} <span style="font-size: 14px;">ر.ي</span>`;
+                document.getElementById('transactionsList').innerHTML = transactionsHTML;
+
+            } catch (err) {
+                console.error("Error fetching wallet data:", err);
+                document.getElementById('transactionsList').innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:20px;">حدث خطأ في جلب البيانات المالية.</p>`;
+            }
+        }
+
+        function requestWithdraw() {
+            if (currentBalance > 0) {
+                alert(`تم إرسال طلب سحب بمبلغ ${currentBalance.toLocaleString()} ر.ي إلى إدارة Speed Go. سيتم تحويل المبلغ قريباً.`);
+            } else {
+                alert("رصيدك الحالي 0 ر.ي، لا يمكنك تقديم طلب سحب.");
+            }
+        }
+
+        window.onload = loadWalletData;
     </script>
 </body>
 </html>
