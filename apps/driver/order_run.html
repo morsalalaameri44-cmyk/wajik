@@ -72,7 +72,7 @@
         .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .target-name { font-size: 16px; font-weight: 800; }
         
-        /* أزرار الاتصال السريع GSM */
+        /* أزرار الاتصال السريع والخرائط */
         .call-btn {
             background: #25D366; color: white; border: none; width: 40px; height: 40px;
             border-radius: 50%; display: flex; justify-content: center; align-items: center;
@@ -232,13 +232,21 @@
                 const custName = currentOrder.customer_name || 'عميل Speed Go';
                 const custPhone = currentOrder.customer_phone || '';
                 
+                // استخدام encodeURIComponent لضمان عدم وجود أخطاء في الرابط
+                const mapQuery = encodeURIComponent(custName + ' عدن');
+                
                 card.innerHTML = `
                     <div class="card-meta">
                         <div>
                             <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة التالية: التوصيل للزبون</p>
                             <h3 class="target-name">العميل: ${custName}</h3>
                         </div>
-                        <a href="tel:${custPhone}" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
+                        <div style="display:flex; gap:10px;">
+                            <!-- زر خرائط جوجل للتوجيه المباشر -->
+                            <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" class="call-btn" style="background:#4285F4;"><i class="fa-solid fa-map-location-dot"></i></a>
+                            <!-- زر الاتصال بالعميل -->
+                            <a href="tel:${custPhone}" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
+                        </div>
                     </div>
                     <div class="items-box" style="border-right: 3px solid var(--success)">
                         <strong>المطلوب تحصيله كاش:</strong> <span style="color:var(--success); font-weight:900;">${currentOrder.total_amount.toLocaleString()} ر.ي</span>
