@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تطبيق الكابتن - واجيك</title>
+    <title>تطبيق الكابتن - Speed Go</title>
     
     <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@
            ========================================= */
         .map-area {
             flex: 1;
-            background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80'); /* صورة خريطة ليلية */
+            background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -136,16 +136,30 @@
         /* =========================================
            بطاقة الطلب المسند (Bottom Sheet)
            ========================================= */
-        .order-sheet {
+        .order-sheet-container {
             position: absolute;
-            bottom: 75px; /* فوق شريط التنقل */
+            bottom: 75px;
             left: 10px; right: 10px;
+            z-index: 20;
+            display: flex; flex-direction: column; gap: 10px;
+            max-height: 50vh; overflow-y: auto; overflow-x: hidden;
+            /* إخفاء شريط التمرير */
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .order-sheet-container::-webkit-scrollbar { display: none; }
+
+        .order-sheet {
             background-color: var(--surface);
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
-            z-index: 20;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .sheet-header {
@@ -203,6 +217,20 @@
         }
         .accept-btn:active { transform: scale(0.98); }
 
+        /* رسالة عدم وجود طلبات */
+        .no-orders-msg {
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-gray);
+            font-weight: 700;
+            font-size: 14px;
+            display: none;
+        }
+
         /* =========================================
            شريط التنقل السفلي
            ========================================= */
@@ -236,52 +264,28 @@
             <div class="profile-btn"><i class="fa-solid fa-user"></i></div>
             <div class="status-toggle">
                 <div class="status-dot"></div>
-                متصل (أنت متاح للطلبات)
+                متصل (متاح للطلبات)
             </div>
         </div>
 
         <!-- منطقة الخريطة -->
         <div class="map-area">
             <div class="map-overlay"></div>
-            <!-- موقع المندوب (الكابتن صالح) -->
+            <!-- موقع المندوب -->
             <div class="driver-marker">
                 <i class="fa-solid fa-motorcycle"></i>
             </div>
         </div>
 
-        <!-- بطاقة الطلب المسند من الإدارة (تظهر بشكل منبثق) -->
-        <div class="order-sheet" id="orderSheet">
-            <div class="sheet-header">
-                <div class="new-alert"><i class="fa-solid fa-bell"></i> طلب جديد بانتظارك!</div>
-                <div class="order-id">#WAJ-992</div>
+        <!-- حاوية الطلبات الواردة من قاعدة البيانات -->
+        <div class="order-sheet-container" id="ordersContainer">
+            <div class="no-orders-msg" id="noOrdersMsg">
+                <i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
+                لا توجد طلبات قريبة جاهزة للاستلام حالياً.
             </div>
-
-            <div class="route-info">
-                <!-- نقطة الاستلام (المطعم) -->
-                <div class="route-point">
-                    <div class="point-icon pickup-icon"><i class="fa-solid fa-store"></i></div>
-                    <div class="point-details">
-                        <h4>استلام: مطعم المراسيم</h4>
-                        <p>يبعد عنك 1.2 كم (التحضير جاري)</p>
-                    </div>
-                </div>
-                
-                <!-- نقطة التسليم (العميل) -->
-                <div class="route-point">
-                    <div class="point-icon dropoff-icon"><i class="fa-solid fa-location-dot"></i></div>
-                    <div class="point-details">
-                        <h4>تسليم: أمجد</h4>
-                        <p>عدن - خورمكسر • الدفع كاش (10,500 ر.ي)</p>
-                    </div>
-                </div>
-            </div>
-
-            <button class="accept-btn" onclick="acceptOrder()">
-                قبول الطلب والتوجه للمطعم <i class="fa-solid fa-arrow-left-long"></i>
-            </button>
         </div>
 
-        <!-- شريط التنقل السفلي المحدث بالروابط الصحيحة -->
+        <!-- شريط التنقل السفلي -->
         <nav class="bottom-nav">
             <a href="index.html" class="nav-link active">
                 <i class="fa-solid fa-map-location-dot"></i>
@@ -299,18 +303,132 @@
 
     </div>
 
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        function acceptOrder() {
-            const btn = document.querySelector('.accept-btn');
-            // تغيير حالة الزر لتوحي بتأكيد الطلب
+        // إعداد الاتصال بقاعدة البيانات الحقيقية
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const ordersContainer = document.getElementById('ordersContainer');
+        const noOrdersMsg = document.getElementById('noOrdersMsg');
+
+        // بناء بطاقة الطلب
+        function buildOrderCard(order) {
+            const customerName = order.customer_name || 'عميل Speed Go';
+            const total = order.total_amount ? order.total_amount.toLocaleString() : '0';
+            const orderIdShort = order.id.toString().substring(0, 6).toUpperCase();
+
+            return `
+            <div class="order-sheet" id="order-${order.id}">
+                <div class="sheet-header">
+                    <div class="new-alert"><i class="fa-solid fa-bell"></i> طلب جديد بانتظارك!</div>
+                    <div class="order-id">#${orderIdShort}</div>
+                </div>
+
+                <div class="route-info">
+                    <!-- نقطة الاستلام -->
+                    <div class="route-point">
+                        <div class="point-icon pickup-icon"><i class="fa-solid fa-store"></i></div>
+                        <div class="point-details">
+                            <h4>استلام: المطعم</h4>
+                            <p>الطلب جاهز للاستلام الآن.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- نقطة التسليم -->
+                    <div class="route-point">
+                        <div class="point-icon dropoff-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div class="point-details">
+                            <h4>تسليم: ${customerName}</h4>
+                            <p>الدفع عند الاستلام (${total} ر.ي)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="accept-btn" onclick="acceptOrder('${order.id}')" id="btn-${order.id}">
+                    قبول الطلب والتوجه للمطعم <i class="fa-solid fa-arrow-left-long"></i>
+                </button>
+            </div>
+            `;
+        }
+
+        // جلب الطلبات الجاهزة للاستلام (حالتها processing)
+        async function fetchAvailableOrders() {
+            try {
+                const { data: orders, error } = await supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .eq('status', 'processing')
+                    .order('created_at', { ascending: true }); // الأقدم أولاً
+
+                if (error) throw error;
+
+                // إزالة البطاقات القديمة مع الاحتفاظ برسالة الفراغ
+                Array.from(ordersContainer.children).forEach(child => {
+                    if (child.id !== 'noOrdersMsg') {
+                        ordersContainer.removeChild(child);
+                    }
+                });
+
+                if (orders && orders.length > 0) {
+                    noOrdersMsg.style.display = 'none';
+                    orders.forEach(order => {
+                        ordersContainer.insertAdjacentHTML('beforeend', buildOrderCard(order));
+                    });
+                } else {
+                    noOrdersMsg.style.display = 'block';
+                }
+
+            } catch (err) {
+                console.error("Error fetching available orders:", err);
+            }
+        }
+
+        // دالة قبول الطلب
+        window.acceptOrder = async function(orderId) {
+            const btn = document.getElementById(`btn-${orderId}`);
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تأكيد الاستلام...';
             btn.style.backgroundColor = 'var(--success)';
+            btn.disabled = true;
             
-            // تأخير لمدة ثانية ثم النقل لصفحة التنفيذ
-            setTimeout(() => {
-                window.location.href = 'order_run.html';
-            }, 1000);
+            try {
+                // تحديث الحالة في قاعدة البيانات إلى "جاري التوصيل"
+                const { error } = await supabaseClient
+                    .from('orders')
+                    .update({ status: 'delivering' })
+                    .eq('id', orderId);
+
+                if (error) throw error;
+
+                // توجيه السائق لصفحة تنفيذ الطلب وتمرير رقم الطلب
+                window.location.href = `order_run.html?id=${orderId}`;
+
+            } catch (err) {
+                console.error("Error accepting order:", err);
+                alert("حدث خطأ أثناء قبول الطلب، قد يكون استلمه كابتن آخر.");
+                fetchAvailableOrders(); // إعادة تحميل القائمة
+            }
         }
+
+        // تفعيل الاستماع المباشر (Real-time) للطلبات الجديدة
+        function subscribeToNewOrders() {
+            supabaseClient
+                .channel('driver_public_orders')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+                    // تحديث القائمة تلقائياً عند تغيير الإدارة لأي حالة
+                    fetchAvailableOrders();
+                })
+                .subscribe();
+        }
+
+        // عند تحميل الصفحة
+        window.onload = () => {
+            fetchAvailableOrders();
+            subscribeToNewOrders();
+        };
     </script>
 </body>
 </html>
