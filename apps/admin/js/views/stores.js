@@ -8,6 +8,8 @@ window.renderStores = async function(container) {
             .action-btn { border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
             .btn-edit { background: #f3f4f6; color: #4b5563; }
             .btn-edit:hover { background: #e5e7eb; }
+            .btn-excel { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+            .btn-excel:hover { background: #d1fae5; }
             .btn-delete { background: #fee2e2; color: #dc2626; }
             .btn-delete:hover { background: #fca5a5; }
             .item-row-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #f1f5f9; }
@@ -23,6 +25,9 @@ window.renderStores = async function(container) {
             .main-tabs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
             .tab-btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; padding: 10px 20px; border-radius: 20px; font-weight: 800; font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
             .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(242,92,5,0.2); }
+            
+            .upload-zone { border: 2px dashed #cbd5e1; padding: 30px; text-align: center; border-radius: 16px; background: #f8fafc; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
+            .upload-zone:hover { border-color: var(--primary); background: #fffaf7; }
         </style>
         
         <div style="max-width: 950px; margin: 0 auto; padding-bottom: 30px;">
@@ -115,7 +120,6 @@ function renderStoresList(filterCategory) {
         const storePhone = store.phone || store.store_phone || 'بدون رقم';
         const storeStatus = store.status || 'مفتوح';
         const storeLogo = store.logo_url ? `<img src="${store.logo_url}" style="width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#f1f5f9; display:flex; justify-content:center; align-items:center; color:#94a3b8;"><i class="fa-solid fa-image"></i></div>`;
-        
         const isStoreOpen = storeStatus === 'مفتوح';
 
         const storeProducts = allProductsData.filter(p => p.store_id === store.id);
@@ -127,7 +131,7 @@ function renderStoresList(filterCategory) {
             storeProducts.forEach(product => {
                 const prodName = product.name || product.item_name || 'صنف غير محدد';
                 const prodSection = product.category || product.category_name || 'عام';
-                const prodAvail = product.is_available !== false; // افتراضياً متوفر
+                const prodAvail = product.is_available !== false; 
                 const prodImg = product.image_url ? `<img src="${product.image_url}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">` : '';
 
                 productsHtml += `
@@ -162,6 +166,7 @@ function renderStoresList(filterCategory) {
                     </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button onclick="openProductModal('${store.id}')" class="add-btn"><i class="fa-solid fa-plus"></i> إضافة صنف</button>
+                        <button onclick="openExcelUploadModal('${store.id}', '${storeName}')" class="action-btn btn-excel"><i class="fa-solid fa-file-excel"></i> رفع منيو</button>
                         <button onclick="openStoreModal('${store.id}')" class="action-btn btn-edit"><i class="fa-solid fa-pen"></i> تعديل المتجر</button>
                         <button onclick="deleteStore('${store.id}')" class="action-btn btn-delete"><i class="fa-solid fa-trash"></i></button>
                     </div>
@@ -177,12 +182,10 @@ function renderStoresList(filterCategory) {
     container.innerHTML = html;
 }
 
-// نافذة المتجر (لإضافة أو تعديل)
+// ---------------------- النوافذ المنبثقة (المتجر والصنف) ----------------------
 window.openStoreModal = function(storeId = null) {
     let store = null;
-    if (storeId) {
-        store = allStoresData.find(s => s.id === storeId);
-    }
+    if (storeId) store = allStoresData.find(s => s.id === storeId);
 
     let categoryOptions = '';
     allMainCategories.forEach(cat => {
@@ -238,29 +241,19 @@ window.saveStore = async function(storeId) {
     const logo_url = document.getElementById('storeLogo').value.trim();
     const statusEl = document.getElementById('storeStatus');
     const status = statusEl ? statusEl.value : 'مفتوح';
-
     if(!name) { alert("يرجى إدخال اسم المتجر"); return; }
-
     const payload = { name, store_name: name, category, phone, logo_url, status };
-
     try {
-        if (storeId) {
-            await window.supabaseClient.from('stores').update(payload).eq('id', storeId);
-        } else {
-            await window.supabaseClient.from('stores').insert([payload]);
-        }
+        if (storeId) await window.supabaseClient.from('stores').update(payload).eq('id', storeId);
+        else await window.supabaseClient.from('stores').insert([payload]);
         document.getElementById('storeModal').remove();
         loadStoresData();
     } catch(e) { alert("فشل الحفظ: " + e.message); }
 }
 
-// نافذة الصنف (لإضافة أو تعديل)
 window.openProductModal = function(storeId, productId = null) {
     let product = null;
-    if (productId) {
-        product = allProductsData.find(p => p.id === productId);
-    }
-
+    if (productId) product = allProductsData.find(p => p.id === productId);
     const isEditing = !!product;
     const modalId = 'productModal';
 
@@ -314,21 +307,129 @@ window.saveProduct = async function(storeId, productId) {
     const is_available = availEl ? availEl.value === 'true' : true;
 
     if(!name || price <= 0) { alert("يرجى إدخال اسم الصنف وسعر صحيح"); return; }
-
     const payload = { store_id: storeId, name, item_name: name, category, category_name: category, price, description, image_url, is_available };
-
     try {
-        if (productId) {
-            await window.supabaseClient.from('products').update(payload).eq('id', productId);
-        } else {
-            await window.supabaseClient.from('products').insert([payload]);
-        }
+        if (productId) await window.supabaseClient.from('products').update(payload).eq('id', productId);
+        else await window.supabaseClient.from('products').insert([payload]);
         document.getElementById('productModal').remove();
         loadStoresData();
     } catch(e) { alert("فشل الحفظ: " + e.message); }
 }
 
-// دوال الحذف
+// ---------------------- ميزة رفع المنيو عبر الإكسل ----------------------
+window.openExcelUploadModal = function(storeId, storeName) {
+    const modalId = 'excelModal';
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+            <div style="background:#fff; width:90%; max-width:450px; border-radius:20px; padding:24px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                <button onclick="document.getElementById('${modalId}').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px; color:#0f172a; font-weight:900;"><i class="fa-solid fa-file-excel" style="color:#10b981;"></i> رفع منيو (إكسل) لمتجر ${storeName}</h3>
+                
+                <p style="font-size:13px; color:#64748b; margin-bottom:15px; line-height:1.5;">يرجى التأكد من أن ملف الإكسل يحتوي على هذه الأعمدة بنفس الترتيب: <b>(الاسم، القسم، السعر، الوصف)</b>، وأن السعر هو رقم فقط.</p>
+                
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleExcelFileSelect(event, '${storeId}')">
+                
+                <div class="upload-zone" onclick="document.getElementById('excelFileInput').click()">
+                    <i class="fa-solid fa-cloud-arrow-up fa-3x" style="color:var(--primary); margin-bottom:10px;"></i>
+                    <h4 style="color:#0f172a; font-weight:800; margin-bottom:5px;">اضغط هنا لاختيار ملف المنيو</h4>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">صيغ مدعومة: XLSX, XLS, CSV</p>
+                </div>
+
+                <div id="excelPreviewArea" style="display:none; max-height:150px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:15px; font-size:12px;"></div>
+
+                <button id="btnUploadExcel" style="width:100%; background:#10b981; color:white; border:none; padding:14px; border-radius:12px; font-weight:900; font-size:15px; cursor:not-allowed; opacity:0.5;" disabled>رفع الأصناف إلى قاعدة البيانات</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+let parsedExcelProducts = [];
+
+window.handleExcelFileSelect = function(event, storeId) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (typeof XLSX === 'undefined') {
+        alert("لم يتم تحميل مكتبة الإكسل. يرجى التأكد من إضافة الرابط في index.html");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        // تحويل الشيت إلى مصفوفة (array of arrays) لتجاهل أسماء الأعمدة المتغيرة
+        const rawRows = XLSX.utils.sheet_to_json(firstSheet, {header: 1}); 
+
+        parsedExcelProducts = [];
+        // نتجاوز الصف الأول (نفترض أنه العناوين: اسم، قسم، سعر، وصف)
+        for(let i = 1; i < rawRows.length; i++) {
+            const row = rawRows[i];
+            if(row.length >= 3 && row[0]) { 
+                const name = String(row[0]).trim();
+                const section = row[1] ? String(row[1]).trim() : 'عام';
+                const price = parseFloat(row[2]) || 0;
+                const desc = row[3] ? String(row[3]).trim() : '';
+
+                if(name && price > 0) {
+                    parsedExcelProducts.push({
+                        store_id: storeId,
+                        name: name,
+                        item_name: name,
+                        category: section,
+                        category_name: section,
+                        price: price,
+                        description: desc,
+                        is_available: true
+                    });
+                }
+            }
+        }
+
+        if(parsedExcelProducts.length > 0) {
+            const preview = document.getElementById('excelPreviewArea');
+            preview.style.display = 'block';
+            preview.innerHTML = `<strong style="color:#059669;">تم قراءة ${parsedExcelProducts.length} صنف جاهز للرفع:</strong><br>` + 
+                                parsedExcelProducts.slice(0, 3).map(p => `• ${p.name} - ${p.price} ر.ي`).join('<br>') +
+                                (parsedExcelProducts.length > 3 ? '<br>... والمزيد' : '');
+
+            const btnUpload = document.getElementById('btnUploadExcel');
+            btnUpload.disabled = false;
+            btnUpload.style.opacity = '1';
+            btnUpload.style.cursor = 'pointer';
+            btnUpload.onclick = () => uploadParsedExcelData();
+        } else {
+            alert("لم يتم العثور على بيانات صحيحة في الملف. تأكد من وجود الاسم والسعر.");
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+async function uploadParsedExcelData() {
+    if(parsedExcelProducts.length === 0) return;
+    
+    const btnUpload = document.getElementById('btnUploadExcel');
+    btnUpload.innerText = 'جاري الرفع...';
+    btnUpload.disabled = true;
+
+    try {
+        const { error } = await window.supabaseClient.from('products').insert(parsedExcelProducts);
+        if(error) throw error;
+        
+        alert(`تم رفع ${parsedExcelProducts.length} صنف للمتجر بنجاح!`);
+        document.getElementById('excelModal').remove();
+        loadStoresData();
+    } catch(err) {
+        alert("حدث خطأ أثناء الرفع لقاعدة البيانات: " + err.message);
+        btnUpload.innerText = 'إعادة المحاولة';
+        btnUpload.disabled = false;
+    }
+}
+
+// ---------------------- دوال الحذف ----------------------
 window.deleteStore = async function(storeId) {
     if(!confirm("هل أنت متأكد من حذف هذا المتجر؟ سيتم حذف جميع الأصناف التابعة له أيضاً.")) return;
     try {
