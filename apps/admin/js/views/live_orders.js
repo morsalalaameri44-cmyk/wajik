@@ -364,7 +364,7 @@ window.openDriverModal = async function(orderId) {
                 <div id="dispatchMap"></div>
                 
                 <div id="mapStatus" style="text-align:center; padding-bottom:15px; border-bottom:1px solid #E2E8F0; margin-bottom:15px; color:#64748B; font-weight:800; font-size:14px;">
-                    <i class="fa-solid fa-spinner fa-spin" style="color:var(--primary);"></i> جاري المسح وجلب الكباتن...
+                    <i class="fa-solid fa-spinner fa-spin" style="color:var(--primary);"></i> جاري المسح وجلب الكباتن المتاحين...
                 </div>
 
                 <h4 style="margin:0 0 15px 0; color:#0F172A; font-size:15px;"><i class="fa-solid fa-list-ul"></i> الإسناد اليدوي المباشر</h4>
@@ -418,14 +418,15 @@ async function initDispatchSystem(orderId) {
             popupAnchor: [0, -20]
         });
 
-        const { data: drivers, error } = await window.supabaseClient.from('drivers').select('*').eq('status', 'متاح');
+        // 🟢 التعديل الجوهري 1: البحث عن المناديب بحالة "نشط"
+        const { data: drivers, error } = await window.supabaseClient.from('drivers').select('*').eq('status', 'نشط');
         if (error) throw error;
 
         const manualList = document.getElementById('manualDriversList');
 
         if (!drivers || drivers.length === 0) {
             document.getElementById('mapStatus').innerHTML = `<span style="color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> لا يوجد كباتن متاحين حالياً!</span>`;
-            manualList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-weight:bold; background:#FEE2E2; border-radius:12px;">يرجى إضافة كباتن متاحين من صفحة إدارة المناديب</div>`;
+            manualList.innerHTML = `<div style="text-align:center; padding:20px; color:var(--danger); font-weight:bold; background:#FEE2E2; border-radius:12px;">جميع الكباتن مشغولون أو متوقفون عن العمل.</div>`;
             return;
         }
 
@@ -434,9 +435,11 @@ async function initDispatchSystem(orderId) {
         let listHTML = '';
 
         drivers.forEach(d => {
+            // جلب الاسم الدقيق من قاعدة البيانات
+            const dName = d.driver_name || d.full_name || d.name || 'مندوب غير محدد';
+            
             const simulatedLat = 12.8222 + (Math.random() - 0.5) * 0.08;
             const simulatedLng = 45.0381 + (Math.random() - 0.5) * 0.08;
-            
             const finalLat = d.lat || simulatedLat;
             const finalLng = d.lng || simulatedLng;
 
@@ -444,9 +447,9 @@ async function initDispatchSystem(orderId) {
             
             const popupContent = `
                 <div style="min-width:180px;">
-                    <h4 style="margin:0 0 5px 0; color:#0F172A; font-weight:900; font-size:16px;">${d.name}</h4>
+                    <h4 style="margin:0 0 5px 0; color:#0F172A; font-weight:900; font-size:16px;">${dName}</h4>
                     <p style="margin:0 0 12px 0; color:#64748B; font-size:13px; font-weight:600;"><i class="fa-solid fa-phone"></i> ${d.phone || 'بدون رقم'} <br> <span style="color:var(--success);"><i class="fa-solid fa-circle" style="font-size:8px;"></i> جاهز</span></p>
-                    <button class="assign-map-btn" onclick="assignDriver('${orderId}', '${d.name}')"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب</button>
+                    <button class="assign-map-btn" onclick="assignDriver('${orderId}', '${d.id}', '${dName}')"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب</button>
                 </div>
             `;
             marker.bindPopup(popupContent);
@@ -456,11 +459,11 @@ async function initDispatchSystem(orderId) {
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div style="width:40px; height:40px; background:#EFF6FF; color:#2563EB; border-radius:10px; display:flex; justify-content:center; align-items:center; font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div>
                         <div>
-                            <div style="font-weight:800; color:#0F172A; font-size:14px;">${d.name}</div>
+                            <div style="font-weight:800; color:#0F172A; font-size:14px;">${dName}</div>
                             <div style="font-size:12px; color:#64748B;"><i class="fa-solid fa-phone"></i> ${d.phone || 'بدون رقم'}</div>
                         </div>
                     </div>
-                    <button onclick="assignDriver('${orderId}', '${d.name}')" style="background:#1E293B; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s;">إسناد</button>
+                    <button onclick="assignDriver('${orderId}', '${d.id}', '${dName}')" style="background:#1E293B; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; transition:0.2s;">إسناد</button>
                 </div>
             `;
         });
@@ -474,13 +477,19 @@ async function initDispatchSystem(orderId) {
     }
 }
 
-window.assignDriver = async function(orderId, driverName) {
+// 🟢 التعديل الجوهري 2: تحديث الطلب وتحديث حالة المندوب إلى "مشغول" في نفس الوقت
+window.assignDriver = async function(orderId, driverId, driverName) {
     const modal = document.getElementById('dispatchModal');
     if (modal) modal.remove();
     
     try {
-        const { error } = await window.supabaseClient.from('orders').update({ status: 'delivering', driver_name: driverName }).eq('id', orderId);
-        if (error) throw error;
+        // 1. تحديث الطلب ليصبح قيد التوصيل ومسند للمندوب
+        const { error: orderError } = await window.supabaseClient.from('orders').update({ status: 'delivering', driver_name: driverName }).eq('id', orderId);
+        if (orderError) throw orderError;
+        
+        // 2. تحديث المندوب ليصبح "مشغول"
+        const { error: driverError } = await window.supabaseClient.from('drivers').update({ status: 'مشغول' }).eq('id', driverId);
+        if (driverError) console.error("لم يتم تحديث حالة المندوب إلى مشغول:", driverError);
         
         const toast = document.createElement('div');
         toast.innerHTML = `<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-check"></i> تم إسناد الطلب للمندوب: ${driverName}</div>`;
@@ -497,6 +506,16 @@ window.updateOrderStatus = async function(orderId, newStatus) {
     try {
         const { error } = await window.supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (error) throw error;
+        
+        // إذا اكتمل الطلب، يجب أن نحرر المندوب ليصبح "نشط" مرة أخرى (هذه ترقية إضافية)
+        if(newStatus === 'completed') {
+            const { data: orderData } = await window.supabaseClient.from('orders').select('driver_name').eq('id', orderId).single();
+            if(orderData && orderData.driver_name) {
+                // نبحث عن المندوب باسمه (إذا لم يكن لدينا ID)
+                await window.supabaseClient.from('drivers').update({ status: 'نشط' }).eq('driver_name', orderData.driver_name);
+            }
+        }
+        
         fetchAndRenderData();
     } catch (error) {
         alert("خطأ في التحديث: " + error.message);
@@ -658,7 +677,6 @@ function renderOrderCards() {
         const status = order.status || 'new';
         const timeStr = getTimeElapsedHTML(order.created_at);
         
-        // المعالجة الذكية لرقم الواتساب
         let cleanPhone = cPhone.replace(/\D/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = cleanPhone.substring(1);
         if (cleanPhone.length > 0 && !cleanPhone.startsWith('967')) {
@@ -681,7 +699,9 @@ function renderOrderCards() {
         } 
         else if (status === 'delivering') {
             statusText = 'مع الكابتن (في الطريق)'; statusClass = 'pill-assigned';
-            actionUI = `<button class="action-btn btn-success" onclick="updateOrderStatus('${id}', 'completed')"><i class="fa-solid fa-flag-checkered"></i> إقفال (تم التوصيل)</button>`;
+            // تمت إضافة عرض اسم المندوب في زر الإقفال
+            const driverBadge = order.driver_name ? `(${order.driver_name})` : '';
+            actionUI = `<button class="action-btn btn-success" onclick="updateOrderStatus('${id}', 'completed')"><i class="fa-solid fa-flag-checkered"></i> إقفال ${driverBadge}</button>`;
         } 
         else {
             statusText = status === 'completed' ? 'مكتمل' : 'ملغي'; 
