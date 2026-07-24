@@ -358,7 +358,7 @@ window.openExcelUploadModal = function(storeId, storeName) {
                 
                 <p style="font-size:13px; color:#64748b; margin-bottom:15px; line-height:1.5;">يرجى التأكد من أن ملف الإكسل يحتوي على هذه الأعمدة بنفس الترتيب: <b>(الاسم، القسم، السعر، الوصف)</b>، وأن السعر هو رقم فقط.</p>
                 
-                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleExcelFileSelect(event, '${storeId}')">
+                <input type="file" id="excelFileInput" accept="*/*" style="display:none;" onchange="handleExcelFileSelect(event, '${storeId}')">
                 
                 <div class="upload-zone" onclick="document.getElementById('excelFileInput').click()">
                     <i class="fa-solid fa-cloud-arrow-up fa-3x" style="color:var(--primary); margin-bottom:10px;"></i>
