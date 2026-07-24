@@ -26,7 +26,7 @@ window.handleSearchInput = function(query) {
     renderOrderCards(); 
 };
 
-// مُفسّر الأصناف الذكي (يحول كود JSON إلى قائمة مرتبة للفاتورة)
+// مُفسّر الأصناف الذكي
 function generateItemsHtml(orderItems) {
     if (!orderItems) return '<div style="text-align:center; color:#94A3B8; font-style:italic;">لا توجد أصناف</div>';
     
@@ -63,7 +63,6 @@ function generateItemsHtml(orderItems) {
 // 3. نوافذ العرض والتعديل الشاملة (Modals)
 // ==========================================
 
-// 🌟 نافذة عرض الفاتورة والتفاصيل (Receipt View)
 window.openOrderDetails = function(orderId) {
     const order = window.opsState.orders.find(o => o.id == orderId);
     if(!order) return;
@@ -84,15 +83,12 @@ window.openOrderDetails = function(orderId) {
     modal.innerHTML = `
         <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
             <div style="background:#F1F5F9; width:90%; max-width:450px; border-radius:24px; box-shadow:0 10px 40px rgba(0,0,0,0.2); position:relative; overflow:hidden; display:flex; flex-direction:column; max-height: 90vh;">
-                
                 <div style="background:#FFF; padding:20px; border-bottom:2px dashed #E2E8F0; text-align:center; position:relative;">
                     <button onclick="document.getElementById('customModal').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer; transition:0.2s;"><i class="fa-solid fa-xmark"></i></button>
                     <div style="width:50px; height:50px; background:rgba(242,92,5,0.1); color:var(--primary); border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:24px; margin:0 auto 10px auto;"><i class="fa-solid fa-receipt"></i></div>
                     <h3 style="margin:0; color:#0F172A; font-size:18px; font-weight:900;">فاتورة الطلب #${order.id.toString().substring(0,6).toUpperCase()}</h3>
                 </div>
-
                 <div style="padding:20px; overflow-y:auto;">
-                    
                     <div style="background:#FFF; border-radius:14px; padding:16px; margin-bottom:15px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                             <span style="color:#64748B; font-size:13px; font-weight:700;"><i class="fa-solid fa-user"></i> العميل</span>
@@ -107,16 +103,13 @@ window.openOrderDetails = function(orderId) {
                             <strong style="color:#0F172A; font-size:14px; max-width:60%; text-align:left;">${address}</strong>
                         </div>
                     </div>
-
                     <h4 style="margin:0 0 10px 5px; color:#475569; font-size:14px; font-weight:800;"><i class="fa-solid fa-basket-shopping"></i> الأصناف المطلوبة</h4>
                     <div style="background:#FFF; border-radius:14px; padding:6px 16px; margin-bottom:15px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
                         ${itemsHtml}
                     </div>
-
                     <div style="background:#FEF3C7; color:#B45309; padding:14px; border-radius:14px; margin-bottom:15px; font-size:13px; font-weight:800; border:1px solid #FDE68A;">
                         <i class="fa-solid fa-circle-exclamation"></i> ملاحظة: ${notes}
                     </div>
-
                     <div style="background:#FFF; border-radius:14px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,0.02);">
                         <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; color:#475569; font-weight:700;">
                             <span>الإجمالي الفرعي للطلب</span>
@@ -126,15 +119,12 @@ window.openOrderDetails = function(orderId) {
                             <span>رسوم التوصيل</span>
                             <strong>${deliveryFee} ر.ي</strong>
                         </div>
-                        
                         <div style="border-top:1px dashed #CBD5E1; margin:0 -16px 15px -16px;"></div>
-                        
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-weight:900; color:#0F172A; font-size:16px;">الإجمالي النهائي</span>
                             <strong style="color:#059669; font-weight:900; font-size:20px; background:#D1FAE5; padding:6px 12px; border-radius:10px;">${total} ر.ي</strong>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -142,7 +132,6 @@ window.openOrderDetails = function(orderId) {
     document.body.appendChild(modal);
 };
 
-// حساب الإجمالي تلقائياً عند تغيير الأصناف أو الرسوم
 window.recalculateTotal = function() {
     let total = 0;
     const rows = document.querySelectorAll('#edit-items-container .item-row');
@@ -155,7 +144,6 @@ window.recalculateTotal = function() {
     document.getElementById('edit-total').value = total + delivery;
 };
 
-// إضافة صف صنف جديد في نافذة التعديل
 window.addEditItemRow = function(qty = 1, name = '', price = 0) {
     const container = document.getElementById('edit-items-container');
     const row = document.createElement('div');
@@ -171,7 +159,6 @@ window.addEditItemRow = function(qty = 1, name = '', price = 0) {
     recalculateTotal();
 };
 
-// 🌟 نافذة التعديل الشاملة (God Mode)
 window.openEditModal = function(orderId) {
     const order = window.opsState.orders.find(o => o.id == orderId);
     if(!order) return;
@@ -289,7 +276,6 @@ window.openEditModal = function(orderId) {
     document.body.appendChild(modal);
 };
 
-// حفظ التعديلات
 window.saveOrderEdits = async function(orderId) {
     try {
         let finalDetails = [];
@@ -338,7 +324,8 @@ window.saveOrderEdits = async function(orderId) {
 // ==========================================
 // 4. نظام إسناد المناديب المشترك (رادار تتبع + قائمة يدوية)
 // ==========================================
-window.openDriverModal = async function(orderId) {
+// 🟢 تم تغيير اسم الدالة لتجنب التعارض مع ملف المناديب
+window.openDispatchModal = async function(orderId) {
     const existingModal = document.getElementById('dispatchModal');
     if (existingModal) {
         existingModal.remove();
@@ -418,7 +405,6 @@ async function initDispatchSystem(orderId) {
             popupAnchor: [0, -20]
         });
 
-        // 🟢 التعديل الجوهري 1: البحث عن المناديب بحالة "نشط"
         const { data: drivers, error } = await window.supabaseClient.from('drivers').select('*').eq('status', 'نشط');
         if (error) throw error;
 
@@ -435,7 +421,6 @@ async function initDispatchSystem(orderId) {
         let listHTML = '';
 
         drivers.forEach(d => {
-            // جلب الاسم الدقيق من قاعدة البيانات
             const dName = d.driver_name || d.full_name || d.name || 'مندوب غير محدد';
             
             const simulatedLat = 12.8222 + (Math.random() - 0.5) * 0.08;
@@ -477,17 +462,14 @@ async function initDispatchSystem(orderId) {
     }
 }
 
-// 🟢 التعديل الجوهري 2: تحديث الطلب وتحديث حالة المندوب إلى "مشغول" في نفس الوقت
 window.assignDriver = async function(orderId, driverId, driverName) {
     const modal = document.getElementById('dispatchModal');
     if (modal) modal.remove();
     
     try {
-        // 1. تحديث الطلب ليصبح قيد التوصيل ومسند للمندوب
         const { error: orderError } = await window.supabaseClient.from('orders').update({ status: 'delivering', driver_name: driverName }).eq('id', orderId);
         if (orderError) throw orderError;
         
-        // 2. تحديث المندوب ليصبح "مشغول"
         const { error: driverError } = await window.supabaseClient.from('drivers').update({ status: 'مشغول' }).eq('id', driverId);
         if (driverError) console.error("لم يتم تحديث حالة المندوب إلى مشغول:", driverError);
         
@@ -507,11 +489,9 @@ window.updateOrderStatus = async function(orderId, newStatus) {
         const { error } = await window.supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (error) throw error;
         
-        // إذا اكتمل الطلب، يجب أن نحرر المندوب ليصبح "نشط" مرة أخرى (هذه ترقية إضافية)
         if(newStatus === 'completed') {
             const { data: orderData } = await window.supabaseClient.from('orders').select('driver_name').eq('id', orderId).single();
             if(orderData && orderData.driver_name) {
-                // نبحث عن المندوب باسمه (إذا لم يكن لدينا ID)
                 await window.supabaseClient.from('drivers').update({ status: 'نشط' }).eq('driver_name', orderData.driver_name);
             }
         }
@@ -694,12 +674,12 @@ function renderOrderCards() {
         } 
         else if (status === 'processing') {
             statusText = 'قيد التجهيز'; statusClass = 'pill-prep';
+            // 🟢 التغيير الجوهري هنا: استدعاء الدالة المستقلة الجديدة
             actionUI = `
-                <button class="action-btn btn-secondary" onclick="openDriverModal('${id}')"><i class="fa-solid fa-motorcycle"></i> إسناد لكابتن التوصيل</button>`;
+                <button class="action-btn btn-secondary" onclick="openDispatchModal('${id}')"><i class="fa-solid fa-motorcycle"></i> إسناد لكابتن التوصيل</button>`;
         } 
         else if (status === 'delivering') {
             statusText = 'مع الكابتن (في الطريق)'; statusClass = 'pill-assigned';
-            // تمت إضافة عرض اسم المندوب في زر الإقفال
             const driverBadge = order.driver_name ? `(${order.driver_name})` : '';
             actionUI = `<button class="action-btn btn-success" onclick="updateOrderStatus('${id}', 'completed')"><i class="fa-solid fa-flag-checkered"></i> إقفال ${driverBadge}</button>`;
         } 
