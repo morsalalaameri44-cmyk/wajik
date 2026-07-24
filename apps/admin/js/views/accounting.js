@@ -1,237 +1,222 @@
 window.renderAccounting = async function(container) {
     container.innerHTML = `
         <style>
-            .acc-card { background: #fff; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
-            .acc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-            .acc-stat { text-align: center; padding: 20px; border-radius: 12px; }
-            .stat-primary { background: rgba(242,92,5,0.05); border: 1px solid rgba(242,92,5,0.1); }
-            .stat-success { background: #ecfdf5; border: 1px solid #d1fae5; }
-            .stat-info { background: #eff6ff; border: 1px solid #dbeafe; }
-            .acc-label { color: #64748b; font-size: 13px; font-weight: 800; margin-bottom: 8px; display: block; }
-            .acc-value { font-size: 24px; font-weight: 900; color: #0f172a; }
+            .acc-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+            .acc-card { background: #fff; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+            .acc-card::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
+            .card-vault::after { background: var(--primary); }
+            .card-income::after { background: #10b981; }
+            .card-expense::after { background: #ef4444; }
+            .card-pending::after { background: #f59e0b; }
             
-            .export-btn { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
-            .export-btn:hover { background: #059669; }
+            .acc-card h3 { margin: 0; font-size: 14px; color: #64748b; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+            .acc-card p { margin: 0; font-size: 28px; font-weight: 900; color: #0f172a; }
             
-            .filter-group { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
-            .date-input { padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; font-weight: bold; color: #475569; }
+            .acc-toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+            .btn-acc { flex: 1; min-width: 150px; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
+            .btn-acc:active { transform: scale(0.98); }
+            .btn-add-income { background: #10b981; box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+            .btn-add-expense { background: #ef4444; box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+
+            .ledger-container { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+            .ledger-header { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 900; color: #0f172a; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+            .ledger-list { max-height: 500px; overflow-y: auto; }
+            .ledger-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px dashed #e2e8f0; transition: 0.2s; }
+            .ledger-item:hover { background: #f8fafc; }
+            .ledger-item:last-child { border-bottom: none; }
             
-            .table-container { width: 100%; overflow-x: auto; margin-top: 15px; }
-            .acc-table { width: 100%; border-collapse: collapse; text-align: right; }
-            .acc-table th, .acc-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-            .acc-table th { background: #f8fafc; color: #475569; font-weight: 800; }
+            .tx-info { display: flex; align-items: center; gap: 15px; }
+            .tx-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 18px; }
+            .icon-income { background: #d1fae5; color: #059669; }
+            .icon-expense { background: #fee2e2; color: #dc2626; }
             
-            .settle-btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
-            .settle-btn:hover { background: #2563eb; }
+            .tx-details h4 { margin: 0 0 5px 0; color: #0f172a; font-size: 15px; font-weight: 800; }
+            .tx-details p { margin: 0; color: #64748b; font-size: 12px; font-weight: 600; }
+            
+            .tx-amount { font-size: 18px; font-weight: 900; }
+            .amount-income { color: #059669; }
+            .amount-expense { color: #dc2626; }
+
+            /* Modal Styles */
+            .form-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 15px; font-family: inherit; font-size: 14px; background: #f8fafc; outline: none; transition: 0.2s; }
+            .form-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(242,92,5,0.1); }
+            .form-label { display: block; font-weight: 800; font-size: 13px; color: #475569; margin-bottom: 6px; }
         </style>
         
-        <div style="max-width: 950px; margin: 0 auto; padding-bottom: 30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap:wrap; gap:15px;">
-                <h2 style="font-size: 20px; font-weight: 900; color: #0f172a;"><i class="fa-solid fa-wallet" style="color:var(--primary);"></i> الخزنة ومحافظ المناديب</h2>
-                <button class="export-btn" onclick="exportToCSV()">
-                    <i class="fa-solid fa-file-csv"></i> تصدير تقرير الإكسل
-                </button>
-            </div>
+        <div style="max-width: 1000px; margin: 0 auto; padding-bottom: 30px;">
             
-            <div class="acc-card filter-group">
-                <span style="font-weight: 800; color: #475569;">تصفية حسب التاريخ:</span>
-                <input type="date" id="dateFrom" class="date-input">
-                <span style="color: #cbd5e1;">إلى</span>
-                <input type="date" id="dateTo" class="date-input">
-                <button onclick="loadAccountingData()" style="background:#1e293b; color:white; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">تحديث</button>
+            <div class="acc-dashboard" id="accStats">
+                <div class="acc-card card-vault">
+                    <h3><i class="fa-solid fa-vault"></i> رصيد الخزنة المركزي</h3>
+                    <p id="statVault">0 ر.ي</p>
+                </div>
+                <div class="acc-card card-income">
+                    <h3><i class="fa-solid fa-arrow-trend-up"></i> إجمالي الإيرادات</h3>
+                    <p id="statIncome">0 ر.ي</p>
+                </div>
+                <div class="acc-card card-expense">
+                    <h3><i class="fa-solid fa-arrow-trend-down"></i> إجمالي المصروفات</h3>
+                    <p id="statExpense">0 ر.ي</p>
+                </div>
+                <div class="acc-card card-pending">
+                    <h3><i class="fa-solid fa-motorcycle"></i> عهد معلقة (مع المناديب)</h3>
+                    <p id="statPending">0 ر.ي</p>
+                </div>
             </div>
 
-            <div id="accountingContent">
-                <div style="text-align:center; padding:50px; color:#64748b;">
-                    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--primary); margin-bottom:15px;"></i>
-                    <p>جاري تحميل الحسابات...</p>
+            <div class="acc-toolbar">
+                <button class="btn-acc btn-add-income" onclick="openTransactionModal('إيراد')"><i class="fa-solid fa-plus"></i> تسجيل إيراد مالي</button>
+                <button class="btn-acc btn-add-expense" onclick="openTransactionModal('مصروف')"><i class="fa-solid fa-minus"></i> تسجيل مصروف / سحب</button>
+            </div>
+
+            <div class="ledger-container">
+                <div class="ledger-header">
+                    <span><i class="fa-solid fa-list-ul"></i> السجل المالي (آخر الحركات)</span>
+                    <button onclick="loadAccountingData()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:16px;"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+                <div class="ledger-list" id="ledgerList">
+                    <div style="text-align:center; padding:50px; color:#64748b;">
+                        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--primary); margin-bottom:15px;"></i>
+                        <p>جاري تحميل السجل المحاسبي...</p>
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    document.getElementById('dateFrom').value = firstDay.toISOString().split('T')[0];
-    document.getElementById('dateTo').value = today.toISOString().split('T')[0];
-
     loadAccountingData();
 };
 
-let currentAccountingData = [];
-let driversWalletsData = [];
-
 async function loadAccountingData() {
-    const fromDate = document.getElementById('dateFrom').value;
-    const toDateRaw = new Date(document.getElementById('dateTo').value);
-    toDateRaw.setDate(toDateRaw.getDate() + 1);
-    const toDate = toDateRaw.toISOString().split('T')[0];
-
     try {
-        const { data: orders, error: oErr } = await window.supabaseClient
-            .from('orders')
-            .select('*')
-            .eq('status', 'completed')
-            .gte('created_at', fromDate)
-            .lt('created_at', toDate);
-
-        if (oErr) throw oErr;
-        currentAccountingData = orders || [];
-
-        // جلب حركات عهد المناديب
-        const { data: wallets, error: wErr } = await window.supabaseClient
-            .from('driver_wallets')
+        // جلب حركات الخزنة
+        const { data: ledger, error: ledgerErr } = await window.supabaseClient
+            .from('accounting_ledger')
             .select('*')
             .order('created_at', { ascending: false });
+        if (ledgerErr) throw ledgerErr;
 
-        if (wErr) throw wErr;
-        driversWalletsData = wallets || [];
+        // جلب إجمالي العهد المعلقة مع المناديب
+        const { data: drivers, error: driversErr } = await window.supabaseClient.from('drivers').select('wallet_balance');
+        let pendingVault = 0;
+        if (!driversErr && drivers) {
+            pendingVault = drivers.reduce((sum, d) => sum + (parseFloat(d.wallet_balance) || 0), 0);
+        }
 
-        renderAccountingDashboard();
-    } catch (e) {
-        document.getElementById('accountingContent').innerHTML = `<div style="background:#fee2e2; color:#dc2626; padding:20px; border-radius:12px; text-align:center; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> خطأ: ${e.message}</div>`;
+        renderAccountingDashboard(ledger || [], pendingVault);
+    } catch(e) {
+        document.getElementById('ledgerList').innerHTML = `<div style="background:#fee2e2; color:#dc2626; padding:20px; text-align:center; font-weight:bold;">خطأ في تحميل البيانات: ${e.message}</div>`;
     }
 }
 
-function renderAccountingDashboard() {
-    let totalSales = 0;
-    let totalDeliveryFees = 0;
-    let ordersCount = currentAccountingData.length;
+function renderAccountingDashboard(ledger, pendingVault) {
+    let totalIncome = 0;
+    let totalExpense = 0;
 
-    currentAccountingData.forEach(o => {
-        totalSales += parseFloat(o.total_amount || 0);
-        totalDeliveryFees += parseFloat(o.delivery_fee || 0);
-    });
-
-    let restaurantDues = totalSales - totalDeliveryFees;
-
-    // تجميع ديون الكاش لكل كابتن
-    const driverBalances = {};
-    driversWalletsData.forEach(w => {
-        if(!driverBalances[w.driver_name]) driverBalances[w.driver_name] = 0;
-        if(w.type === 'cash_in') {
-            driverBalances[w.driver_name] += parseFloat(w.amount);
-        } else if(w.type === 'settled') {
-            driverBalances[w.driver_name] -= parseFloat(w.amount);
-        }
-    });
-
-    let walletsHtml = '';
-    const activeDrivers = Object.keys(driverBalances);
+    let html = '';
     
-    if(activeDrivers.length === 0) {
-        walletsHtml = `<tr><td colspan="3" style="text-align:center; color:#94a3b8; padding:20px;">لا توجد عهد نقدية مسجلة حالياً على المناديب</td></tr>`;
+    if(ledger.length === 0) {
+        html = `<div style="text-align:center; color:#64748b; padding:50px;"><i class="fa-solid fa-receipt fa-3x" style="opacity:0.2; margin-bottom:15px;"></i><h3>لا توجد حركات مالية مسجلة بعد</h3></div>`;
     } else {
-        activeDrivers.forEach(driver => {
-            let balance = driverBalances[driver];
-            if(balance < 0) balance = 0;
-            walletsHtml += `
-                <tr>
-                    <td style="font-weight:800; color:#0f172a;">${driver}</td>
-                    <td style="font-weight:900; color:${balance > 0 ? '#dc2626' : '#059669'};">${balance.toLocaleString()} ر.ي</td>
-                    <td>
-                        ${balance > 0 ? `<button class="settle-btn" onclick="settleDriverWallet('${driver}', ${balance})"><i class="fa-solid fa-check-double"></i> تصفية العهدة</button>` : '<span style="color:#10b981; font-weight:bold;">متصافٍ</span>'}
-                    </td>
-                </tr>
+        ledger.forEach(tx => {
+            const amount = parseFloat(tx.amount) || 0;
+            const isIncome = tx.transaction_type === 'إيراد';
+            
+            if(isIncome) totalIncome += amount;
+            else totalExpense += amount;
+
+            const iconClass = isIncome ? 'icon-income' : 'icon-expense';
+            const iconFa = isIncome ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+            const amountClass = isIncome ? 'amount-income' : 'amount-expense';
+            const sign = isIncome ? '+' : '-';
+            
+            // تنسيق التاريخ والوقت
+            const dateObj = new Date(tx.created_at);
+            const dateStr = dateObj.toLocaleDateString('ar-EG');
+            const timeStr = dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+            html += `
+                <div class="ledger-item">
+                    <div class="tx-info">
+                        <div class="tx-icon ${iconClass}"><i class="fa-solid ${iconFa}"></i></div>
+                        <div class="tx-details">
+                            <h4>${tx.description}</h4>
+                            <p>${dateStr} - ${timeStr} ${tx.reference_id ? `| المرجع: ${tx.reference_id}` : ''}</p>
+                        </div>
+                    </div>
+                    <div class="tx-amount ${amountClass}" dir="ltr">
+                        ${sign} ${amount.toLocaleString()} ر.ي
+                    </div>
+                </div>
             `;
         });
     }
 
-    const contentDiv = document.getElementById('accountingContent');
-    contentDiv.innerHTML = `
-        <div class="acc-card acc-grid">
-            <div class="acc-stat stat-primary">
-                <span class="acc-label"><i class="fa-solid fa-money-bill-wave"></i> إجمالي المبيعات</span>
-                <span class="acc-value">${totalSales.toLocaleString()} <span style="font-size:14px;">ر.ي</span></span>
-            </div>
-            <div class="acc-stat stat-success">
-                <span class="acc-label"><i class="fa-solid fa-motorcycle"></i> إيرادات التوصيل</span>
-                <span class="acc-value" style="color:#059669;">${totalDeliveryFees.toLocaleString()} <span style="font-size:14px;">ر.ي</span></span>
-            </div>
-            <div class="acc-stat stat-info">
-                <span class="acc-label"><i class="fa-solid fa-store"></i> مستحقات المطاعم</span>
-                <span class="acc-value" style="color:#2563eb;">${restaurantDues.toLocaleString()} <span style="font-size:14px;">ر.ي</span></span>
-            </div>
-        </div>
+    const currentVault = totalIncome - totalExpense;
 
-        <div class="acc-card">
-            <h3 style="font-size:16px; font-weight:900; color:#0f172a; margin-bottom:15px;"><i class="fa-solid fa-hand-holding-dollar" style="color:var(--primary);"></i> أرصدة وعهد المناديب (الكاش المتراكم)</h3>
-            <div class="table-container">
-                <table class="acc-table">
-                    <thead>
-                        <tr>
-                            <th>اسم الكابتن</th>
-                            <th>المبلغ بعهمته (كاش مطلوب تسليمه)</th>
-                            <th>الإجراء</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${walletsHtml}
-                    </tbody>
-                </table>
+    document.getElementById('statIncome').innerText = totalIncome.toLocaleString() + ' ر.ي';
+    document.getElementById('statExpense').innerText = totalExpense.toLocaleString() + ' ر.ي';
+    document.getElementById('statVault').innerText = currentVault.toLocaleString() + ' ر.ي';
+    document.getElementById('statPending').innerText = pendingVault.toLocaleString() + ' ر.ي';
+    
+    document.getElementById('ledgerList').innerHTML = html;
+}
+
+window.openTransactionModal = function(type) {
+    const isIncome = type === 'إيراد';
+    const modalId = 'txModal';
+    const color = isIncome ? '#10b981' : '#ef4444';
+    const icon = isIncome ? 'fa-plus' : 'fa-minus';
+
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(4px);">
+            <div style="background:#fff; width:90%; max-width:400px; border-radius:24px; padding:24px; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                <button onclick="document.getElementById('${modalId}').remove()" style="position:absolute; left:20px; top:20px; background:none; border:none; font-size:20px; color:#64748B; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                
+                <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:20px; color:#0f172a; font-weight:900;">
+                    <i class="fa-solid ${icon}" style="color:${color}; background:${color}20; padding:8px; border-radius:8px; margin-left:8px;"></i> تسجيل ${type} جديد
+                </h3>
+                
+                <label class="form-label">المبلغ (ر.ي)</label>
+                <input type="number" id="txAmount" class="form-input" placeholder="0" style="font-size:18px; font-weight:bold; color:${color};" dir="ltr">
+                
+                <label class="form-label">البيان / الوصف</label>
+                <input type="text" id="txDescription" class="form-input" placeholder="مثال: ${isIncome ? 'إيراد خارجي، رأس مال...' : 'سداد مطعم، راتب موظف، بنزين...'}">
+                
+                <label class="form-label">رقم المرجع (اختياري)</label>
+                <input type="text" id="txReference" class="form-input" placeholder="رقم الفاتورة أو المندوب">
+
+                <button onclick="saveTransaction('${type}')" style="width:100%; background:${color}; color:white; border:none; padding:14px; border-radius:12px; font-weight:900; font-size:16px; cursor:pointer; margin-top:10px; box-shadow:0 4px 15px ${color}40;">حفظ العملية</button>
             </div>
-        </div>
-        
-        <div class="acc-card" style="text-align:center;">
-            <p style="color:#64748b; font-weight:800; margin-bottom:10px;">إجمالي الطلبات المكتملة في الفترة: <strong style="color:#0f172a;">${ordersCount}</strong> طلب.</p>
         </div>
     `;
+    document.body.appendChild(modal);
 }
 
-// دالة تسجيل تصفية العهدة للمندوب
-window.settleDriverWallet = async function(driverName, amount) {
-    if(!confirm(`هل أنت متأكد من تسليم الكابتن (${driverName}) لمبلغ ${amount} ر.ي وتصفية عهدته لخزنة الشركة؟`)) return;
+window.saveTransaction = async function(type) {
+    const amount = parseFloat(document.getElementById('txAmount').value);
+    const description = document.getElementById('txDescription').value.trim();
+    const reference_id = document.getElementById('txReference').value.trim();
+
+    if(!amount || amount <= 0) { alert("يرجى إدخال مبلغ صحيح أكبر من الصفر."); return; }
+    if(!description) { alert("يرجى إدخال وصف للعملية."); return; }
+
+    const payload = {
+        transaction_type: type,
+        amount: amount,
+        description: description,
+        reference_id: reference_id
+    };
 
     try {
-        const { error } = await window.supabaseClient.from('driver_wallets').insert([{
-            driver_name: driverName,
-            amount: amount,
-            type: 'settled',
-            notes: 'تصفية نقدية للخزنة المركزية'
-        }]);
-
+        const { error } = await window.supabaseClient.from('accounting_ledger').insert([payload]);
         if (error) throw error;
         
-        const toast = document.createElement('div');
-        toast.innerHTML = `<div style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-check"></i> تم تصفية عهدة الكابتن بنجاح</div>`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-
+        document.getElementById('txModal').remove();
         loadAccountingData();
-    } catch(err) {
-        alert("فشل التصفية: " + err.message);
+    } catch(e) {
+        alert("فشل حفظ العملية: " + e.message);
     }
-}
-
-window.exportToCSV = function() {
-    if (currentAccountingData.length === 0) {
-        alert("لا توجد بيانات لتصديرها.");
-        return;
-    }
-
-    let csvContent = "\uFEFF";
-    csvContent += "رقم الطلب,تاريخ الطلب,العميل,الهاتف,المطعم,الكابتن,إجمالي الطلب,رسوم التوصيل\n";
-
-    currentAccountingData.forEach(o => {
-        let dateObj = new Date(o.created_at);
-        let formattedDate = `${dateObj.getFullYear()}-${(dateObj.getMonth()+1).toString().padStart(2,'0')}-${dateObj.getDate().toString().padStart(2,'0')}`;
-        let cName = (o.customer_name || 'غير محدد').replace(/,/g, ' ');
-        let phone = (o.customer_phone || '').replace(/,/g, '');
-        let store = (o.store_name || 'غير محدد').replace(/,/g, ' ');
-        let driver = (o.driver_name || 'غير محدد').replace(/,/g, ' ');
-        let total = parseFloat(o.total_amount || 0);
-        let delivery = parseFloat(o.delivery_fee || 0);
-
-        csvContent += `${o.id},${formattedDate},${cName},${phone},${store},${driver},${total},${delivery}\n`;
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `تقرير_مبيعات_${document.getElementById('dateTo').value}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
