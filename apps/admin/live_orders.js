@@ -26,7 +26,6 @@ window.handleSearchInput = function(query) {
     renderOrderCards(); 
 };
 
-// مُفسّر الأصناف الذكي
 function generateItemsHtml(orderItems) {
     if (!orderItems) return '<div style="text-align:center; color:#94A3B8; font-style:italic;">لا توجد أصناف</div>';
     
@@ -321,9 +320,6 @@ window.saveOrderEdits = async function(orderId) {
     }
 };
 
-// ==========================================
-// 4. نظام إسناد المناديب المشترك
-// ==========================================
 window.openDispatchModal = async function(orderId) {
     const existingModal = document.getElementById('dispatchModal');
     if (existingModal) {
@@ -483,48 +479,59 @@ window.assignDriver = async function(orderId, driverId, driverName) {
     }
 };
 
-// 🌟 التحديث الذكي لدالة الإقفال وإضافة العهدة
+// 🌟 التحديث الذكي: تنظيف القيمة النصية والبحث المزدوج لتفادي أي خطأ
 window.updateOrderStatus = async function(orderId, newStatus) {
     try {
-        // 1. جلب بيانات الطلب قبل التحديث للحصول على القيمة واسم المندوب
         const { data: orderData, error: orderFetchErr } = await window.supabaseClient
             .from('orders')
-            .select('driver_name, total_amount, total_price, price, total')
+            .select('*')
             .eq('id', orderId)
             .single();
             
         if (orderFetchErr) throw orderFetchErr;
 
-        // 2. تحديث حالة الطلب
         const { error: updateErr } = await window.supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (updateErr) throw updateErr;
         
-        // 3. إذا كان التحديث إلى "مكتمل"، قم بتحرير المندوب وإضافة العهدة
-        if (newStatus === 'completed' && orderData && orderData.driver_name) {
+        if (newStatus === 'completed' && orderData.driver_name) {
             
-            // جلب المندوب من قاعدة البيانات لمعرفة رصيد عهدته الحالي
-            const { data: driverData, error: driverFetchErr } = await window.supabaseClient
+            // البحث عن المندوب باستخدام أي من العمودين المتوقعين
+            const { data: driverMatches, error: driverFetchErr } = await window.supabaseClient
                 .from('drivers')
-                .select('id, wallet_balance')
-                .eq('driver_name', orderData.driver_name)
-                .single();
+                .select('*')
+                .or(`driver_name.eq."${orderData.driver_name}",name.eq."${orderData.driver_name}"`)
+                .limit(1);
                 
-            if (!driverFetchErr && driverData) {
-                // تحديد قيمة الطلب بدقة
-                const orderValue = parseFloat(orderData.total_amount || orderData.total_price || orderData.price || orderData.total) || 0;
+            if (driverFetchErr) {
+                console.error("خطأ في البحث عن المندوب:", driverFetchErr);
+            } else if (driverMatches && driverMatches.length > 0) {
+                const driverData = driverMatches[0];
                 
-                // حساب الرصيد الجديد
+                // استخلاص الرقم الصافي فقط من حقل السعر (مثلاً "4500 ر.ي" تصبح 4500)
+                let orderRawValue = orderData.total_amount || orderData.total_price || orderData.price || orderData.total || "0";
+                let orderValue = parseFloat(orderRawValue.toString().replace(/[^\d.-]/g, '')) || 0;
+                
                 const currentWallet = parseFloat(driverData.wallet_balance) || 0;
                 const newWalletBalance = currentWallet + orderValue;
                 
-                // تحديث حالة المندوب إلى "نشط" ورفع رصيد العهدة
-                await window.supabaseClient
+                const { error: walletUpdateErr } = await window.supabaseClient
                     .from('drivers')
                     .update({ 
                         status: 'نشط',
                         wallet_balance: newWalletBalance
                     })
                     .eq('id', driverData.id);
+
+                if (walletUpdateErr) {
+                    alert("تم إقفال الطلب، لكن فشل تحديث عهدة المندوب: " + walletUpdateErr.message);
+                } else {
+                    const toast = document.createElement('div');
+                    toast.innerHTML = `<div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-wallet"></i> تم إضافة ${orderValue} ر.ي لعهدة الكابتن ${driverData.driver_name || driverData.name}</div>`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 4000);
+                }
+            } else {
+                alert("تحذير: لم يتم العثور على بيانات المندوب في النظام لإضافة العهدة إليه!");
             }
         }
         
