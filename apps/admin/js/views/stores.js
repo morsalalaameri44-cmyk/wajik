@@ -103,7 +103,7 @@ function renderStoresList(filterCategory) {
     let filteredStores = allStoresData;
     if (filterCategory !== 'الكل') {
         filteredStores = allStoresData.filter(s => {
-            const cat = s.category || s.store_category || '';
+            const cat = s.category || '';
             return cat.includes(filterCategory);
         });
     }
@@ -115,9 +115,9 @@ function renderStoresList(filterCategory) {
 
     let html = '';
     filteredStores.forEach(store => {
-        const storeName = store.name || store.store_name || 'متجر غير محدد';
-        const storeCategory = store.category || store.store_category || 'عام';
-        const storePhone = store.phone || store.store_phone || 'بدون رقم';
+        const storeName = store.store_name || store.name || 'متجر غير محدد';
+        const storeCategory = store.category || 'عام';
+        const storePhone = store.phone || 'بدون رقم';
         const storeStatus = store.status || 'مفتوح';
         const storeLogo = store.logo_url ? `<img src="${store.logo_url}" style="width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid #e2e8f0;">` : `<div style="width:40px; height:40px; border-radius:8px; background:#f1f5f9; display:flex; justify-content:center; align-items:center; color:#94a3b8;"><i class="fa-solid fa-image"></i></div>`;
         const isStoreOpen = storeStatus === 'مفتوح';
@@ -129,8 +129,8 @@ function renderStoresList(filterCategory) {
             productsHtml = `<p style="color:#94a3b8; font-size:13px; font-style:italic; text-align:center; padding:10px 0;">لا توجد أصناف مضافة في هذا المتجر بعد</p>`;
         } else {
             storeProducts.forEach(product => {
-                const prodName = product.name || product.item_name || 'صنف غير محدد';
-                const prodSection = product.category || product.category_name || 'عام';
+                const prodName = product.name || 'صنف غير محدد';
+                const prodSection = product.category_name || product.category || 'عام';
                 const prodAvail = product.is_available !== false; 
                 const prodImg = product.image_url ? `<img src="${product.image_url}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">` : '';
 
@@ -182,7 +182,7 @@ function renderStoresList(filterCategory) {
     container.innerHTML = html;
 }
 
-// ---------------------- النوافذ المنبثقة (المتجر والصنف) ----------------------
+// ---------------------- النوافذ المنبثقة للنماذج (تم إضافة التقاط الأخطاء) ----------------------
 window.openStoreModal = function(storeId = null) {
     let store = null;
     if (storeId) store = allStoresData.find(s => s.id === storeId);
@@ -212,7 +212,7 @@ window.openStoreModal = function(storeId = null) {
                 <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px; color:#0f172a; font-weight:900;"><i class="fa-solid fa-shop"></i> ${isEditing ? 'تعديل بيانات المتجر' : 'إضافة متجر جديد'}</h3>
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">اسم المتجر</label>
-                <input type="text" id="storeName" class="form-input" placeholder="اسم المتجر..." value="${store ? (store.name || store.store_name) : ''}">
+                <input type="text" id="storeName" class="form-input" placeholder="اسم المتجر..." value="${store ? (store.store_name || store.name || '') : ''}">
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">القسم الرئيسي</label>
                 <select id="storeCategory" class="form-input" style="font-weight:bold;">
@@ -241,14 +241,29 @@ window.saveStore = async function(storeId) {
     const logo_url = document.getElementById('storeLogo').value.trim();
     const statusEl = document.getElementById('storeStatus');
     const status = statusEl ? statusEl.value : 'مفتوح';
+    
     if(!name) { alert("يرجى إدخال اسم المتجر"); return; }
-    const payload = { name, store_name: name, category, phone, logo_url, status };
-    try {
-        if (storeId) await window.supabaseClient.from('stores').update(payload).eq('id', storeId);
-        else await window.supabaseClient.from('stores').insert([payload]);
-        document.getElementById('storeModal').remove();
-        loadStoresData();
-    } catch(e) { alert("فشل الحفظ: " + e.message); }
+    
+    // تم تصحيح اسم العمود إلى store_name
+    const payload = { store_name: name, category: category, phone: phone, logo_url: logo_url, status: status };
+    
+    let responseError = null;
+    
+    if (storeId) {
+        const { error } = await window.supabaseClient.from('stores').update(payload).eq('id', storeId);
+        responseError = error;
+    } else {
+        const { error } = await window.supabaseClient.from('stores').insert([payload]);
+        responseError = error;
+    }
+    
+    if (responseError) {
+        alert("فشل الحفظ في قاعدة البيانات!\nالسبب: " + responseError.message);
+        return;
+    }
+    
+    document.getElementById('storeModal').remove();
+    loadStoresData();
 }
 
 window.openProductModal = function(storeId, productId = null) {
@@ -274,10 +289,10 @@ window.openProductModal = function(storeId, productId = null) {
                 <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px; color:#0f172a; font-weight:900;"><i class="fa-solid fa-box"></i> ${isEditing ? 'تعديل الصنف' : 'إضافة صنف جديد'}</h3>
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">اسم الصنف</label>
-                <input type="text" id="prodName" class="form-input" placeholder="اسم الصنف..." value="${product ? (product.name || product.item_name) : ''}">
+                <input type="text" id="prodName" class="form-input" placeholder="اسم الصنف..." value="${product ? (product.name || '') : ''}">
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">القسم الداخلي (مقبلات، مشروبات...)</label>
-                <input type="text" id="prodSection" class="form-input" placeholder="القسم" value="${product ? (product.category || product.category_name || '') : ''}">
+                <input type="text" id="prodSection" class="form-input" placeholder="القسم" value="${product ? (product.category_name || '') : ''}">
 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">السعر (ر.ي)</label>
                 <input type="number" id="prodPrice" class="form-input" placeholder="0" value="${product ? (product.price || '') : ''}">
@@ -307,13 +322,27 @@ window.saveProduct = async function(storeId, productId) {
     const is_available = availEl ? availEl.value === 'true' : true;
 
     if(!name || price <= 0) { alert("يرجى إدخال اسم الصنف وسعر صحيح"); return; }
-    const payload = { store_id: storeId, name, item_name: name, category, category_name: category, price, description, image_url, is_available };
-    try {
-        if (productId) await window.supabaseClient.from('products').update(payload).eq('id', productId);
-        else await window.supabaseClient.from('products').insert([payload]);
-        document.getElementById('productModal').remove();
-        loadStoresData();
-    } catch(e) { alert("فشل الحفظ: " + e.message); }
+    
+    // تم تصحيح اسم العمود إلى category_name
+    const payload = { store_id: storeId, name: name, category_name: category, price: price, description: description, image_url: image_url, is_available: is_available };
+    
+    let responseError = null;
+
+    if (productId) {
+        const { error } = await window.supabaseClient.from('products').update(payload).eq('id', productId);
+        responseError = error;
+    } else {
+        const { error } = await window.supabaseClient.from('products').insert([payload]);
+        responseError = error;
+    }
+    
+    if (responseError) {
+        alert("فشل الحفظ في قاعدة البيانات!\nالسبب: " + responseError.message);
+        return;
+    }
+    
+    document.getElementById('productModal').remove();
+    loadStoresData();
 }
 
 // ---------------------- ميزة رفع المنيو عبر الإكسل ----------------------
@@ -361,11 +390,9 @@ window.handleExcelFileSelect = function(event, storeId) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, {type: 'array'});
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        // تحويل الشيت إلى مصفوفة (array of arrays) لتجاهل أسماء الأعمدة المتغيرة
         const rawRows = XLSX.utils.sheet_to_json(firstSheet, {header: 1}); 
 
         parsedExcelProducts = [];
-        // نتجاوز الصف الأول (نفترض أنه العناوين: اسم، قسم، سعر، وصف)
         for(let i = 1; i < rawRows.length; i++) {
             const row = rawRows[i];
             if(row.length >= 3 && row[0]) { 
@@ -378,9 +405,7 @@ window.handleExcelFileSelect = function(event, storeId) {
                     parsedExcelProducts.push({
                         store_id: storeId,
                         name: name,
-                        item_name: name,
-                        category: section,
-                        category_name: section,
+                        category_name: section, // تم التصحيح هنا أيضاً
                         price: price,
                         description: desc,
                         is_available: true
@@ -415,33 +440,33 @@ async function uploadParsedExcelData() {
     btnUpload.innerText = 'جاري الرفع...';
     btnUpload.disabled = true;
 
-    try {
-        const { error } = await window.supabaseClient.from('products').insert(parsedExcelProducts);
-        if(error) throw error;
-        
-        alert(`تم رفع ${parsedExcelProducts.length} صنف للمتجر بنجاح!`);
-        document.getElementById('excelModal').remove();
-        loadStoresData();
-    } catch(err) {
-        alert("حدث خطأ أثناء الرفع لقاعدة البيانات: " + err.message);
+    const { error } = await window.supabaseClient.from('products').insert(parsedExcelProducts);
+    
+    if(error) {
+        alert("حدث خطأ أثناء الرفع لقاعدة البيانات: " + error.message);
         btnUpload.innerText = 'إعادة المحاولة';
         btnUpload.disabled = false;
+        return;
     }
+    
+    alert(`تم رفع ${parsedExcelProducts.length} صنف للمتجر بنجاح!`);
+    document.getElementById('excelModal').remove();
+    loadStoresData();
 }
 
 // ---------------------- دوال الحذف ----------------------
 window.deleteStore = async function(storeId) {
     if(!confirm("هل أنت متأكد من حذف هذا المتجر؟ سيتم حذف جميع الأصناف التابعة له أيضاً.")) return;
-    try {
-        await window.supabaseClient.from('stores').delete().eq('id', storeId);
-        loadStoresData();
-    } catch(e) { alert("فشل الحذف: " + e.message); }
+    
+    const { error } = await window.supabaseClient.from('stores').delete().eq('id', storeId);
+    if(error) { alert("فشل الحذف: " + error.message); return; }
+    loadStoresData();
 }
 
 window.deleteProduct = async function(productId) {
     if(!confirm("هل أنت متأكد من حذف هذا الصنف؟")) return;
-    try {
-        await window.supabaseClient.from('products').delete().eq('id', productId);
-        loadStoresData();
-    } catch(e) { alert("فشل الحذف: " + e.message); }
+    
+    const { error } = await window.supabaseClient.from('products').delete().eq('id', productId);
+    if(error) { alert("فشل الحذف: " + error.message); return; }
+    loadStoresData();
 }
