@@ -149,7 +149,8 @@
     <script src="js/views/customers.js"></script>
     <script src="js/views/accounting.js"></script> 
     <script src="js/views/stores.js"></script>
-    <script src="js/views/drivers.js"></script> <!-- تمت إضافة استدعاء المناديب هنا -->
+    <script src="js/views/drivers.js"></script>
+    <script src="js/views/settings.js"></script> <!-- تمت إضافة استدعاء إعدادات النظام هنا -->
 
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
@@ -235,11 +236,17 @@
                     showFileError(container, 'stores.js');
                 }
             } else if (currentView === 'drivers') {
-                // تفعيل تشغيل ملف المناديب هنا
                 if (typeof window.renderDrivers === 'function') {
                     window.renderDrivers(container);
                 } else {
                     showFileError(container, 'drivers.js');
+                }
+            } else if (currentView === 'settings') {
+                // تفعيل تشغيل ملف الإعدادات والصلاحيات هنا
+                if (typeof window.renderSettings === 'function') {
+                    window.renderSettings(container);
+                } else {
+                    showFileError(container, 'settings.js');
                 }
             } else {
                 container.innerHTML = `
