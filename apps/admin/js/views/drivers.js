@@ -138,7 +138,8 @@ window.filterDrivers = function() {
     const statusFilter = document.getElementById('filterStatus').value;
 
     const filtered = allDriversData.filter(driver => {
-        const matchesSearch = (driver.name && driver.name.toLowerCase().includes(searchTerm)) || 
+        const dName = driver.driver_name || driver.full_name || driver.name || '';
+        const matchesSearch = dName.toLowerCase().includes(searchTerm) || 
                               (driver.phone && driver.phone.includes(searchTerm));
         const matchesStatus = statusFilter === 'الكل' || driver.status === statusFilter;
         return matchesSearch && matchesStatus;
@@ -157,7 +158,7 @@ function renderDriversList(drivers) {
 
     let html = '';
     drivers.forEach(driver => {
-        const name = driver.name || 'غير محدد';
+        const name = driver.driver_name || driver.full_name || driver.name || 'غير محدد';
         const phone = driver.phone || 'بدون رقم';
         const status = driver.status || 'غير متصل';
         const vehicle = driver.vehicle_type || 'دراجة نارية';
@@ -216,6 +217,7 @@ window.openDriverModal = function(driverId = null) {
 
     const isEditing = !!driver;
     const modalId = 'driverModal';
+    const driverValName = driver ? (driver.driver_name || driver.full_name || driver.name || '') : '';
 
     const modal = document.createElement('div');
     modal.id = modalId;
@@ -226,7 +228,7 @@ window.openDriverModal = function(driverId = null) {
                 <h3 style="margin-top:0; border-bottom:1px solid #E2E8F0; padding-bottom:15px; margin-bottom:15px; color:#0f172a; font-weight:900;"><i class="fa-solid fa-id-card"></i> ${isEditing ? 'تعديل بيانات المندوب' : 'تسجيل مندوب جديد'}</h3>
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">اسم المندوب الرباعي</label>
-                <input type="text" id="driverName" class="form-input" placeholder="اسم المندوب..." value="${driver ? driver.name : ''}">
+                <input type="text" id="driverName" class="form-input" placeholder="اسم المندوب..." value="${driverValName}">
                 
                 <label style="display:block; font-weight:800; font-size:13px; color:#475569; margin-bottom:5px;">رقم الهاتف</label>
                 <input type="text" id="driverPhone" class="form-input" placeholder="07XXXXXXXX" value="${driver ? driver.phone : ''}">
@@ -251,7 +253,7 @@ window.saveDriver = async function(driverId) {
 
     if(!name || !phone) { alert("يرجى إدخال اسم المندوب ورقم هاتفه."); return; }
 
-    const payload = { name: name, phone: phone, vehicle_type: vehicle_type };
+    const payload = { driver_name: name, phone: phone, vehicle_type: vehicle_type };
     let responseError = null;
 
     if (driverId) {
@@ -263,7 +265,7 @@ window.saveDriver = async function(driverId) {
     }
 
     if (responseError) {
-        alert("فشل الحفظ في قاعدة البيانات!\nتأكد من مطابقة أسماء الأعمدة. السبب: " + responseError.message);
+        alert("فشل الحفظ في قاعدة البيانات!\nالسبب: " + responseError.message);
         return;
     }
 
@@ -302,16 +304,28 @@ window.settleDriverWallet = async function(driverId, currentWallet) {
     
     const newWalletBalance = currentWallet - amountToSettle;
 
-    const { error } = await window.supabaseClient.from('drivers').update({ wallet_balance: newWalletBalance }).eq('id', driverId);
-    
-    if(error) {
-        alert("فشل التحديث: " + error.message);
-        return;
-    }
+    try {
+        // 1. تحديث عهدة المندوب
+        const { error: driverErr } = await window.supabaseClient.from('drivers').update({ wallet_balance: newWalletBalance }).eq('id', driverId);
+        if(driverErr) throw driverErr;
 
-    alert(`تم تصفية مبلغ ${amountToSettle} ر.ي بنجاح.`);
-    document.getElementById('walletModal').remove();
-    loadDriversData();
+        // 2. تسجيل المبلغ المورد كإيراد في الخزنة تلقائياً
+        const driverName = allDriversData.find(d => d.id === driverId)?.driver_name || 'مندوب';
+        const accPayload = {
+            transaction_type: 'إيراد',
+            amount: amountToSettle,
+            description: `تصفية عهدة من الكابتن: ${driverName}`,
+            reference_id: driverId
+        };
+        const { error: accErr } = await window.supabaseClient.from('accounting_ledger').insert([accPayload]);
+        if(accErr) console.error("تم التوريد لكن فشل تسجيله في الخزنة:", accErr);
+
+        alert(`تم تصفية مبلغ ${amountToSettle} ر.ي وتوريده للخزنة بنجاح.`);
+        document.getElementById('walletModal').remove();
+        loadDriversData();
+    } catch(e) {
+        alert("فشل العملية: " + e.message);
+    }
 }
 
 window.toggleDriverStatus = async function(driverId, newStatus) {
