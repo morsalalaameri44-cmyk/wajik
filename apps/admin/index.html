@@ -92,8 +92,8 @@
 
             <div class="nav-group">
                 <div class="nav-group-title">الشركاء واللوجستيات</div>
-                <a class="nav-link" id="nav-stores" onclick="navigateTo('stores', 'إدارة المطاعم')">
-                    <i class="fa-solid fa-store"></i> إدارة المطاعم
+                <a class="nav-link" id="nav-stores" onclick="navigateTo('stores', 'إدارة المتاجر')">
+                    <i class="fa-solid fa-store"></i> إدارة المتاجر
                 </a>
                 <a class="nav-link" id="nav-drivers" onclick="navigateTo('drivers', 'إدارة المناديب')">
                     <i class="fa-solid fa-motorcycle"></i> إدارة المناديب
@@ -141,12 +141,14 @@
 
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS Library (لرفع ملفات الإكسل) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <!-- استدعاء ملفات العمليات المباشرة -->
     <script src="js/views/live_orders.js"></script>
     <script src="js/views/customers.js"></script>
     <script src="js/views/accounting.js"></script> 
-    <script src="js/views/stores.js"></script> <!-- تمت إضافة هذا السطر -->
+    <script src="js/views/stores.js"></script>
 
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
@@ -226,7 +228,6 @@
                     showFileError(container, 'accounting.js');
                 }
             } else if (currentView === 'stores') {
-                // تفعيل استدعاء واجهة المطاعم هنا
                 if (typeof window.renderStores === 'function') {
                     window.renderStores(container);
                 } else {
@@ -268,12 +269,27 @@
             } catch(e) { console.error(e); }
         }
 
+        async function updateDriversBadge() {
+            try {
+                const { count, error } = await window.supabaseClient
+                    .from('drivers')
+                    .select('*', { count: 'exact', head: true });
+                
+                const badge = document.getElementById('driversCount');
+                if (!error && badge && count > 0) {
+                    badge.innerText = count;
+                    badge.style.display = 'inline-block';
+                }
+            } catch(e) {}
+        }
+
         window.onload = async () => {
             const isAuthenticated = await checkAuth();
             if (!isAuthenticated) return; 
 
             loadViewContent();
             updateNewOrdersBadge();
+            updateDriversBadge();
 
             try {
                 window.supabaseClient
