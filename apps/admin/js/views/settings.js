@@ -162,13 +162,11 @@ window.openAccountModal = function() {
                     <option value="driver">كابتن / مندوب توصيل</option>
                 </select>
 
-                <!-- حقل اختيار المتجر أو المندوب المرتبط -->
                 <div id="referenceWrapper" style="display:none; background:#f8fafc; padding:12px; border-radius:10px; border:1px dashed #cbd5e1; margin-bottom:12px;">
                     <label class="form-label" id="referenceLabel">اختر الجهة المرتبطة:</label>
                     <select id="accReference" class="form-input" style="margin-bottom:0;"></select>
                 </div>
 
-                <!-- حقل الصلاحيات الحبيبية لموظف العمليات -->
                 <div id="permissionsWrapper" style="margin-bottom:12px;">
                     <label class="form-label">تحديد الصلاحيات المتاحة للموظف:</label>
                     <div class="perm-grid">
@@ -229,7 +227,7 @@ window.toggleReferenceField = function() {
 
 window.saveAccount = async function() {
     const role = document.getElementById('accRole').value;
-    const username = document.getElementById('accUsername'].value.trim();
+    const username = document.getElementById('accUsername').value.trim();
     const password = document.getElementById('accPassword').value.trim();
     const reference_id = document.getElementById('accReference')?.value || null;
 
