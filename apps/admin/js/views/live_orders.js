@@ -479,7 +479,7 @@ window.assignDriver = async function(orderId, driverId, driverName) {
     }
 };
 
-// 🌟 التحديث الذكي: تنظيف القيمة النصية والبحث المزدوج لتفادي أي خطأ
+// 🌟 التحديث الذكي والنهائي لدالة الإقفال وإضافة العهدة
 window.updateOrderStatus = async function(orderId, newStatus) {
     try {
         const { data: orderData, error: orderFetchErr } = await window.supabaseClient
@@ -493,45 +493,52 @@ window.updateOrderStatus = async function(orderId, newStatus) {
         const { error: updateErr } = await window.supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (updateErr) throw updateErr;
         
-        if (newStatus === 'completed' && orderData.driver_name) {
+        if (newStatus === 'completed') {
+            let targetDriverName = orderData.driver_name;
             
-            // البحث عن المندوب باستخدام أي من العمودين المتوقعين
-            const { data: driverMatches, error: driverFetchErr } = await window.supabaseClient
-                .from('drivers')
-                .select('*')
-                .or(`driver_name.eq."${orderData.driver_name}",name.eq."${orderData.driver_name}"`)
-                .limit(1);
-                
-            if (driverFetchErr) {
-                console.error("خطأ في البحث عن المندوب:", driverFetchErr);
-            } else if (driverMatches && driverMatches.length > 0) {
-                const driverData = driverMatches[0];
-                
-                // استخلاص الرقم الصافي فقط من حقل السعر (مثلاً "4500 ر.ي" تصبح 4500)
-                let orderRawValue = orderData.total_amount || orderData.total_price || orderData.price || orderData.total || "0";
-                let orderValue = parseFloat(orderRawValue.toString().replace(/[^\d.-]/g, '')) || 0;
-                
-                const currentWallet = parseFloat(driverData.wallet_balance) || 0;
-                const newWalletBalance = currentWallet + orderValue;
-                
-                const { error: walletUpdateErr } = await window.supabaseClient
-                    .from('drivers')
-                    .update({ 
-                        status: 'نشط',
-                        wallet_balance: newWalletBalance
-                    })
-                    .eq('id', driverData.id);
+            // 💡 معالجة الطلبات القديمة التي تم إسنادها قبل إضافة عمود اسم المندوب!
+            if (!targetDriverName) {
+                targetDriverName = prompt("هذا الطلب قديم ولا يحتوي على اسم المندوب في قاعدة البيانات!\\nالرجاء كتابة اسم المندوب لتسجيل العهدة عليه (أو اتركه فارغاً لتجاهل العهدة):");
+            }
 
-                if (walletUpdateErr) {
-                    alert("تم إقفال الطلب، لكن فشل تحديث عهدة المندوب: " + walletUpdateErr.message);
+            if (targetDriverName) {
+                // جلب كل المناديب والبحث داخل الجافاسكريبت لتفادي أي أخطاء من قاعدة البيانات
+                const { data: allDrivers, error: dErr } = await window.supabaseClient.from('drivers').select('*');
+                if (dErr) throw dErr;
+
+                const driverData = allDrivers.find(d => 
+                    (d.driver_name && d.driver_name.trim() === targetDriverName.trim()) || 
+                    (d.name && d.name.trim() === targetDriverName.trim()) || 
+                    (d.full_name && d.full_name.trim() === targetDriverName.trim())
+                );
+
+                if (driverData) {
+                    // استخلاص الرقم الصافي فقط من حقل السعر مهما كان محتواه
+                    let orderRawValue = orderData.total_amount || orderData.total_price || orderData.price || orderData.total || "0";
+                    let orderValue = parseFloat(orderRawValue.toString().replace(/[^\d.-]/g, '')) || 0;
+                    
+                    const currentWallet = parseFloat(driverData.wallet_balance) || 0;
+                    const newWalletBalance = currentWallet + orderValue;
+                    
+                    const { error: walletUpdateErr } = await window.supabaseClient
+                        .from('drivers')
+                        .update({ 
+                            status: 'نشط',
+                            wallet_balance: newWalletBalance
+                        })
+                        .eq('id', driverData.id);
+
+                    if (walletUpdateErr) {
+                        alert("تم إقفال الطلب، لكن فشل تحديث عهدة المندوب: " + walletUpdateErr.message);
+                    } else {
+                        const toast = document.createElement('div');
+                        toast.innerHTML = `<div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-wallet"></i> تم إضافة ${orderValue} ر.ي لعهدة الكابتن ${driverData.driver_name || driverData.name || targetDriverName}</div>`;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4000);
+                    }
                 } else {
-                    const toast = document.createElement('div');
-                    toast.innerHTML = `<div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#10B981; color:white; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(16,185,129,0.3);"><i class="fa-solid fa-wallet"></i> تم إضافة ${orderValue} ر.ي لعهدة الكابتن ${driverData.driver_name || driverData.name}</div>`;
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 4000);
+                    alert("تحذير: لم يتم العثور على مندوب بهذا الاسم (" + targetDriverName + ") في قائمة المناديب! لم يتم تسجيل العهدة.");
                 }
-            } else {
-                alert("تحذير: لم يتم العثور على بيانات المندوب في النظام لإضافة العهدة إليه!");
             }
         }
         
