@@ -146,6 +146,7 @@
     <script src="js/views/live_orders.js"></script>
     <script src="js/views/customers.js"></script>
     <script src="js/views/accounting.js"></script> 
+    <script src="js/views/stores.js"></script> <!-- تمت إضافة هذا السطر -->
 
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
@@ -223,6 +224,13 @@
                     window.renderAccounting(container);
                 } else {
                     showFileError(container, 'accounting.js');
+                }
+            } else if (currentView === 'stores') {
+                // تفعيل استدعاء واجهة المطاعم هنا
+                if (typeof window.renderStores === 'function') {
+                    window.renderStores(container);
+                } else {
+                    showFileError(container, 'stores.js');
                 }
             } else {
                 container.innerHTML = `
