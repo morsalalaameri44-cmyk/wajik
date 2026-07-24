@@ -96,7 +96,7 @@
                     <i class="fa-solid fa-store"></i> إدارة المتاجر
                 </a>
                 <a class="nav-link" id="nav-drivers" onclick="navigateTo('drivers', 'إدارة المناديب')">
-                    <i class="fa-solid fa-motorcycle"></i> إدارة المناديب
+                    <i class="fa-solid fa-motorcycle"></i> إدارة المناديب <span class="badge" id="driversCount" style="background-color: var(--info);">0</span>
                 </a>
             </div>
             
@@ -149,6 +149,7 @@
     <script src="js/views/customers.js"></script>
     <script src="js/views/accounting.js"></script> 
     <script src="js/views/stores.js"></script>
+    <script src="js/views/drivers.js"></script> <!-- تمت إضافة استدعاء المناديب هنا -->
 
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
@@ -232,6 +233,13 @@
                     window.renderStores(container);
                 } else {
                     showFileError(container, 'stores.js');
+                }
+            } else if (currentView === 'drivers') {
+                // تفعيل تشغيل ملف المناديب هنا
+                if (typeof window.renderDrivers === 'function') {
+                    window.renderDrivers(container);
+                } else {
+                    showFileError(container, 'drivers.js');
                 }
             } else {
                 container.innerHTML = `
