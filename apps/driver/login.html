@@ -24,6 +24,7 @@
         
         .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; transition: 0.2s; }
         .login-btn:active { transform: scale(0.98); }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         #errorMsg { color: #EE5D50; font-size: 13px; font-weight: 700; text-align: center; margin-top: 15px; display: none; }
     </style>
 </head>
@@ -33,17 +34,20 @@
         <h1>بوابة الكابتن</h1>
         <p>Speed Go - سجل دخولك لتبدأ ورديتك</p>
 
-        <div class="input-group">
-            <i class="fa-solid fa-envelope"></i>
-            <input type="email" id="email" placeholder="البريد الإلكتروني للكابتن" dir="ltr" style="text-align: right;">
-        </div>
-        <div class="input-group">
-            <i class="fa-solid fa-lock"></i>
-            <input type="password" id="password" placeholder="كلمة المرور">
-        </div>
+        <!-- تم وضع الحقول داخل Form لتحسين تجربة المستخدم ومنع التحديث العشوائي -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="email" placeholder="البريد الإلكتروني للكابتن" dir="ltr" style="text-align: right;" required>
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="password" placeholder="كلمة المرور" required>
+            </div>
 
-        <button class="login-btn" id="loginBtn" onclick="handleLogin()">تسجيل الدخول</button>
-        <div id="errorMsg">البيانات غير صحيحة، يرجى المحاولة مجدداً.</div>
+            <button type="submit" class="login-btn" id="loginBtn">تسجيل الدخول</button>
+            <div id="errorMsg">البيانات غير صحيحة، يرجى المحاولة مجدداً.</div>
+        </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -56,8 +60,11 @@
             if (data.session) window.location.href = 'index.html';
         };
 
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
+        async function handleLogin(event) {
+            // منع الصفحة من إعادة التحميل عند الضغط على زر الدخول
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('loginBtn');
             const errorMsg = document.getElementById('errorMsg');
@@ -68,14 +75,24 @@
             btn.disabled = true;
             errorMsg.style.display = 'none';
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
+            try {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                
+                if (error) {
+                    console.error("Supabase Error:", error.message);
+                    errorMsg.innerText = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+                    errorMsg.style.display = 'block';
+                    btn.innerHTML = 'تسجيل الدخول';
+                    btn.disabled = false;
+                } else {
+                    window.location.href = 'index.html'; // التوجيه بعد النجاح
+                }
+            } catch (err) {
+                console.error("Network Error:", err);
+                errorMsg.innerText = 'حدث خطأ في الاتصال، يرجى المحاولة لاحقاً.';
                 errorMsg.style.display = 'block';
                 btn.innerHTML = 'تسجيل الدخول';
                 btn.disabled = false;
-            } else {
-                window.location.href = 'index.html';
             }
         }
     </script>
