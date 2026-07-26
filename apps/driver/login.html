@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الموصلين - Speed Go</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #F25C05; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: #0F172A; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: #1E293B; width: 90%; max-width: 400px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .logo-box { width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 28px; margin: 0 auto 15px auto; box-shadow: 0 4px 15px rgba(242,92,5,0.4); }
+        .form-input { width: 100%; padding: 14px 16px; background: #0F172A; border: 1px solid #334155; border-radius: 12px; color: white; font-size: 15px; margin-bottom: 15px; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(242,92,5,0.2); }
+        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(242,92,5,0.3); }
+        .login-btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo-icon logo-box"><i class="fa-solid fa-motorcycle"></i></div>
+        <h2 style="color: white; font-weight: 900; font-size: 22px; margin-bottom: 5px;">بوابة الموصلين</h2>
+        <p style="color: #94A3B8; font-size: 13px; margin-bottom: 25px;">تسجيل الدخول لتطبيق السائق</p>
+        
+        <!-- تم إضافة onsubmit هنا لضمان منع التحديث الخاطئ -->
+        <form id="login-form" onsubmit="handleDriverLogin(event)">
+            <input type="email" id="email-input" class="form-input" placeholder="البريد الإلكتروني للموصل..." required dir="ltr" style="text-align:right;">
+            <input type="password" id="password-input" class="form-input" placeholder="كلمة المرور..." required dir="ltr" style="text-align:right;">
+            <button type="submit" class="login-btn" id="login-btn">تسجيل الدخول</button>
+        </form>
+    </div>
+
+    <!-- استدعاء مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // إعدادات الاتصال الخاصة بمشروعك
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function handleDriverLogin(event) {
+            event.preventDefault(); 
+            
+            const submitBtn = document.getElementById('login-btn'); 
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = 'جاري التحقق...';
+            submitBtn.disabled = true;
+
+            const email = document.getElementById('email-input').value.trim(); 
+            const password = document.getElementById('password-input').value;
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    console.error('خطأ في تسجيل الدخول:', error.message);
+                    alert("فشل تسجيل الدخول: البريد الإلكتروني أو كلمة المرور غير صحيحة."); 
+                } else if (data.session) {
+                     console.log('تم تسجيل الدخول بنجاح!', data.user);
+                    window.location.href = 'driver-dashboard.html'; 
+                }
+                
+            } catch (unexpectedError) {
+                 console.error('حدث خطأ غير متوقع:', unexpectedError);
+                 alert("حدث خطأ في الاتصال. يرجى المحاولة لاحقاً.");
+            } finally {
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
