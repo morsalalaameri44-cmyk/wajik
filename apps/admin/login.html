@@ -7,83 +7,55 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #F25C05; --bg-dark: #1E293B; --surface: #0F172A; --text-light: #F8FAFC; --text-gray: #94A3B8; --danger: #EF4444; }
+        :root { --primary: #F25C05; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
-        
-        .login-container { background: var(--surface); width: 100%; max-width: 400px; padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        .logo-box { width: 80px; height: 80px; background: var(--primary); border-radius: 20px; display: flex; justify-content: center; align-items: center; font-size: 40px; color: white; margin: 0 auto 20px auto; box-shadow: 0 10px 25px rgba(242, 92, 5, 0.3); }
-        h1 { font-size: 24px; font-weight: 900; margin-bottom: 5px; color: white; }
-        p { font-size: 14px; color: var(--text-gray); margin-bottom: 30px; }
-        
-        .input-group { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; padding: 15px; margin-bottom: 15px; transition: 0.3s; }
-        .input-group:focus-within { border-color: var(--primary); background: rgba(242, 92, 5, 0.05); }
-        .input-group i { color: var(--text-gray); margin-left: 15px; font-size: 18px; }
-        .input-group input { flex: 1; background: transparent; border: none; color: white; outline: none; font-size: 15px; font-weight: 700; }
-        .input-group input::placeholder { color: var(--text-gray); }
-        
-        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; transition: 0.2s; }
+        body { background-color: #0F172A; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: #1E293B; width: 90%; max-width: 400px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .logo-box { width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 28px; margin: 0 auto 15px auto; box-shadow: 0 4px 15px rgba(242,92,5,0.4); }
+        .form-input { width: 100%; padding: 14px 16px; background: #0F172A; border: 1px solid #334155; border-radius: 12px; color: white; font-size: 15px; margin-bottom: 15px; outline: none; transition: 0.2s; }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(242,92,5,0.2); }
+        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(242,92,5,0.3); }
         .login-btn:active { transform: scale(0.98); }
-        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        
-        .error-msg { color: var(--danger); font-size: 13px; font-weight: 700; margin-top: 15px; display: none; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo-box"><i class="fa-solid fa-bolt"></i></div>
-        <h1>Speed Go Ops</h1>
-        <p>بوابة الدخول المحمية للإدارة</p>
-
-        <div class="input-group">
-            <i class="fa-solid fa-envelope"></i>
-            <input type="email" id="email" placeholder="البريد الإلكتروني للإدارة" dir="ltr" style="text-align: right;">
-        </div>
-        <div class="input-group">
-            <i class="fa-solid fa-lock"></i>
-            <input type="password" id="password" placeholder="كلمة المرور">
-        </div>
-
-        <button class="login-btn" id="loginBtn" onclick="handleLogin()">تسجيل الدخول <i class="fa-solid fa-arrow-left"></i></button>
-        <div class="error-msg" id="errorMsg"></div>
+    <div class="login-card">
+        <div class="logo-icon logo-box"><i class="fa-solid fa-bolt"></i></div>
+        <h2 style="color: white; font-weight: 900; font-size: 22px; margin-bottom: 5px;">Speed Go Ops</h2>
+        <p style="color: #94A3B8; font-size: 13px; margin-bottom: 25px;">بوابة الدخول المحمية للإدارة</p>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <input type="email" id="loginEmail" class="form-input" placeholder="البريد الإلكتروني للإدارة..." required dir="ltr" style="text-align:right;">
+            <input type="password" id="loginPassword" class="form-input" placeholder="كلمة المرور..." required dir="ltr" style="text-align:right;">
+            <button type="submit" class="login-btn" id="submitBtn">تسجيل الدخول</button>
+        </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = supabase.createClient('https://ldefaxirgruqulxhkaqh.supabase.co', 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4');
-        
-        // منع الدخول إذا كان مسجلاً بالفعل
-        window.onload = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) window.location.href = 'admin.html';
-        };
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            const errorMsg = document.getElementById('errorMsg');
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const btn = document.getElementById('submitBtn');
 
-            if(!email || !password) {
-                errorMsg.innerText = "يرجى إدخال البريد وكلمة المرور.";
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
+            btn.innerText = 'جاري التحقق...';
             btn.disabled = true;
-            errorMsg.style.display = 'none';
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                errorMsg.innerText = "البيانات غير صحيحة أو غير مصرح لك بالدخول.";
-                errorMsg.style.display = 'block';
-                btn.innerHTML = 'تسجيل الدخول <i class="fa-solid fa-arrow-left"></i>';
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                // التحقق والتوجيه الناجح
+                window.location.replace('index.html');
+            } catch (err) {
+                alert('فشل تسجيل الدخول: ' + err.message);
+                btn.innerText = 'تسجيل الدخول';
                 btn.disabled = false;
-            } else {
-                // دخول ناجح
-                window.location.href = 'admin.html';
             }
         }
     </script>
