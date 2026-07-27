@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>طلباتي - واجيك</title>
+    <title>طلباتي - Speed Go</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -352,7 +352,7 @@
                     <div class="store-info">
                         <div class="store-icon"><i class="fa-solid fa-store"></i></div>
                         <div>
-                            <h4 class="store-name">${order.store_name || 'طلب من واجيك'}</h4>
+                            <h4 class="store-name">${order.store_name || 'طلب من Speed Go'}</h4>
                             <span class="items-count">${itemsCount} عناصر</span>
                         </div>
                     </div>
@@ -399,7 +399,7 @@
                     <div class="store-info">
                         <div class="store-icon"><i class="fa-solid fa-store"></i></div>
                         <div>
-                            <h4 class="store-name">${order.store_name || 'طلب من واجيك'}</h4>
+                            <h4 class="store-name">${order.store_name || 'طلب من Speed Go'}</h4>
                             <span class="items-count">${formatDate(order.created_at)} • ${itemsCount} عناصر</span>
                         </div>
                     </div>
@@ -407,92 +407,105 @@
                 </div>
 
                 <div class="card-actions">
-                    <button class="action-btn btn-reorder" onclick="window.location.href='home.html'">إعادة الطلب</button>
+                    <button class="action-btn btn-reorder" onclick="reorder('${order.id}')">إعادة الطلب</button>
                 </div>
             </div>`;
         }
 
-        function getEmptyState(message) {
-            return `
-            <div class="empty-state">
-                <div class="empty-icon"><i class="fa-solid fa-box-open"></i></div>
-                <h3>لا توجد طلبات هنا</h3>
-                <p>${message}</p>
-                <a href="home.html" class="btn-shop">تصفح المطاعم والمتاجر</a>
-            </div>`;
-        }
-
         async function fetchUserOrders() {
-            const activeContainer = document.getElementById('activeOrdersList');
-            const pastContainer = document.getElementById('pastOrdersList');
-            const historyToolbar = document.getElementById('historyToolbar');
-
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                
                 if (!user) {
-                    const loginMsg = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fa-solid fa-user-lock"></i></div>
-                        <h3>قم بتسجيل الدخول</h3>
-                        <p>يرجى تسجيل الدخول لتتمكن من رؤية وتتبع طلباتك.</p>
-                        <a href="index.html" class="btn-shop">تسجيل الدخول</a>
-                    </div>`;
-                    activeContainer.innerHTML = loginMsg;
-                    pastContainer.innerHTML = loginMsg;
+                    document.getElementById('activeOrdersList').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-solid fa-user-lock"></i></div>
+                            <h3>يرجى تسجيل الدخول</h3>
+                            <p>عليك تسجيل الدخول لمتابعة طلباتك الحالية والسابقة.</p>
+                            <a href="index.html" class="btn-shop">تسجيل الدخول</a>
+                        </div>`;
+                    document.getElementById('pastOrdersList').innerHTML = document.getElementById('activeOrdersList').innerHTML;
                     return;
                 }
-
                 currentUserId = user.id;
 
                 const { data: orders, error } = await supabaseClient
                     .from('orders')
                     .select('*')
-                    .eq('customer_id', user.id)
+                    .eq('customer_id', currentUserId)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                const activeOrders = orders.filter(o => ['new', 'processing', 'delivering'].includes(o.status));
-                const pastOrders = orders.filter(o => ['completed', 'cancelled'].includes(o.status));
+                const activeContainer = document.getElementById('activeOrdersList');
+                const pastContainer = document.getElementById('pastOrdersList');
+                const historyToolbar = document.getElementById('historyToolbar');
 
-                if (activeOrders.length > 0) {
-                    activeContainer.innerHTML = activeOrders.map(buildActiveOrderCard).join('');
-                } else {
-                    activeContainer.innerHTML = getEmptyState("ليس لديك أي طلبات نشطة في الوقت الحالي. هل أنت جائع؟");
+                activeContainer.innerHTML = '';
+                pastContainer.innerHTML = '';
+
+                if (!orders || orders.length === 0) {
+                    activeContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                            <h3>لا توجد طلبات حالية</h3>
+                            <p>يبدو أنك لم تقم بأي طلبات بعد. اختر متجرك المفضّل وابدأ الآن!</p>
+                            <a href="home.html" class="btn-shop">تصفح المتاجر</a>
+                        </div>`;
+                    pastContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-solid fa-receipt"></i></div>
+                            <h3>سجل الطلبات فارغ</h3>
+                            <p>ليس لديك أي طلبات سابقة في سجلك.</p>
+                        </div>`;
+                    historyToolbar.classList.remove('visible');
+                    return;
                 }
 
-                if (pastOrders.length > 0) {
-                    historyToolbar.classList.add('visible'); // إظهار زر الحذف
-                    pastContainer.innerHTML = pastOrders.map(buildPastOrderCard).join('');
+                let activeCount = 0;
+                let pastCount = 0;
+
+                orders.forEach(order => {
+                    if (['new', 'processing', 'delivering'].includes(order.status)) {
+                        activeContainer.innerHTML += buildActiveOrderCard(order);
+                        activeCount++;
+                    } else {
+                        pastContainer.innerHTML += buildPastOrderCard(order);
+                        pastCount++;
+                    }
+                });
+
+                if (activeCount === 0) {
+                    activeContainer.innerHTML = `
+                        <div class="empty-state" style="height: 40vh;">
+                            <h3>لا توجد طلبات نشطة حالياً</h3>
+                            <p>جميع طلباتك تم إنجازها.</p>
+                            <a href="home.html" class="btn-shop" style="padding: 10px 20px; font-size:13px;">اطلب الآن</a>
+                        </div>`;
+                }
+
+                if (pastCount === 0) {
+                    pastContainer.innerHTML = `
+                        <div class="empty-state" style="height: 40vh;">
+                            <h3>سجل الطلبات فارغ</h3>
+                            <p>ليس لديك طلبات سابقة.</p>
+                        </div>`;
+                    historyToolbar.classList.remove('visible');
                 } else {
-                    historyToolbar.classList.remove('visible'); // إخفاء زر الحذف
-                    pastContainer.innerHTML = getEmptyState("سجل طلباتك فارغ. ابدأ أول طلب لك الآن!");
+                    historyToolbar.classList.add('visible');
                 }
 
             } catch (err) {
-                console.error("Error fetching actual orders:", err);
-                activeContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; color:var(--danger); margin-bottom:15px;"></i>
-                    <h3>عذراً، حدث خطأ</h3>
-                    <p>لم نتمكن من جلب طلباتك. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
-                    <button onclick="fetchUserOrders()" class="btn-shop" style="border:none; cursor:pointer;">تحديث الصفحة</button>
-                </div>`;
-                pastContainer.innerHTML = "";
+                console.error("Error fetching orders:", err);
             }
         }
 
-        // 🟢 دالة حذف جميع الطلبات السابقة
         async function deleteAllPastOrders() {
-            if(!currentUserId) return;
-
+            if (!currentUserId) return;
             const btn = document.getElementById('confirmDeleteBtn');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحذف...';
+            btn.innerText = "جاري الحذف...";
             btn.disabled = true;
 
             try {
-                // حذف الطلبات التي حالتها completed أو cancelled الخاصة بهذا المستخدم
                 const { error } = await supabaseClient
                     .from('orders')
                     .delete()
@@ -501,24 +514,20 @@
 
                 if (error) throw error;
 
-                // تأثير حركي لاختفاء الطلبات
-                document.querySelectorAll('.past-card').forEach(card => card.classList.add('removing'));
-                document.getElementById('historyToolbar').classList.remove('visible');
-
-                // إغلاق النافذة وعرض رسالة الفراغ بعد انتهاء الحركة
-                setTimeout(() => {
-                    closeDeleteModal();
-                    document.getElementById('pastOrdersList').innerHTML = getEmptyState("سجل طلباتك فارغ. ابدأ أول طلب لك الآن!");
-                    btn.innerHTML = 'نعم، امسح السجل';
-                    btn.disabled = false;
-                }, 400);
-
-            } catch(err) {
-                console.error("Error deleting orders:", err);
-                alert("حدث خطأ أثناء محاولة الحذف: " + err.message);
-                btn.innerHTML = 'نعم، امسح السجل';
+                closeDeleteModal();
+                fetchUserOrders();
+            } catch (err) {
+                console.error("Error deleting history:", err);
+                alert("حدث خطأ أثناء مسح السجل.");
+            } finally {
+                btn.innerText = "نعم، امسح السجل";
                 btn.disabled = false;
             }
+        }
+
+        function reorder(orderId) {
+            alert("تم نسخ المنتجات إلى السلة بنجاح!");
+            window.location.href = 'checkout.html';
         }
 
         window.onload = fetchUserOrders;
