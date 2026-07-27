@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>محفظتي - Speed Go كابتن</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --success: #05CD99; --danger: #EE5D50; --info: #4318FF; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -48,7 +46,6 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <header class="page-header">
             <h1 class="page-title">محفظتي المالية</h1>
@@ -106,13 +103,14 @@
                     window.location.href = 'login.html';
                     return;
                 }
+                
+                // استخدام الاسم الحقيقي
+                const driverName = session.real_name || session.username;
 
-                // جلب المديونية الحقيقية
                 const { data: driverData, error: driverErr } = await supabaseClient.from('drivers').select('wallet_balance').eq('id', session.reference_id).single();
                 if (driverErr) throw driverErr;
 
-                // جلب الطلبات لعمولة الكابتن
-                const { data: orders, error: ordersErr } = await supabaseClient.from('orders').select('*').eq('driver_name', session.username).eq('status', 'completed').order('created_at', { ascending: false }).limit(20);
+                const { data: orders, error: ordersErr } = await supabaseClient.from('orders').select('*').eq('driver_name', driverName).eq('status', 'completed').order('created_at', { ascending: false }).limit(20);
                 if (ordersErr) throw ordersErr;
 
                 const walletDebt = parseFloat(driverData.wallet_balance) || 0;
