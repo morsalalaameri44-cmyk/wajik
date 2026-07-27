@@ -47,16 +47,27 @@
         <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج (إنهاء الوردية)</button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        window.onload = () => {
-            const session = JSON.parse(localStorage.getItem('user_session'));
-            
-            if(!session) {
-                window.location.href = 'login.html';
-                return;
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        window.onload = async () => {
+            let session = JSON.parse(localStorage.getItem('user_session'));
+            if(!session) { window.location.href = 'login.html'; return; }
+
+            // نظام الإصلاح الذاتي أيضاً هنا لضمان عمله من أي شاشة
+            if (session.reference_id && (!session.real_name || session.real_name.includes('@'))) {
+                try {
+                    const { data, error } = await supabaseClient.from('drivers').select('*').eq('id', session.reference_id).single();
+                    if (!error && data) {
+                        session.real_name = data.driver_name || data.name || data.full_name || session.username;
+                        localStorage.setItem('user_session', JSON.stringify(session));
+                    }
+                } catch(e) {}
             }
 
-            // عرض الاسم الحقيقي المدمج في الجلسة
             const displayName = session.real_name || session.username;
             document.getElementById('driverName').innerText = displayName;
         };
