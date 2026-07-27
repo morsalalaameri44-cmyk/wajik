@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تسجيل الدخول - واجيك</title>
+    <title>تسجيل الدخول - Speed Go</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,11 +19,13 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
 
+        /* خلفية واجهة تسجيل الدخول (الأصلية) */
         body {
             background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1080&q=80');
             background-size: cover; background-position: center;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; position: relative;
+            overflow: hidden; 
         }
 
         body::before {
@@ -32,77 +34,205 @@
             z-index: 1;
         }
 
+        /* =========================================
+           1. شاشة البداية الخرافية (Splash Screen) بخلفية الأسود المموج
+           ========================================= */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* خلفية الأسود المموج خاصة بشاشة البداية فقط */
+            background: linear-gradient(45deg, #000000, #111111, #080808, #1a1a1a, #000000);
+            background-size: 400% 400%;
+            animation: waveBackground 15s ease infinite, fadeOutSplash 0.6s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+            animation-delay: 0s, 4.5s; /* اختفاء الشاشة بعد 4.5 ثواني */
+        }
+
+        /* أمواج SVG في أسفل شاشة البداية */
+        #splash-screen::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%231a1a1a' fill-opacity='0.4' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3Cpath fill='%23111111' fill-opacity='0.7' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,117.3C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: bottom;
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        .splash-content {
+            position: relative;
+            z-index: 2; /* ليكون فوق الأمواج */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes waveBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .splash-logo-container {
+            width: 240px;
+            background: transparent;
+            /* اندفاع قوي ثم طفو ونبض */
+            animation: speedEntry 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
+                       floatPulse 2.5s ease-in-out 0.8s infinite;
+        }
+
+        .splash-logo-container img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .splash-slogan {
+            margin-top: 20px;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #FFFFFF 0%, #F25C05 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 15px rgba(242, 92, 5, 0.3));
+            opacity: 0;
+            /* السلوجن يظهر بعد ثانية من العرض */
+            animation: revealSlogan 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation-delay: 1s; 
+        }
+
+        @keyframes speedEntry {
+            0% { transform: scale(0) translateY(50px); filter: blur(10px); opacity: 0; }
+            60% { transform: scale(1.1) translateY(-10px); filter: blur(0); opacity: 1; }
+            100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); opacity: 1; }
+        }
+
+        @keyframes floatPulse {
+            0% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); }
+            50% { transform: translateY(-12px); filter: drop-shadow(0 0 35px rgba(242, 92, 5, 1)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)); }
+            100% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); }
+        }
+
+        @keyframes revealSlogan {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes fadeOutSplash {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.1); visibility: hidden; }
+        }
+
+        /* =========================================
+           2. واجهة تسجيل الدخول (المرحلة الثانية)
+           ========================================= */
         .auth-container {
-            width: 100%; max-width: 400px; padding: 30px; position: relative; z-index: 2;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;
+            width: 100%; max-width: 400px; padding: 35px 30px; position: relative; z-index: 2;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6); text-align: center;
             margin: 20px;
+            opacity: 0;
+            /* ظهور الواجهة مباشرة بعد انتهاء مدة 4.5 ثانية لشاشة البداية */
+            animation: fadeInInterface 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            animation-delay: 4.7s; 
         }
 
+        @keyframes fadeInInterface {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الشعار داخل الواجهة مكبر بشكل متناسق (تم رفعه لـ 155px) */
         .logo-box {
-            width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
-            border-radius: 25px; display: flex; justify-content: center; align-items: center;
-            font-size: 35px; color: white; margin: 0 auto 20px auto;
-            box-shadow: 0 10px 25px var(--primary-glow); transform: rotate(-5deg);
+            width: 155px;
+            height: auto; margin: 0 auto 15px auto;
+            background: transparent; display: flex; justify-content: center; align-items: center;
+            filter: drop-shadow(0 0 15px rgba(242, 92, 5, 0.4));
+            transition: filter 0.3s ease;
+        }
+        
+        .logo-box:hover {
+            filter: drop-shadow(0 0 25px rgba(242, 92, 5, 0.8));
         }
 
-        .auth-container h1 { font-size: 26px; font-weight: 900; color: var(--white); margin-bottom: 5px; }
-        .auth-container p { font-size: 14px; color: var(--text-gray); margin-bottom: 30px; }
+        .logo-box img {
+            width: 100%; height: auto; object-fit: contain; display: block;
+        }
 
-        /* التبديل بين الدخول والتسجيل */
-        .tabs { display: flex; background: rgba(0,0,0,0.2); border-radius: 16px; margin-bottom: 25px; padding: 5px; }
+        .auth-container h1 { font-size: 28px; font-weight: 900; color: var(--white); margin-bottom: 5px; letter-spacing: 0.5px; }
+        .auth-container p { font-size: 15px; color: var(--text-gray); margin-bottom: 30px; font-weight: 500; }
+
+        .tabs { display: flex; background: rgba(0,0,0,0.3); border-radius: 16px; margin-bottom: 25px; padding: 6px; }
         .tab {
             flex: 1; padding: 12px; border-radius: 12px; color: var(--text-gray);
-            font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.3s;
+            font-size: 14px; font-weight: 800; cursor: pointer; transition: all 0.3s ease;
         }
-        .tab.active { background: var(--white); color: var(--bg-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .tab.active { background: var(--white); color: var(--bg-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-        /* الحقول */
         .input-group { position: relative; margin-bottom: 15px; }
-        .input-group i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 16px; }
+        .input-group i { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 16px; transition: 0.3s; }
         .auth-input {
-            width: 100%; padding: 16px 45px 16px 16px; border-radius: 16px;
-            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-            color: white; font-size: 14px; outline: none; transition: 0.3s;
+            width: 100%; padding: 18px 45px 18px 16px; border-radius: 16px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            color: white; font-size: 14px; outline: none; transition: all 0.3s ease;
         }
         .auth-input::placeholder { color: var(--text-gray); }
-        .auth-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); box-shadow: 0 0 0 4px rgba(242,92,5,0.2); }
+        .auth-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.12); box-shadow: 0 0 0 4px rgba(242,92,5,0.15); }
+        .auth-input:focus + i { color: var(--primary); }
 
-        /* الأزرار */
         .btn-primary {
             width: 100%; padding: 18px; border-radius: 16px; border: none;
             background: linear-gradient(135deg, #FF6B35 0%, #F25C05 100%);
-            color: white; font-size: 16px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 10px 25px var(--primary-glow); margin-top: 10px; transition: 0.2s;
+            color: white; font-size: 17px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 10px 25px var(--primary-glow); margin-top: 10px; transition: all 0.2s ease;
         }
         .btn-primary:active { transform: scale(0.96); box-shadow: 0 5px 15px var(--primary-glow); }
 
         .divider {
             display: flex; align-items: center; margin: 25px 0; color: var(--text-gray); font-size: 13px; font-weight: 700;
         }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); margin: 0 10px; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.1); margin: 0 15px; }
 
         .btn-guest {
-            width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05); color: white; font-size: 15px; font-weight: 800;
-            cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px;
+            width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.03); color: white; font-size: 15px; font-weight: 800;
+            cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: center; align-items: center; gap: 10px;
             text-decoration: none;
         }
-        .btn-guest:active { background: rgba(255,255,255,0.1); transform: scale(0.96); }
+        .btn-guest:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+        .btn-guest:active { transform: scale(0.96); }
 
-        /* رسائل الخطأ */
         #errorMessage { color: #EF4444; font-size: 13px; font-weight: 700; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
+    <!-- شاشة البداية الخرافية (الأسود المموج) -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo-container">
+                <img src="1000167488-removebg-preview.png" alt="Speed Go Logo">
+            </div>
+            <div class="splash-slogan">معنا طلبك أسرع</div>
+        </div>
+    </div>
+
+    <!-- واجهة تسجيل الدخول الرسمية (بخلفية الطعام) -->
     <div class="auth-container">
         <div class="logo-box">
-            <i class="fa-solid fa-bolt"></i>
+            <img src="1000167488-removebg-preview.png" alt="Speed Go Logo">
         </div>
-        <h1>واجيك</h1>
-        <p>أسرع دليفري في مدينتك</p>
+        <!-- الهوية الجديدة -->
+        <h1>Speed Go</h1>
+        <p>معنا طلبك أسرع</p>
 
         <div class="tabs">
             <div class="tab active" id="tabLogin" onclick="switchMode('login')">تسجيل الدخول</div>
@@ -111,16 +241,16 @@
 
         <div id="authForm">
             <div class="input-group" id="nameGroup" style="display: none;">
-                <i class="fa-solid fa-user"></i>
                 <input type="text" id="nameInput" class="auth-input" placeholder="اسمك الكريم">
+                <i class="fa-solid fa-user"></i>
             </div>
             <div class="input-group">
-                <i class="fa-solid fa-envelope"></i>
                 <input type="email" id="emailInput" class="auth-input" placeholder="البريد الإلكتروني">
+                <i class="fa-solid fa-envelope"></i>
             </div>
             <div class="input-group">
-                <i class="fa-solid fa-lock"></i>
                 <input type="password" id="passwordInput" class="auth-input" placeholder="كلمة المرور">
+                <i class="fa-solid fa-lock"></i>
             </div>
 
             <p id="errorMessage"></p>
@@ -140,6 +270,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        // إزالة شاشة البداية بالكامل من المتصفح بعد 5.1 ثوانٍ 
+        // (4.5 تأخير + 0.6 مدة التلاشي لضمان سلاسة الحذف)
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) {
+                splash.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }, 5100);
+
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
         const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
@@ -205,7 +345,7 @@
             }
         }
 
-        // التحقق مما إذا كان المستخدم مسجلاً بالفعل لتوجيهه مباشرة
+        // التحقق مما إذا كان المستخدم مسجلاً بالفعل
         window.onload = async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
