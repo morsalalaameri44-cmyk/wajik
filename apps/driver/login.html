@@ -2,76 +2,115 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة الموصلين - Speed Go</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسجيل الدخول - Speed Go كابتن</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #F25C05; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background-color: #0F172A; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: #1E293B; width: 90%; max-width: 400px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); text-align: center; }
-        .logo-box { width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 28px; margin: 0 auto 15px auto; box-shadow: 0 4px 15px rgba(242,92,5,0.4); }
-        .form-input { width: 100%; padding: 14px 16px; background: #0F172A; border: 1px solid #334155; border-radius: 12px; color: white; font-size: 15px; margin-bottom: 15px; outline: none; transition: 0.2s; }
-        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(242,92,5,0.2); }
-        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(242,92,5,0.3); }
-        .login-btn:active { transform: scale(0.98); }
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --danger: #EE5D50; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; color: var(--text-light); }
+        .app-container { width: 100%; max-width: 420px; height: 100vh; max-height: 900px; background-color: var(--bg-dark); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px; box-shadow: 0 0 40px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        
+        /* تأثيرات الخلفية */
+        .app-container::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(242, 92, 5, 0.2); filter: blur(50px); border-radius: 50%; z-index: 0; }
+        .app-container::after { content: ''; position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: rgba(242, 92, 5, 0.1); filter: blur(50px); border-radius: 50%; z-index: 0; }
+
+        .login-box { width: 100%; background: var(--surface); padding: 30px 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.3); z-index: 1; }
+        .logo-icon { width: 70px; height: 70px; background: var(--primary); border-radius: 20px; display: flex; justify-content: center; align-items: center; font-size: 35px; color: white; margin: 0 auto 20px auto; box-shadow: 0 10px 20px rgba(242, 92, 5, 0.3); }
+        .title { text-align: center; font-size: 22px; font-weight: 900; margin-bottom: 5px; }
+        .subtitle { text-align: center; font-size: 13px; color: var(--text-gray); margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 18px; }
+        .form-input { width: 100%; padding: 16px 45px 16px 15px; background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; color: white; font-size: 15px; outline: none; transition: 0.3s; }
+        .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(242, 92, 5, 0.2); }
+        
+        .login-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 900; cursor: pointer; transition: 0.2s; box-shadow: 0 10px 20px rgba(242, 92, 5, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .login-btn:active { transform: scale(0.96); box-shadow: 0 5px 10px rgba(242, 92, 5, 0.3); }
+        
+        .error-msg { background: rgba(238, 93, 80, 0.1); color: var(--danger); padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 20px; display: none; border: 1px solid rgba(238, 93, 80, 0.2); }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="logo-icon logo-box"><i class="fa-solid fa-motorcycle"></i></div>
-        <h2 style="color: white; font-weight: 900; font-size: 22px; margin-bottom: 5px;">بوابة الموصلين</h2>
-        <p style="color: #94A3B8; font-size: 13px; margin-bottom: 25px;">تسجيل الدخول لتطبيق السائق</p>
-        
-        <!-- تم إضافة onsubmit هنا لضمان منع التحديث الخاطئ -->
-        <form id="login-form" onsubmit="handleDriverLogin(event)">
-            <input type="email" id="email-input" class="form-input" placeholder="البريد الإلكتروني للموصل..." required dir="ltr" style="text-align:right;">
-            <input type="password" id="password-input" class="form-input" placeholder="كلمة المرور..." required dir="ltr" style="text-align:right;">
-            <button type="submit" class="login-btn" id="login-btn">تسجيل الدخول</button>
-        </form>
+
+    <div class="app-container">
+        <div class="login-box">
+            <div class="logo-icon"><i class="fa-solid fa-motorcycle"></i></div>
+            <h2 class="title">بوابة الكابتن</h2>
+            <p class="subtitle">قم بتسجيل الدخول لبدء استلام الطلبات</p>
+            
+            <div class="error-msg" id="errorMsg">اسم المستخدم أو كلمة المرور غير صحيحة.</div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" id="username" class="form-input" placeholder="اسم المستخدم أو رقم الهاتف" required dir="ltr" style="text-align: right;">
+                </div>
+                
+                <div class="form-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" class="form-input" placeholder="كلمة المرور" required dir="ltr" style="text-align: right;">
+                </div>
+                
+                <button type="submit" class="login-btn" id="submitBtn">
+                    تسجيل الدخول <i class="fa-solid fa-arrow-left-long"></i>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- استدعاء مكتبة Supabase -->
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
-        // إعدادات الاتصال الخاصة بمشروعك
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function handleDriverLogin(event) {
-            event.preventDefault(); 
-            
-            const submitBtn = document.getElementById('login-btn'); 
-            const originalBtnText = submitBtn.innerText;
-            submitBtn.innerText = 'جاري التحقق...';
-            submitBtn.disabled = true;
+        // التحقق مما إذا كان الكابتن مسجل دخوله مسبقاً
+        window.onload = () => {
+            const session = JSON.parse(localStorage.getItem('user_session'));
+            if (session && session.role === 'driver') {
+                window.location.href = 'index.html';
+            }
+        };
 
-            const email = document.getElementById('email-input').value.trim(); 
-            const password = document.getElementById('password-input').value;
+        async function handleLogin(e) {
+            e.preventDefault();
+            const userVal = document.getElementById('username').value.trim();
+            const passVal = document.getElementById('password').value.trim();
+            const btn = document.getElementById('submitBtn');
+            const errorMsg = document.getElementById('errorMsg');
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
 
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
+                // البحث في قاعدة البيانات عن الحساب والتأكد من أنه كابتن
+                const { data, error } = await supabaseClient
+                    .from('system_accounts')
+                    .select('*')
+                    .eq('username', userVal)
+                    .eq('password', passVal)
+                    .eq('role', 'driver')
+                    .single();
 
-                if (error) {
-                    console.error('خطأ في تسجيل الدخول:', error.message);
-                    alert("فشل تسجيل الدخول: البريد الإلكتروني أو كلمة المرور غير صحيحة."); 
-                } else if (data.session) {
-                     console.log('تم تسجيل الدخول بنجاح!', data.user);
-                    window.location.href = 'driver-dashboard.html'; 
+                if (error || !data) {
+                    throw new Error('بيانات الدخول غير صحيحة، أو الحساب غير مصرح له ككابتن.');
                 }
+
+                // حفظ الجلسة في المتصفح بنجاح
+                localStorage.setItem('user_session', JSON.stringify(data));
                 
-            } catch (unexpectedError) {
-                 console.error('حدث خطأ غير متوقع:', unexpectedError);
-                 alert("حدث خطأ في الاتصال. يرجى المحاولة لاحقاً.");
-            } finally {
-                submitBtn.innerText = originalBtnText;
-                submitBtn.disabled = false;
+                // التوجيه إلى خريطة السائق الرئيسية
+                window.location.href = 'index.html';
+
+            } catch (err) {
+                errorMsg.innerText = err.message || 'حدث خطأ في الاتصال، يرجى المحاولة لاحقاً.';
+                errorMsg.style.display = 'block';
+                btn.innerHTML = 'تسجيل الدخول <i class="fa-solid fa-arrow-left-long"></i>';
+                btn.disabled = false;
             }
         }
     </script>
