@@ -5,90 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مهامي - Speed Go كابتن</title>
     
-    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #F25C05;
-            --bg-dark: #121212;
-            --surface: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-gray: #A0A0A0;
-            --success: #05CD99;
-            --danger: #EE5D50;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --success: #05CD99; --danger: #EE5D50; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
-
-        .app-container {
-            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
-            background-color: var(--bg-dark); position: relative;
-            display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px;
-        }
-
-        /* الهيدر */
-        .page-header {
-            padding: 25px 20px 15px;
-            background-color: var(--surface);
-            position: sticky; top: 0; z-index: 10;
-        }
+        .app-container { width: 100%; max-width: 420px; height: 100vh; max-height: 900px; background-color: var(--bg-dark); position: relative; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px; }
+        .page-header { padding: 25px 20px 15px; background-color: var(--surface); position: sticky; top: 0; z-index: 10; }
         .page-title { font-size: 20px; font-weight: 900; color: var(--text-light); margin-bottom: 15px; }
-
-        /* التبويبات (Tabs) */
         .tabs { display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
         .tab { flex: 1; text-align: center; font-size: 14px; font-weight: 700; color: var(--text-gray); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
         .tab.active { background-color: rgba(242, 92, 5, 0.1); color: var(--primary); font-weight: 900; }
-
-        /* قائمة المهام */
         .tasks-list { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .task-card {
-            background-color: var(--surface); border-radius: 15px; padding: 15px;
-            border: 1px solid rgba(255,255,255,0.05); position: relative; animation: fadeIn 0.4s ease;
-        }
+        .task-card { background-color: var(--surface); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); position: relative; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
         .task-id { font-size: 14px; font-weight: 900; color: var(--primary); }
         .task-time { font-size: 12px; color: var(--text-gray); }
-
         .task-route { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
         .route-point { display: flex; align-items: center; gap: 10px; }
         .point-dot { width: 10px; height: 10px; border-radius: 50%; }
         .dot-pickup { background-color: var(--primary); }
         .dot-dropoff { background-color: var(--success); }
         .point-text { font-size: 13px; font-weight: 700; color: var(--text-light); }
-
         .task-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .status-badge { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 5px; }
         .status-completed { background: rgba(5, 205, 153, 0.1); color: var(--success); }
         .status-canceled { background: rgba(238, 93, 80, 0.1); color: var(--danger); }
         .task-earning { font-size: 14px; font-weight: 900; color: var(--success); }
-
-        /* حالات التحميل والفراغ */
         .empty-state { text-align: center; padding: 40px 20px; }
         .empty-state i { font-size: 40px; color: #374151; margin-bottom: 15px; }
         .empty-state h3 { font-size: 15px; font-weight: 900; color: var(--text-gray); }
-
-        /* شريط التنقل السفلي */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; max-width: 420px; height: 70px;
-            background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex; justify-content: space-around; align-items: center; z-index: 30;
-        }
-        .nav-link {
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-            color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s;
-        }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 420px; height: 70px; background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 30; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s; }
         .nav-link i { font-size: 20px; }
         .nav-link.active { color: var(--primary); }
     </style>
@@ -96,7 +47,6 @@
 <body>
 
     <div class="app-container">
-        
         <header class="page-header">
             <h1 class="page-title">مهامي</h1>
             <div class="tabs">
@@ -112,54 +62,33 @@
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي المربوط بالملفات -->
         <nav class="bottom-nav">
-            <a href="index.html" class="nav-link">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>الخريطة</span>
-            </a>
-            <a href="tasks.html" class="nav-link active">
-                <i class="fa-solid fa-clipboard-check"></i>
-                <span>مهامي</span>
-            </a>
-            <a href="wallet.html" class="nav-link">
-                <i class="fa-solid fa-wallet"></i>
-                <span>محفظتي</span>
-            </a>
+            <a href="index.html" class="nav-link"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></a>
+            <a href="tasks.html" class="nav-link active"><i class="fa-solid fa-clipboard-check"></i><span>مهامي</span></a>
+            <a href="wallet.html" class="nav-link"><i class="fa-solid fa-wallet"></i><span>محفظتي</span></a>
         </nav>
-
     </div>
 
-    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // إعداد الاتصال بقاعدة البيانات
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let allTasks = [];
         let currentFilter = 'completed';
 
-        // دالة تنسيق التاريخ والوقت لتكون "اليوم • 01:30 م" أو تاريخ أقدم
         function formatTaskDate(dateString) {
             const date = new Date(dateString);
             const today = new Date();
             const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
-            
             const timeOptions = { hour: '2-digit', minute:'2-digit', hour12: true };
             const timeString = date.toLocaleTimeString('ar-SA', timeOptions);
             
-            if (isToday) {
-                return `اليوم • ${timeString}`;
-            } else {
-                const dateOptions = { month: 'short', day: 'numeric' };
-                return `${date.toLocaleDateString('ar-SA', dateOptions)} • ${timeString}`;
-            }
+            if (isToday) { return `اليوم • ${timeString}`; } 
+            else { return `${date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })} • ${timeString}`; }
         }
 
-        // دالة التبديل بين التبويبات
         function switchTab(status) {
             currentFilter = status;
             document.getElementById('tab-completed').classList.remove('active');
@@ -168,7 +97,6 @@
             renderTasks();
         }
 
-        // دالة رسم البطاقات في الواجهة
         function renderTasks() {
             const container = document.getElementById('tasksListContainer');
             const filteredTasks = allTasks.filter(task => task.status === currentFilter);
@@ -183,26 +111,15 @@
                 const shortId = task.id.toString().substring(0, 6).toUpperCase();
                 const custName = task.customer_name || 'العميل';
                 const formattedDate = formatTaskDate(task.created_at);
-                
-                // افتراض عمولة التوصيل
                 const earning = task.delivery_fee || 1500; 
                 
                 if (currentFilter === 'completed') {
                     return `
                     <div class="task-card">
-                        <div class="task-header">
-                            <span class="task-id">#${shortId}</span>
-                            <span class="task-time">${formattedDate}</span>
-                        </div>
+                        <div class="task-header"><span class="task-id">#${shortId}</span><span class="task-time">${formattedDate}</span></div>
                         <div class="task-route">
-                            <div class="route-point">
-                                <div class="point-dot dot-pickup"></div>
-                                <span class="point-text">استلام: المطعم</span>
-                            </div>
-                            <div class="route-point">
-                                <div class="point-dot dot-dropoff"></div>
-                                <span class="point-text">تسليم: ${custName}</span>
-                            </div>
+                            <div class="route-point"><div class="point-dot dot-pickup"></div><span class="point-text">استلام: المطعم</span></div>
+                            <div class="route-point"><div class="point-dot dot-dropoff"></div><span class="point-text">تسليم: ${custName}</span></div>
                         </div>
                         <div class="task-footer">
                             <span class="status-badge status-completed"><i class="fa-solid fa-check"></i> مكتمل</span>
@@ -212,19 +129,10 @@
                 } else {
                     return `
                     <div class="task-card" style="opacity: 0.7;">
-                        <div class="task-header">
-                            <span class="task-id">#${shortId}</span>
-                            <span class="task-time">${formattedDate}</span>
-                        </div>
+                        <div class="task-header"><span class="task-id">#${shortId}</span><span class="task-time">${formattedDate}</span></div>
                         <div class="task-route">
-                            <div class="route-point">
-                                <div class="point-dot dot-pickup"></div>
-                                <span class="point-text">استلام: المطعم</span>
-                            </div>
-                            <div class="route-point">
-                                <div class="point-dot dot-dropoff"></div>
-                                <span class="point-text">تسليم: ${custName}</span>
-                            </div>
+                            <div class="route-point"><div class="point-dot dot-pickup"></div><span class="point-text">استلام: المطعم</span></div>
+                            <div class="route-point"><div class="point-dot dot-dropoff"></div><span class="point-text">تسليم: ${custName}</span></div>
                         </div>
                         <div class="task-footer">
                             <span class="status-badge status-canceled"><i class="fa-solid fa-xmark"></i> ملغي</span>
@@ -235,23 +143,27 @@
             }).join('');
         }
 
-        // جلب البيانات من قاعدة البيانات
         async function fetchTasksHistory() {
             try {
-                // جلب المهام المكتملة والملغية
+                const session = JSON.parse(localStorage.getItem('user_session'));
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const driverName = session.username;
+
                 const { data, error } = await supabaseClient
                     .from('orders')
                     .select('*')
+                    .eq('driver_name', driverName)
                     .in('status', ['completed', 'cancelled'])
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                
                 allTasks = data || [];
                 renderTasks();
-
             } catch (err) {
-                console.error("Error fetching tasks history:", err);
+                console.error("Error fetching tasks:", err);
                 document.getElementById('tasksListContainer').innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger)"></i><h3>حدث خطأ في جلب البيانات</h3></div>`;
             }
         }
