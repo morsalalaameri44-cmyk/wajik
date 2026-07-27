@@ -5,127 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>محفظتي - Speed Go كابتن</title>
     
-    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #F25C05;
-            --bg-dark: #121212;
-            --surface: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-gray: #A0A0A0;
-            --success: #05CD99;
-            --danger: #EE5D50;
-            --warning: #FFCE20;
-            --info: #4318FF;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --success: #05CD99; --danger: #EE5D50; --info: #4318FF; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
-
-        .app-container {
-            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
-            background-color: var(--bg-dark); position: relative;
-            display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px;
-        }
-
-        /* الهيدر */
-        .page-header {
-            padding: 25px 20px 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            background-color: var(--surface);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            position: sticky; top: 0; z-index: 10;
-        }
+        .app-container { width: 100%; max-width: 420px; height: 100vh; max-height: 900px; background-color: var(--bg-dark); position: relative; display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 80px; }
+        .page-header { padding: 25px 20px 15px; display: flex; justify-content: space-between; align-items: center; background-color: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 10; }
         .page-title { font-size: 20px; font-weight: 900; color: var(--text-light); }
         .support-btn { color: var(--primary); font-size: 20px; background: none; border: none; cursor: pointer; }
-
-        /* قسم البطاقات المالية */
         .wallet-cards { padding: 20px; }
-        
-        .main-balance-card {
-            background: linear-gradient(135deg, var(--primary) 0%, #D14500 100%);
-            border-radius: 20px; padding: 25px; margin-bottom: 15px;
-            box-shadow: 0 10px 30px rgba(242, 92, 5, 0.3);
-            position: relative; overflow: hidden;
-        }
-        .main-balance-card::after {
-            content: '\f555'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; left: -20px; bottom: -20px; font-size: 100px;
-            color: rgba(255,255,255,0.1); transform: rotate(-15deg);
-        }
+        .main-balance-card { background: linear-gradient(135deg, var(--primary) 0%, #D14500 100%); border-radius: 20px; padding: 25px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(242, 92, 5, 0.3); position: relative; overflow: hidden; }
+        .main-balance-card::after { content: '\f555'; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; left: -20px; bottom: -20px; font-size: 100px; color: rgba(255,255,255,0.1); transform: rotate(-15deg); }
         .balance-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); margin-bottom: 5px; }
         .balance-amount { font-size: 32px; font-weight: 900; color: white; margin-bottom: 20px; }
-        
-        .withdraw-btn {
-            background: white; color: var(--primary); border: none;
-            padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px;
-            cursor: pointer; transition: 0.2s;
-        }
+        .withdraw-btn { background: white; color: var(--primary); border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; }
         .withdraw-btn:active { transform: scale(0.95); }
-
-        /* بطاقة المديونية (الكاش المحصل) */
-        .debt-card {
-            background-color: var(--surface); border-radius: 16px; padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(238, 93, 80, 0.2);
-        }
+        .debt-card { background-color: var(--surface); border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(238, 93, 80, 0.2); }
         .debt-info h4 { font-size: 14px; color: var(--text-gray); margin-bottom: 5px; }
         .debt-info h2 { font-size: 20px; color: var(--danger); font-weight: 900; }
-        .settle-btn {
-            background: rgba(238, 93, 80, 0.1); color: var(--danger); border: none;
-            padding: 10px 15px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s;
-        }
+        .settle-btn { background: rgba(238, 93, 80, 0.1); color: var(--danger); border: none; padding: 10px 15px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .settle-btn:active { transform: scale(0.95); }
-
-        /* سجل العمليات (Transactions) */
         .transactions-section { padding: 0 20px; }
         .section-title { font-size: 16px; font-weight: 800; margin-bottom: 15px; color: var(--text-light); }
-        
-        .transaction-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 15px; background: var(--surface); border-radius: 12px; margin-bottom: 10px;
-            animation: fadeIn 0.4s ease;
-        }
+        .transaction-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--surface); border-radius: 12px; margin-bottom: 10px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
         .trans-left { display: flex; align-items: center; gap: 12px; }
-        .trans-icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            display: flex; justify-content: center; align-items: center; font-size: 16px;
-        }
+        .trans-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 16px; }
         .icon-delivery { background: rgba(5, 205, 153, 0.1); color: var(--success); }
-        .icon-withdraw { background: rgba(67, 24, 255, 0.1); color: var(--info); }
-        
         .trans-details h4 { font-size: 14px; font-weight: 800; margin-bottom: 3px; }
         .trans-details p { font-size: 11px; color: var(--text-gray); }
-        
         .trans-amount { font-size: 14px; font-weight: 900; }
         .amount-pos { color: var(--success); }
-        .amount-neg { color: var(--text-light); }
-
-        /* شريط التنقل السفلي */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; max-width: 420px; height: 70px;
-            background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex; justify-content: space-around; align-items: center; z-index: 30;
-        }
-        .nav-link {
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-            color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; max-width: 420px; height: 70px; background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 30; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s; }
         .nav-link i { font-size: 20px; }
         .nav-link.active { color: var(--primary); }
-
-        /* حالة التحميل */
         .loading-icon { display: inline-block; animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
@@ -133,33 +50,26 @@
 <body>
 
     <div class="app-container">
-        
-        <!-- الهيدر -->
         <header class="page-header">
             <h1 class="page-title">محفظتي المالية</h1>
             <button class="support-btn" onclick="alert('للتواصل مع الدعم الفني، يرجى مراسلة الرقم: +967770000000')"><i class="fa-solid fa-headset"></i></button>
         </header>
 
-        <!-- البطاقات المالية -->
         <div class="wallet-cards">
-            <!-- أرباح الكابتن -->
             <div class="main-balance-card">
                 <p class="balance-label">الرصيد المتاح (أرباحك الصافية)</p>
                 <div class="balance-amount" id="balanceAmount"><i class="fa-solid fa-circle-notch loading-icon" style="font-size: 24px;"></i></div>
                 <button class="withdraw-btn" onclick="requestWithdraw()"><i class="fa-solid fa-building-columns"></i> طلب سحب الرصيد</button>
             </div>
-
-            <!-- مديونية الكاش -->
             <div class="debt-card">
                 <div class="debt-info">
                     <h4>كاش محصل (مطالب بتوريده)</h4>
                     <h2 id="debtAmount"><i class="fa-solid fa-circle-notch loading-icon" style="font-size: 16px; color: var(--danger);"></i></h2>
                 </div>
-                <button class="settle-btn" onclick="alert('لإتمام التوريد، يرجى إيداع المبلغ في حساب Speed Go عبر الكريمي أو النجم، ثم رفع السند للإدارة.')">تصفية العهدة</button>
+                <button class="settle-btn" onclick="alert('لإتمام التوريد، يرجى إيداع المبلغ عبر النجم، ثم رفع السند للإدارة.')">تصفية العهدة</button>
             </div>
         </div>
 
-        <!-- سجل العمليات -->
         <div class="transactions-section">
             <h3 class="section-title">سجل العمليات الأخير</h3>
             <div id="transactionsList">
@@ -170,66 +80,50 @@
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي -->
         <nav class="bottom-nav">
-            <a href="index.html" class="nav-link">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>الخريطة</span>
-            </a>
-            <a href="tasks.html" class="nav-link">
-                <i class="fa-solid fa-clipboard-check"></i>
-                <span>مهامي</span>
-            </a>
-            <a href="wallet.html" class="nav-link active">
-                <i class="fa-solid fa-wallet"></i>
-                <span>محفظتي</span>
-            </a>
+            <a href="index.html" class="nav-link"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></a>
+            <a href="tasks.html" class="nav-link"><i class="fa-solid fa-clipboard-check"></i><span>مهامي</span></a>
+            <a href="wallet.html" class="nav-link active"><i class="fa-solid fa-wallet"></i><span>محفظتي</span></a>
         </nav>
-
     </div>
 
-    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // إعداد الاتصال بقاعدة البيانات
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
         let currentBalance = 0;
 
-        // دالة تنسيق التاريخ للعمليات
         function formatTransactionDate(dateString) {
             const date = new Date(dateString);
-            const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
-            return date.toLocaleDateString('ar-SA', options).replace(',', ' •');
+            return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', ' •');
         }
 
         async function loadWalletData() {
             try {
-                // جلب الطلبات المكتملة لعمل إحصائية بالأرباح والديون
-                const { data: orders, error } = await supabaseClient
-                    .from('orders')
-                    .select('*')
-                    .eq('status', 'completed')
-                    .order('created_at', { ascending: false });
+                const session = JSON.parse(localStorage.getItem('user_session'));
+                if (!session || !session.reference_id) {
+                    window.location.href = 'login.html';
+                    return;
+                }
 
-                if (error) throw error;
+                // جلب المديونية الحقيقية
+                const { data: driverData, error: driverErr } = await supabaseClient.from('drivers').select('wallet_balance').eq('id', session.reference_id).single();
+                if (driverErr) throw driverErr;
 
+                // جلب الطلبات لعمولة الكابتن
+                const { data: orders, error: ordersErr } = await supabaseClient.from('orders').select('*').eq('driver_name', session.username).eq('status', 'completed').order('created_at', { ascending: false }).limit(20);
+                if (ordersErr) throw ordersErr;
+
+                const walletDebt = parseFloat(driverData.wallet_balance) || 0;
                 let totalEarnings = 0;
-                let totalDebt = 0;
                 let transactionsHTML = '';
 
                 if (orders && orders.length > 0) {
                     orders.forEach(order => {
-                        // افتراض 1500 ريال كعمولة توصيل لكل طلب في حال عدم وجودها في قاعدة البيانات
                         const earning = order.delivery_fee || 1500; 
                         totalEarnings += earning;
-                        totalDebt += order.total_amount || 0;
-
                         const shortId = order.id.toString().substring(0, 6).toUpperCase();
-                        
                         transactionsHTML += `
                         <div class="transaction-item">
                             <div class="trans-left">
@@ -243,32 +137,23 @@
                         </div>`;
                     });
                 } else {
-                    transactionsHTML = `
-                    <div style="text-align: center; padding: 30px 20px; color: var(--text-gray);">
-                        <i class="fa-solid fa-receipt" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i>
-                        <p>لا توجد عمليات مالية مسجلة حتى الآن.</p>
-                    </div>`;
+                    transactionsHTML = `<div style="text-align: center; padding: 30px 20px; color: var(--text-gray);"><i class="fa-solid fa-receipt" style="font-size: 40px; margin-bottom: 15px; opacity: 0.5;"></i><p>لا توجد عمليات مالية مسجلة.</p></div>`;
                 }
 
                 currentBalance = totalEarnings;
-
-                // تحديث الواجهة بالأرقام الحقيقية
                 document.getElementById('balanceAmount').innerHTML = `${totalEarnings.toLocaleString()} <span style="font-size: 16px;">ر.ي</span>`;
-                document.getElementById('debtAmount').innerHTML = `${totalDebt.toLocaleString()} <span style="font-size: 14px;">ر.ي</span>`;
+                document.getElementById('debtAmount').innerHTML = `${walletDebt.toLocaleString()} <span style="font-size: 14px;">ر.ي</span>`;
                 document.getElementById('transactionsList').innerHTML = transactionsHTML;
 
             } catch (err) {
-                console.error("Error fetching wallet data:", err);
+                console.error("Error:", err);
                 document.getElementById('transactionsList').innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:20px;">حدث خطأ في جلب البيانات المالية.</p>`;
             }
         }
 
         function requestWithdraw() {
-            if (currentBalance > 0) {
-                alert(`تم إرسال طلب سحب بمبلغ ${currentBalance.toLocaleString()} ر.ي إلى إدارة Speed Go. سيتم تحويل المبلغ قريباً.`);
-            } else {
-                alert("رصيدك الحالي 0 ر.ي، لا يمكنك تقديم طلب سحب.");
-            }
+            if (currentBalance > 0) alert(`تم إرسال طلب سحب بمبلغ ${currentBalance.toLocaleString()} ر.ي إلى إدارة Speed Go.`);
+            else alert("رصيدك الحالي 0 ر.ي، لا يمكنك تقديم طلب سحب.");
         }
 
         window.onload = loadWalletData;
