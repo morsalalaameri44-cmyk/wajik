@@ -35,7 +35,7 @@
 
         <div class="header-profile">
             <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
-            <div class="driver-name" id="driverName">جاري التحميل...</div>
+            <div class="driver-name" id="driverName">جاري تحميل الاسم...</div>
             <div class="rating"><i class="fa-solid fa-star"></i> 4.9 (تقييم ممتاز)</div>
         </div>
 
@@ -47,13 +47,44 @@
         <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج (إنهاء الوردية)</button>
     </div>
 
+    <!-- تضمين مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        window.onload = () => {
+        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        window.onload = async () => {
             const session = JSON.parse(localStorage.getItem('user_session'));
-            if(session) {
-                document.getElementById('driverName').innerText = session.username;
-            } else {
+            
+            // إذا لم تكن هناك جلسة، أعده لتسجيل الدخول
+            if(!session) {
                 window.location.href = 'login.html';
+                return;
+            }
+
+            // محاولة جلب الاسم الحقيقي للمندوب من قاعدة البيانات عبر reference_id
+            try {
+                if (session.reference_id) {
+                    const { data, error } = await supabaseClient
+                        .from('drivers')
+                        .select('driver_name, name')
+                        .eq('id', session.reference_id)
+                        .single();
+
+                    if (!error && data) {
+                        // استخدام الاسم الحقيقي أو التراجع لاسم المستخدم كخطة بديلة
+                        const realName = data.driver_name || data.name || session.username;
+                        document.getElementById('driverName').innerText = realName;
+                    } else {
+                        document.getElementById('driverName').innerText = session.username;
+                    }
+                } else {
+                    document.getElementById('driverName').innerText = session.username;
+                }
+            } catch (err) {
+                console.error("Error fetching driver name:", err);
+                document.getElementById('driverName').innerText = session.username;
             }
         };
 
