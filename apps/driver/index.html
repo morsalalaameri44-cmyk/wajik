@@ -56,34 +56,22 @@
                 <span id="statusText">متصل (متاح للطلبات)</span>
             </div>
         </div>
-
         <div class="map-area">
             <div class="map-overlay"></div>
             <div class="driver-marker">
                 <i class="fa-solid fa-motorcycle"></i>
             </div>
         </div>
-
         <div class="order-sheet-container" id="ordersContainer">
             <div class="no-orders-msg" id="noOrdersMsg">
                 <i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
                 لا توجد طلبات قريبة جاهزة للاستلام حالياً.
             </div>
         </div>
-
         <nav class="bottom-nav">
-            <a href="index.html" class="nav-link active">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>الخريطة</span>
-            </a>
-            <a href="tasks.html" class="nav-link">
-                <i class="fa-solid fa-clipboard-check"></i>
-                <span>مهامي</span>
-            </a>
-            <a href="wallet.html" class="nav-link">
-                <i class="fa-solid fa-wallet"></i>
-                <span>محفظتي</span>
-            </a>
+            <a href="index.html" class="nav-link active"><i class="fa-solid fa-map-location-dot"></i><span>الخريطة</span></a>
+            <a href="tasks.html" class="nav-link"><i class="fa-solid fa-clipboard-check"></i><span>مهامي</span></a>
+            <a href="wallet.html" class="nav-link"><i class="fa-solid fa-wallet"></i><span>محفظتي</span></a>
         </nav>
     </div>
 
@@ -98,7 +86,45 @@
         let isOnline = true;
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        const driverSession = JSON.parse(localStorage.getItem('user_session'));
+        let driverSession = JSON.parse(localStorage.getItem('user_session'));
+
+        window.onload = async () => {
+            if (!driverSession || driverSession.role !== 'driver') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // --- 1. نظام الإصلاح الذاتي للاسم ---
+            if (driverSession.reference_id && (!driverSession.real_name || driverSession.real_name.includes('@'))) {
+                try {
+                    const { data: dData, error: dErr } = await supabaseClient.from('drivers').select('*').eq('id', driverSession.reference_id).single();
+                    if (!dErr && dData) {
+                        driverSession.real_name = dData.driver_name || dData.name || dData.full_name || driverSession.username;
+                        localStorage.setItem('user_session', JSON.stringify(driverSession));
+                    }
+                } catch(e) {}
+            }
+
+            const activeDriverName = driverSession.real_name || driverSession.username;
+
+            // --- 2. نظام استعادة الطلب النشط (لمنع ضياع الطلب في حال التحديث) ---
+            try {
+                const { data: activeOrder, error: activeErr } = await supabaseClient
+                    .from('orders')
+                    .select('id')
+                    .eq('driver_name', activeDriverName)
+                    .eq('status', 'delivering')
+                    .single();
+                    
+                if (!activeErr && activeOrder) {
+                    window.location.replace(`order_run.html?id=${activeOrder.id}`);
+                    return; // توجيه فوري لشاشة التنفيذ ومنع تحميل الخريطة
+                }
+            } catch(e) {}
+
+            fetchAvailableOrders();
+            subscribeToNewOrders();
+        };
 
         function toggleOnlineStatus() {
             isOnline = !isOnline;
@@ -197,7 +223,6 @@
             btn.disabled = true;
             
             try {
-                // استخدام الاسم الحقيقي للمندوب
                 const driverName = driverSession ? (driverSession.real_name || driverSession.username) : 'مندوب';
 
                 const { error: orderError } = await supabaseClient
@@ -229,15 +254,7 @@
                     fetchAvailableOrders();
                 }).subscribe();
         }
-
-        window.onload = async () => {
-            if (!driverSession || driverSession.role !== 'driver') {
-                window.location.href = 'login.html';
-                return;
-            }
-            fetchAvailableOrders();
-            subscribeToNewOrders();
-        };
     </script>
 </body>
 </html>
+
