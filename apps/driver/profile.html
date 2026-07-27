@@ -47,7 +47,6 @@
         <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج (إنهاء الوردية)</button>
     </div>
 
-    <!-- تضمين مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
@@ -57,13 +56,19 @@
         window.onload = async () => {
             const session = JSON.parse(localStorage.getItem('user_session'));
             
-            // إذا لم تكن هناك جلسة، أعده لتسجيل الدخول
             if(!session) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // محاولة جلب الاسم الحقيقي للمندوب من قاعدة البيانات عبر reference_id
+            // دالة استخراج الاسم القصير من الإيميل كخيار أخير
+            const getShortName = (emailStr) => {
+                if(emailStr && emailStr.includes('@')) return emailStr.split('@')[0];
+                return emailStr;
+            };
+
+            let finalName = getShortName(session.username);
+
             try {
                 if (session.reference_id) {
                     const { data, error } = await supabaseClient
@@ -73,19 +78,18 @@
                         .single();
 
                     if (!error && data) {
-                        // استخدام الاسم الحقيقي أو التراجع لاسم المستخدم كخطة بديلة
-                        const realName = data.driver_name || data.name || session.username;
-                        document.getElementById('driverName').innerText = realName;
-                    } else {
-                        document.getElementById('driverName').innerText = session.username;
+                        const dbName = data.driver_name || data.name;
+                        if (dbName && dbName.trim() !== '') {
+                            finalName = dbName;
+                        }
                     }
-                } else {
-                    document.getElementById('driverName').innerText = session.username;
                 }
             } catch (err) {
-                console.error("Error fetching driver name:", err);
-                document.getElementById('driverName').innerText = session.username;
+                console.error("Error fetching from drivers:", err);
             }
+
+            // تحديث واجهة المستخدم بالاسم النهائي
+            document.getElementById('driverName').innerText = finalName;
         };
 
         function logout() {
