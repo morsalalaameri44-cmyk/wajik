@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>مهامي - Speed Go كابتن</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --success: #05CD99; --danger: #EE5D50; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -45,7 +43,6 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <header class="page-header">
             <h1 class="page-title">مهامي</h1>
@@ -150,7 +147,8 @@
                     window.location.href = 'login.html';
                     return;
                 }
-                const driverName = session.username;
+                // استخدام الاسم الحقيقي
+                const driverName = session.real_name || session.username;
 
                 const { data, error } = await supabaseClient
                     .from('orders')
