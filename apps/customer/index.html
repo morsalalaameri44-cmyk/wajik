@@ -35,7 +35,7 @@
         }
 
         /* =========================================
-           1. شاشة البداية الخرافية (Splash Screen) بخلفية الأسود المموج
+           1. شاشة البداية (Splash Screen) بخلفية سوداء متدرجة ناعمة
            ========================================= */
         #splash-screen {
             position: fixed;
@@ -45,10 +45,17 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(45deg, #000000, #111111, #080808, #1a1a1a, #000000);
-            background-size: 400% 400%;
-            animation: waveBackground 15s ease infinite;
+            /* خلفية سوداء متدرجة ناعمة بدون طبقات مقسمة */
+            background: linear-gradient(135deg, #050505 0%, #151515 50%, #000000 100%);
+            background-size: 200% 200%;
+            animation: smoothDarkWave 10s ease infinite;
             transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        @keyframes smoothDarkWave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* كلاس الاختفاء الذي سيتم إضافته عند الضغط على الزر */
@@ -57,38 +64,34 @@
             visibility: hidden !important;
         }
 
-        /* أمواج SVG في أسفل شاشة البداية */
-        #splash-screen::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%231a1a1a' fill-opacity='0.4' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3Cpath fill='%23111111' fill-opacity='0.7' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,117.3C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
-            background-size: cover;
-            background-position: bottom;
-            background-repeat: no-repeat;
-            z-index: 1;
-        }
-
         .splash-content {
             position: relative;
-            z-index: 2; /* ليكون فوق الأمواج */
+            z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        @keyframes waveBackground {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .splash-logo-container {
+            position: relative;
             width: 240px;
             background: transparent;
-            /* اندفاع قوي ثم طفو ونبض */
+            /* حركة دخول سلسة يعقبها طفو */
             animation: speedEntry 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, 
-                       floatPulse 2.5s ease-in-out 0.8s infinite;
+                       floatAnim 2.5s ease-in-out 0.8s infinite;
+        }
+
+        /* توهج دائري ناعم خلف الصورة يمنع ظهور الحواف المربعة */
+        .splash-logo-container::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 210px; height: 210px;
+            background: radial-gradient(circle, rgba(242, 92, 5, 0.35) 0%, rgba(242, 92, 5, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            animation: pulseGlow 2.5s ease-in-out 0.8s infinite;
         }
 
         .splash-logo-container img {
@@ -96,7 +99,7 @@
         }
 
         .splash-slogan {
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 26px;
             font-weight: 900;
             letter-spacing: 0.5px;
@@ -109,9 +112,9 @@
             animation-delay: 1s; 
         }
 
-        /* زر "ابدأ الآن" الجديد */
+        /* زر "ابدأ الآن" الجديد بمكانه المعدل */
         .btn-start-now {
-            margin-top: 45px;
+            margin-top: 90px; /* تمت إزاحته للأسفل بشكل مناسب */
             padding: 16px 45px;
             border-radius: 30px;
             border: none;
@@ -127,7 +130,6 @@
             align-items: center;
             gap: 12px;
             z-index: 3;
-            /* يظهر بعد السلوجن، ثم يبدأ بالنبض لجذب انتباه المستخدم */
             animation: revealSlogan 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards, pulseBtn 2s infinite ease-in-out;
             animation-delay: 1.5s, 2.3s; 
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -142,22 +144,28 @@
             transform: scale(0.95);
         }
 
-        /* حركات CSS المخصصة لشاشة البداية */
+        /* حركات CSS */
         @keyframes speedEntry {
-            0% { transform: scale(0) translateY(50px); filter: blur(10px); opacity: 0; }
-            60% { transform: scale(1.1) translateY(-10px); filter: blur(0); opacity: 1; }
-            100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); opacity: 1; }
+            0% { transform: scale(0) translateY(50px); opacity: 0; }
+            60% { transform: scale(1.1) translateY(-10px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        @keyframes floatPulse {
-            0% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); }
-            50% { transform: translateY(-12px); filter: drop-shadow(0 0 35px rgba(242, 92, 5, 1)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.4)); }
-            100% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(242, 92, 5, 0.6)); }
+        @keyframes floatAnim {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
         }
 
         @keyframes revealSlogan {
-            0% { opacity: 0; transform: translateY(20px) scale(0.9); filter: blur(4px); }
-            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         @keyframes pulseBtn {
@@ -177,10 +185,9 @@
             margin: 20px;
             opacity: 0;
             transform: translateY(30px);
-            /* لا تظهر الواجهة تلقائياً، بل عبر كلاس يتم إضافته برمجياً */
         }
 
-        /* الكلاس الذي سيفعل حركة دخول واجهة تسجيل الدخول */
+        /* الكلاس الذي يفعل حركة دخول واجهة تسجيل الدخول */
         .show-auth {
             animation: fadeInInterface 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
@@ -191,14 +198,27 @@
         }
 
         .logo-box {
+            position: relative;
             width: 155px; height: auto; margin: 0 auto 15px auto;
             background: transparent; display: flex; justify-content: center; align-items: center;
-            filter: drop-shadow(0 0 15px rgba(242, 92, 5, 0.4));
-            transition: filter 0.3s ease;
+        }
+
+        /* توهج دائري ناعم خلف شعار الدخول */
+        .logo-box::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(242, 92, 5, 0.25) 0%, rgba(242, 92, 5, 0) 70%);
+            border-radius: 50%;
+            z-index: -1;
+            transition: all 0.3s ease;
         }
         
-        .logo-box:hover {
-            filter: drop-shadow(0 0 25px rgba(242, 92, 5, 0.8));
+        .logo-box:hover::before {
+            background: radial-gradient(circle, rgba(242, 92, 5, 0.4) 0%, rgba(242, 92, 5, 0) 70%);
+            transform: translate(-50%, -50%) scale(1.2);
         }
 
         .logo-box img {
@@ -253,7 +273,7 @@
 </head>
 <body>
 
-    <!-- شاشة البداية الخرافية (الأسود المموج) -->
+    <!-- شاشة البداية الخرافية -->
     <div id="splash-screen">
         <div class="splash-content">
             <div class="splash-logo-container">
@@ -273,7 +293,7 @@
         <div class="logo-box">
             <img src="1000167488-removebg-preview.png" alt="Speed Go Logo">
         </div>
-        <!-- الهوية الجديدة -->
+        
         <h1>Speed Go</h1>
         <p>معنا طلبك أسرع</p>
 
