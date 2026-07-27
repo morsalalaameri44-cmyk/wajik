@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تتبع الطلب - واجيك</title>
+    <title>تتبع الطلب - Speed Go</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -380,8 +380,8 @@
                 return;
             }
 
-            // عرض رقم الطلب في الهيدر
-            document.getElementById('headerOrderId').innerText = `WAJ-${orderId.substring(0,4).toUpperCase()}`;
+            // عرض رقم الطلب في الهيدر (تم تعديل البادئة لتصبح SG)
+            document.getElementById('headerOrderId').innerText = `SG-${orderId.substring(0,4).toUpperCase()}`;
 
             try {
                 // جلب بيانات الطلب الأولية
