@@ -5,256 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>تطبيق الكابتن - Speed Go</title>
     
-    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary: #F25C05;
-            --bg-dark: #121212;
-            --surface: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-gray: #A0A0A0;
-            --success: #05CD99;
-            --danger: #EE5D50;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: var(--text-light);
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-            height: 100vh;
-            max-height: 900px;
-            background-color: var(--bg-dark);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(0,0,0,0.5);
-        }
-
-        /* =========================================
-           الهيدر (حالة الكابتن)
-           ========================================= */
-        .driver-header {
-            position: absolute;
-            top: 0; left: 0; width: 100%;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-            background: linear-gradient(to bottom, rgba(18,18,18,0.9) 0%, rgba(18,18,18,0) 100%);
-        }
-
-        .profile-btn {
-            width: 40px; height: 40px;
-            background-color: var(--surface);
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 18px; color: var(--text-light);
-            border: 2px solid var(--primary);
-            text-decoration: none; /* لمنع ظهور خط تحت الرابط */
-        }
-
-        .status-toggle {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 14px; font-weight: 800;
-            border: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer; /* للإشارة إلى أنه قابل للنقر */
-            transition: 0.3s;
-        }
-
-        .status-dot {
-            width: 10px; height: 10px;
-            background-color: var(--success);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--success);
-            transition: 0.3s;
-        }
-
-        /* =========================================
-           الخريطة الوهمية (Map Area)
-           ========================================= */
-        .map-area {
-            flex: 1;
-            background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .map-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 18, 18, 0.4);
-        }
-
-        /* علامة موقع المندوب */
-        .driver-marker {
-            position: absolute;
-            top: 40%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px; height: 50px;
-            background-color: rgba(242, 92, 5, 0.2);
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            animation: pulse 2s infinite;
-        }
-        .driver-marker i {
-            color: var(--primary);
-            font-size: 24px;
-            background: white;
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-        }
-
-        /* =========================================
-           بطاقة الطلب المسند (Bottom Sheet)
-           ========================================= */
-        .order-sheet-container {
-            position: absolute;
-            bottom: 75px;
-            left: 10px; right: 10px;
-            z-index: 20;
-            display: flex; flex-direction: column; gap: 10px;
-            max-height: 50vh; overflow-y: auto; overflow-x: hidden;
-            /* إخفاء شريط التمرير */
-            -ms-overflow-style: none; scrollbar-width: none;
-        }
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --text-gray: #A0A0A0; --success: #05CD99; --danger: #EE5D50; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
+        .app-container { width: 100%; max-width: 420px; height: 100vh; max-height: 900px; background-color: var(--bg-dark); position: relative; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        .driver-header { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: linear-gradient(to bottom, rgba(18,18,18,0.9) 0%, rgba(18,18,18,0) 100%); }
+        .profile-btn { width: 40px; height: 40px; background-color: var(--surface); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; color: var(--text-light); border: 2px solid var(--primary); text-decoration: none; }
+        .status-toggle { background: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+        .status-dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); transition: 0.3s; }
+        .map-area { flex: 1; background-image: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; position: relative; }
+        .map-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 18, 18, 0.4); }
+        .driver-marker { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background-color: rgba(242, 92, 5, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; animation: pulse 2s infinite; }
+        .driver-marker i { color: var(--primary); font-size: 24px; background: white; width: 35px; height: 35px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
+        .order-sheet-container { position: absolute; bottom: 75px; left: 10px; right: 10px; z-index: 20; display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto; overflow-x: hidden; -ms-overflow-style: none; scrollbar-width: none; }
         .order-sheet-container::-webkit-scrollbar { display: none; }
-
-        .order-sheet {
-            background-color: var(--surface);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            animation: slideUp 0.4s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .sheet-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px;
-        }
+        .order-sheet { background-color: var(--surface); border-radius: 20px; padding: 20px; box-shadow: 0 -5px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 10px; }
         .new-alert { color: var(--success); font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 5px;}
         .new-alert i { animation: ring 1s infinite; }
         .order-id { color: var(--text-gray); font-size: 13px; font-weight: 700; }
-
-        @keyframes ring {
-            0% { transform: rotate(0); }
-            25% { transform: rotate(15deg); }
-            50% { transform: rotate(-15deg); }
-            75% { transform: rotate(15deg); }
-            100% { transform: rotate(0); }
-        }
-
+        @keyframes ring { 0% { transform: rotate(0); } 25% { transform: rotate(15deg); } 50% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } 100% { transform: rotate(0); } }
         .route-info { margin-bottom: 20px; }
         .route-point { display: flex; gap: 15px; margin-bottom: 15px; position: relative; }
         .route-point:last-child { margin-bottom: 0; }
-        
-        .point-icon {
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 12px; z-index: 2;
-        }
+        .point-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; z-index: 2; }
         .pickup-icon { background-color: var(--primary); color: white; }
         .dropoff-icon { background-color: var(--success); color: white; }
-        
-        /* الخط الواصل بين نقطة الاستلام والتسليم */
-        .route-point:first-child::after {
-            content: ''; position: absolute;
-            top: 30px; left: 14px; /* adjusted for RTL */
-            width: 2px; height: 25px;
-            background-color: rgba(255,255,255,0.1); z-index: 1;
-        }
-
+        .route-point:first-child::after { content: ''; position: absolute; top: 30px; left: 14px; width: 2px; height: 25px; background-color: rgba(255,255,255,0.1); z-index: 1; }
         .point-details h4 { font-size: 15px; font-weight: 800; margin-bottom: 3px; }
         .point-details p { font-size: 12px; color: var(--text-gray); }
-
-        .accept-btn {
-            width: 100%;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 900;
-            cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: 0.2s;
-        }
+        .accept-btn { width: 100%; background-color: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.2s; }
         .accept-btn:active { transform: scale(0.98); }
-
-        /* رسالة عدم وجود طلبات */
-        .no-orders-msg {
-            background-color: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            color: var(--text-gray);
-            font-weight: 700;
-            font-size: 14px;
-            display: none;
-        }
-
-        /* =========================================
-           شريط التنقل السفلي
-           ========================================= */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0; left: 0; width: 100%;
-            height: 70px;
-            background-color: var(--surface);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 30;
-        }
-
-        .nav-link {
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-            color: var(--text-gray); text-decoration: none; font-size: 11px;
-            font-weight: 700; transition: 0.2s;
-        }
+        .no-orders-msg { background-color: rgba(30, 30, 30, 0.8); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); color: var(--text-gray); font-weight: 700; font-size: 14px; display: none; }
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 70px; background-color: var(--surface); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 30; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-gray); text-decoration: none; font-size: 11px; font-weight: 700; transition: 0.2s; }
         .nav-link i { font-size: 20px; }
         .nav-link.active { color: var(--primary); }
     </style>
@@ -262,28 +52,21 @@
 <body>
 
     <div class="app-container">
-        
-        <!-- الهيدر (حالة المندوب) -->
         <div class="driver-header">
-            <!-- توجيه الكابتن إلى إعدادات الحساب -->
             <a href="profile.html" class="profile-btn"><i class="fa-solid fa-user"></i></a>
-            <!-- زر تبديل حالة الاتصال -->
             <div class="status-toggle" id="statusToggle" onclick="toggleOnlineStatus()">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">متصل (متاح للطلبات)</span>
             </div>
         </div>
 
-        <!-- منطقة الخريطة -->
         <div class="map-area">
             <div class="map-overlay"></div>
-            <!-- موقع المندوب -->
             <div class="driver-marker">
                 <i class="fa-solid fa-motorcycle"></i>
             </div>
         </div>
 
-        <!-- حاوية الطلبات الواردة من قاعدة البيانات -->
         <div class="order-sheet-container" id="ordersContainer">
             <div class="no-orders-msg" id="noOrdersMsg">
                 <i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
@@ -291,7 +74,6 @@
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي -->
         <nav class="bottom-nav">
             <a href="index.html" class="nav-link active">
                 <i class="fa-solid fa-map-location-dot"></i>
@@ -306,26 +88,22 @@
                 <span>محفظتي</span>
             </a>
         </nav>
-
     </div>
 
-    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // إعداد الاتصال بقاعدة البيانات الحقيقية
         const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw'; 
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         const ordersContainer = document.getElementById('ordersContainer');
         const noOrdersMsg = document.getElementById('noOrdersMsg');
-        
         let isOnline = true;
-        // إعداد ملف صوتي خفيف للتنبيه (صوت رنين رسالة)
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // دالة التبديل بين متصل وغير متصل
+        // جلب بيانات الجلسة من LocalStorage
+        const driverSession = JSON.parse(localStorage.getItem('user_session'));
+
         function toggleOnlineStatus() {
             isOnline = !isOnline;
             const dot = document.getElementById('statusDot');
@@ -335,25 +113,21 @@
                 dot.style.backgroundColor = 'var(--success)';
                 dot.style.boxShadow = '0 0 10px var(--success)';
                 text.innerText = 'متصل (متاح للطلبات)';
-                fetchAvailableOrders(); // جلب الطلبات فور الاتصال
+                fetchAvailableOrders();
             } else {
                 dot.style.backgroundColor = 'var(--text-gray)';
                 dot.style.boxShadow = 'none';
                 text.innerText = 'غير متصل (استراحة)';
-                // تفريغ الطلبات وإظهار رسالة الاستراحة
                 Array.from(ordersContainer.children).forEach(child => {
                     if (child.id !== 'noOrdersMsg') {
                         ordersContainer.removeChild(child);
                     }
                 });
-                noOrdersMsg.innerHTML = `
-                    <i class="fa-solid fa-bed" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
-                    أنت الآن في وضع عدم الاتصال.`;
+                noOrdersMsg.innerHTML = `<i class="fa-solid fa-bed" style="margin-bottom: 8px; font-size: 20px; display: block;"></i> أنت الآن في وضع عدم الاتصال.`;
                 noOrdersMsg.style.display = 'block';
             }
         }
 
-        // بناء بطاقة الطلب
         function buildOrderCard(order) {
             const customerName = order.customer_name || 'عميل Speed Go';
             const total = order.total_amount ? order.total_amount.toLocaleString() : '0';
@@ -365,9 +139,7 @@
                     <div class="new-alert"><i class="fa-solid fa-bell"></i> طلب جديد بانتظارك!</div>
                     <div class="order-id">#${orderIdShort}</div>
                 </div>
-
                 <div class="route-info">
-                    <!-- نقطة الاستلام -->
                     <div class="route-point">
                         <div class="point-icon pickup-icon"><i class="fa-solid fa-store"></i></div>
                         <div class="point-details">
@@ -375,8 +147,6 @@
                             <p>الطلب جاهز للاستلام الآن.</p>
                         </div>
                     </div>
-                    
-                    <!-- نقطة التسليم -->
                     <div class="route-point">
                         <div class="point-icon dropoff-icon"><i class="fa-solid fa-location-dot"></i></div>
                         <div class="point-details">
@@ -385,7 +155,6 @@
                         </div>
                     </div>
                 </div>
-
                 <button class="accept-btn" onclick="acceptOrder('${order.id}')" id="btn-${order.id}">
                     قبول الطلب والتوجه للمطعم <i class="fa-solid fa-arrow-left-long"></i>
                 </button>
@@ -393,20 +162,17 @@
             `;
         }
 
-        // جلب الطلبات الجاهزة للاستلام (حالتها processing)
         async function fetchAvailableOrders() {
-            if (!isOnline) return; // لا تجلب الطلبات إذا كان غير متصل
-
+            if (!isOnline) return;
             try {
                 const { data: orders, error } = await supabaseClient
                     .from('orders')
                     .select('*')
                     .eq('status', 'processing')
-                    .order('created_at', { ascending: true }); // الأقدم أولاً
+                    .order('created_at', { ascending: true });
 
                 if (error) throw error;
 
-                // إزالة البطاقات القديمة مع الاحتفاظ برسالة الفراغ
                 Array.from(ordersContainer.children).forEach(child => {
                     if (child.id !== 'noOrdersMsg') {
                         ordersContainer.removeChild(child);
@@ -415,25 +181,19 @@
 
                 if (orders && orders.length > 0) {
                     noOrdersMsg.style.display = 'none';
-                    // تشغيل تنبيه صوتي عند وجود طلبات
-                    notificationSound.play().catch(e => console.log("الصوت مقفل من المتصفح مؤقتاً"));
-                    
+                    notificationSound.play().catch(e => console.log("الصوت مقفل"));
                     orders.forEach(order => {
                         ordersContainer.insertAdjacentHTML('beforeend', buildOrderCard(order));
                     });
                 } else {
-                    noOrdersMsg.innerHTML = `
-                        <i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i>
-                        لا توجد طلبات قريبة جاهزة للاستلام حالياً.`;
+                    noOrdersMsg.innerHTML = `<i class="fa-solid fa-mug-hot" style="margin-bottom: 8px; font-size: 20px; display: block;"></i> لا توجد طلبات قريبة جاهزة للاستلام حالياً.`;
                     noOrdersMsg.style.display = 'block';
                 }
-
             } catch (err) {
-                console.error("Error fetching available orders:", err);
+                console.error("Error:", err);
             }
         }
 
-        // دالة قبول الطلب
         window.acceptOrder = async function(orderId) {
             const btn = document.getElementById(`btn-${orderId}`);
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تأكيد الاستلام...';
@@ -441,44 +201,44 @@
             btn.disabled = true;
             
             try {
-                // تحديث الحالة في قاعدة البيانات إلى "جاري التوصيل"
-                const { error } = await supabaseClient
+                const driverName = driverSession ? driverSession.username : 'مندوب';
+
+                const { error: orderError } = await supabaseClient
                     .from('orders')
-                    .update({ status: 'delivering' })
+                    .update({ status: 'delivering', driver_name: driverName })
                     .eq('id', orderId);
+                if (orderError) throw orderError;
 
-                if (error) throw error;
+                if (driverSession && driverSession.reference_id) {
+                    await supabaseClient
+                        .from('drivers')
+                        .update({ status: 'مشغول' })
+                        .eq('id', driverSession.reference_id);
+                }
 
-                // توجيه السائق لصفحة تنفيذ الطلب وتمرير رقم الطلب
+                // النقل لصفحة التنفيذ
                 window.location.href = `order_run.html?id=${orderId}`;
 
             } catch (err) {
-                console.error("Error accepting order:", err);
-                alert("حدث خطأ أثناء قبول الطلب، قد يكون استلمه كابتن آخر.");
-                fetchAvailableOrders(); // إعادة تحميل القائمة
+                console.error("Error accepting:", err);
+                alert("فشل القبول، قد يكون الكابتن آخر سبَقك.");
+                fetchAvailableOrders();
             }
         }
 
-        // تفعيل الاستماع المباشر (Real-time) للطلبات الجديدة
         function subscribeToNewOrders() {
             supabaseClient
                 .channel('driver_public_orders')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
-                    // تحديث القائمة تلقائياً عند تغيير الإدارة لأي حالة
                     fetchAvailableOrders();
-                })
-                .subscribe();
+                }).subscribe();
         }
 
-        // عند تحميل الصفحة
         window.onload = async () => {
-            // التحقق من تسجيل الدخول
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) {
+            if (!driverSession || driverSession.role !== 'driver') {
                 window.location.href = 'login.html';
                 return;
             }
-            
             fetchAvailableOrders();
             subscribeToNewOrders();
         };
