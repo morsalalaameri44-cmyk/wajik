@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أصناف المتجر - واجيك</title>
+    <title>أصناف المتجر - Speed Go</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -224,7 +224,7 @@
 
         // دالة لتهيئة عدادات السلة عند تحميل الصفحة من الذاكرة المحلية
         function initCartCounters() {
-            const savedCart = JSON.parse(localStorage.getItem('wajik_cart')) || [];
+            const savedCart = JSON.parse(localStorage.getItem('speed_go_cart')) || [];
             currentItemsCount = savedCart.length;
             currentTotal = savedCart.reduce((sum, item) => sum + item.price, 0);
             
@@ -238,19 +238,18 @@
         // دالة ذكية لاختيار صورة افتراضية حسب تصنيف المتجر
         function getDefaultCoverByCategory(category) {
             const cat = category ? category.toLowerCase() : '';
-            if (cat.includes('مطعم') || cat.includes('مطاعم')) return 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80'; // طعام
-            if (cat.includes('سوبر ماركت') || cat.includes('بقالة')) return 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'; // بقالة
-            if (cat.includes('صيدل') || cat.includes('أدوية')) return 'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=600&q=80'; // صيدلية
-            if (cat.includes('تحف') || cat.includes('هدايا')) return 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=600&q=80'; // هدايا وتحف
-            if (cat.includes('مكتب')) return 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80'; // كتب ومكتبات
-            if (cat.includes('إلكترون') || cat.includes('جوال')) return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80'; // إلكترونيات
+            if (cat.includes('مطعم') || cat.includes('مطاعم')) return 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80'; 
+            if (cat.includes('سوبر ماركت') || cat.includes('بقالة')) return 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'; 
+            if (cat.includes('صيدل') || cat.includes('أدوية')) return 'https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&w=600&q=80'; 
+            if (cat.includes('تحف') || cat.includes('هدايا')) return 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?auto=format&fit=crop&w=600&q=80'; 
+            if (cat.includes('مكتب')) return 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80'; 
+            if (cat.includes('إلكترون') || cat.includes('جوال')) return 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=600&q=80'; 
             
-            // صورة افتراضية محايدة (واجهة متجر عامة) لأي تصنيف آخر
             return 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80'; 
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
-            initCartCounters(); // تفعيل العدادات المحفوظة مسبقاً إن وجدت
+            initCartCounters();
 
             if(!storeId) {
                 document.getElementById('storeNameDisplay').innerText = "خطأ: لم يتم تحديد المتجر";
@@ -268,7 +267,6 @@
                     document.getElementById('storeNameDisplay').innerText = store.name || store.store_name || "متجر غير معروف";
                     document.getElementById('storeCategoryDisplay').innerText = storeCategory;
                     
-                    // استخدام الغلاف من الداتا، أو الشعار، وإذا لم يوجد، استخدام الدالة الذكية
                     let finalCoverUrl = store.cover_url;
                     if (!finalCoverUrl || finalCoverUrl.trim() === '') {
                         finalCoverUrl = store.logo_url;
@@ -294,9 +292,8 @@
 
                 if (products && products.length > 0) {
                     
-                    // التجميع بناء على category_name
                     const groupedProducts = products.reduce((groups, product) => {
-                        const catName = product.category_name || 'أصناف عامة';
+                        const catName = product.category_name || product.category || 'أصناف عامة';
                         if (!groups[catName]) groups[catName] = [];
                         groups[catName].push(product);
                         return groups;
@@ -307,7 +304,6 @@
                     for (const [categoryName, categoryProducts] of Object.entries(groupedProducts)) {
                         const safeId = categoryName.replace(/\s+/g, '-');
                         
-                        // بناء التبويب العلوي
                         const tab = document.createElement('div');
                         tab.className = `cat-tab ${isFirstTab ? 'active' : ''}`;
                         tab.innerText = categoryName;
@@ -323,7 +319,6 @@
                         tabsContainer.appendChild(tab);
                         isFirstTab = false;
 
-                        // بناء القسم والمنتجات تحته
                         const sectionContainer = document.createElement('div');
                         sectionContainer.className = 'category-group';
                         sectionContainer.id = `section-${safeId}`;
@@ -337,11 +332,7 @@
                             const prodName = product.name || 'منتج غير مسمى';
                             const prodDesc = product.description || '';
                             const prodPrice = product.price ? product.price.toLocaleString() : '0';
-                            
-                            // توفير صورة منتج محايدة في حال لم توجد صورة
                             const prodImg = product.image_url || 'https://via.placeholder.com/150/F8F9FA/757575?text=بدون+صورة';
-
-                            // تنظيف الاسم لتجنب أخطاء الأقواس المزدوجة في التمرير
                             const safeProdName = prodName.replace(/'/g, "\\'");
 
                             const card = document.createElement('div');
@@ -355,7 +346,6 @@
                                     ${prodDesc ? `<p>${prodDesc}</p>` : ''}
                                     <div class="product-bottom">
                                         <span class="product-price">${prodPrice} ر.ي</span>
-                                        <!-- 🟢 تم تعديل الدالة لترسل اسم وسعر المنتج معاً للحفظ -->
                                         <button class="add-btn" onclick="addToCart(this, '${safeProdName}', ${product.price || 0})"><i class="fa-solid fa-plus"></i></button>
                                     </div>
                                 </div>
@@ -378,9 +368,7 @@
             }
         });
 
-        // 🟢 دالة الإضافة المعدلة لتحفظ البيانات في الذاكرة لتقرأها صفحة السلة
         window.addToCart = function(btnElement, itemName, itemPrice) {
-            // تأثير الحركة
             btnElement.classList.add('added');
             btnElement.innerHTML = '<i class="fa-solid fa-check"></i>'; 
             
@@ -389,12 +377,11 @@
                 btnElement.innerHTML = '<i class="fa-solid fa-plus"></i>'; 
             }, 600);
 
-            // حفظ المنتج في الذاكرة المحلية لربط الواجهات
-            let currentCart = JSON.parse(localStorage.getItem('wajik_cart')) || [];
-            currentCart.push({ name: itemName, price: itemPrice });
-            localStorage.setItem('wajik_cart', JSON.stringify(currentCart));
+            // حفظ المنتج في الذاكرة المحلية
+            const savedCart = JSON.parse(localStorage.getItem('speed_go_cart')) || [];
+            savedCart.push({ name: itemName, price: itemPrice });
+            localStorage.setItem('speed_go_cart', JSON.stringify(savedCart));
 
-            // تحديث العدادات السفلية
             currentItemsCount++;
             currentTotal += itemPrice;
 
