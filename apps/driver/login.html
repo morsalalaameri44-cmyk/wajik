@@ -76,7 +76,6 @@
             errorMsg.style.display = 'none';
 
             try {
-                // 1. التحقق من بيانات الدخول
                 const { data: accountData, error: accountError } = await supabaseClient
                     .from('system_accounts')
                     .select('*')
@@ -89,21 +88,20 @@
                     throw new Error('بيانات الدخول غير صحيحة، أو الحساب غير مصرح له ككابتن.');
                 }
 
-                // 2. جلب الاسم الحقيقي للمندوب من جدول drivers
                 let realDriverName = accountData.username; 
                 if (accountData.reference_id) {
+                    // التحديث الأهم: استخدام select('*') لتجنب أي أخطاء في توافق الأعمدة
                     const { data: driverData, error: driverError } = await supabaseClient
                         .from('drivers')
-                        .select('driver_name, name')
+                        .select('*')
                         .eq('id', accountData.reference_id)
                         .single();
                         
                     if (!driverError && driverData) {
-                        realDriverName = driverData.driver_name || driverData.name || accountData.username;
+                        realDriverName = driverData.driver_name || driverData.name || driverData.full_name || accountData.username;
                     }
                 }
 
-                // 3. دمج الاسم الحقيقي داخل الجلسة
                 const sessionData = {
                     ...accountData,
                     real_name: realDriverName 
@@ -122,3 +120,4 @@
     </script>
 </body>
 </html>
+
