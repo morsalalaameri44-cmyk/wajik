@@ -3,297 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تنفيذ المهمة - Speed Go كابتن</title>
-    
-    <!-- الخطوط والأيقونات -->
+    <title>تنفيذ الطلب - Speed Go</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --primary: #F25C05;
-            --bg-dark: #121212;
-            --surface: #1E1E1E;
-            --text-light: #FFFFFF;
-            --text-gray: #A0A0A0;
-            --success: #05CD99;
-            --danger: #EE5D50;
-            --warning: #FFCE20;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0; padding: 0;
-            font-family: 'Tajawal', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body { background-color: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-light); }
-
-        .app-container {
-            width: 100%; max-width: 420px; height: 100vh; max-height: 900px;
-            background-color: var(--bg-dark); position: relative;
-            display: flex; flex-direction: column; overflow-y: auto;
-        }
-
-        /* الهيدر العلوي */
-        .task-header {
-            background-color: var(--surface); padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .task-title { font-size: 16px; font-weight: 900; color: var(--primary); }
-        .price-badge { background: rgba(5, 205, 153, 0.1); color: var(--success); padding: 5px 12px; border-radius: 8px; font-weight: 800; font-size: 14px; }
-
-        /* خطوات التنفيذ (Timeline) */
-        .timeline-container { padding: 25px 20px; background: var(--surface); margin-bottom: 15px; }
-        .step-row { display: flex; gap: 15px; position: relative; margin-bottom: 25px; transition: 0.3s; }
-        .step-row:last-child { margin-bottom: 0; }
-        
-        /* الخط العمودي الواصل بين الخطوات */
-        .step-row:not(:last-child)::after {
-            content: ''; position: absolute; top: 30px; right: 14px;
-            width: 2px; height: calc(100% - 10px); background-color: rgba(255,255,255,0.1);
-        }
-        .step-row.completed:not(:last-child)::after { background-color: var(--primary); }
-
-        .step-icon {
-            width: 30px; height: 30px; border-radius: 50%; background: #333;
-            display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: 800; z-index: 2;
-        }
-        .completed .step-icon { background: var(--primary); color: white; }
-        .active .step-icon { background: var(--warning); color: #000; box-shadow: 0 0 10px var(--warning); }
-
-        .step-details h4 { font-size: 14px; font-weight: 800; }
-        .step-details p { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
-
-        /* كرت معلومات الاتصال والعمليات */
-        .info-card { background: var(--surface); padding: 20px; margin: 0 15px 15px 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .target-name { font-size: 16px; font-weight: 800; }
-        
-        /* أزرار الاتصال السريع والخرائط */
-        .call-btn {
-            background: #25D366; color: white; border: none; width: 40px; height: 40px;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 16px; cursor: pointer; text-decoration: none;
-        }
-        .call-btn.phone { background: #007aff; }
-
-        .items-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; font-size: 13px; color: var(--text-gray); line-height: 1.6; }
-
-        /* حالة التحميل */
-        .loading-state { text-align: center; padding: 50px 20px; }
-
-        /* زر الإجراء السفلي العائم المثبت */
-        .action-bar { position: sticky; bottom: 0; background: var(--bg-dark); padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .main-action-btn {
-            width: 100%; padding: 16px; background-color: var(--warning); color: #000;
-            border: none; border-radius: 12px; font-size: 15px; font-weight: 900;
-            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 206, 32, 0.2);
-        }
-        .main-action-btn:active { transform: scale(0.98); }
+        :root { --primary: #F25C05; --bg-dark: #121212; --surface: #1E1E1E; --text-light: #FFFFFF; --success: #05CD99; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000; display: flex; justify-content: center; min-height: 100vh; color: var(--text-light); }
+        .app-container { width: 100%; max-width: 420px; background-color: var(--bg-dark); display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        .header { padding: 20px; background: var(--surface); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header h2 { font-size: 18px; font-weight: 900; }
+        .content { padding: 20px; flex: 1; overflow-y: auto; }
+        .customer-card { background: rgba(242, 92, 5, 0.1); border: 1px solid rgba(242, 92, 5, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .cust-name { font-size: 18px; font-weight: 900; color: var(--primary); margin-bottom: 5px; }
+        .cust-phone { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .call-btn { background: var(--primary); color: white; padding: 8px 15px; border-radius: 10px; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .order-details { background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size: 14px; }
+        .detail-row:last-child { border: none; margin: 0; padding: 0; }
+        .total-price { font-size: 20px; font-weight: 900; color: var(--success); }
+        .action-btn { width: 100%; background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; transition: 0.2s; }
+        .action-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
-
-    <div class="app-container" id="mainContainer">
-        <div class="loading-state" id="loadingState">
-            <i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
-            <h3>جاري تحميل بيانات المهمة...</h3>
+    <div class="app-container">
+        <div class="header">
+            <h2 id="orderTitle">جاري تحميل بيانات الطلب...</h2>
         </div>
-
-        <div id="contentView" style="display: none;">
-            <!-- الهيدر العلوي -->
-            <header class="task-header">
-                <span class="task-title" id="headerOrderId"><i class="fa-solid fa-motorcycle"></i> مهمة نشطة</span>
-                <span class="price-badge" id="headerTotal">تحصيل: --</span>
-            </header>
-
-            <!-- تايم لاين تتبع حالة الطلب الحية للمندوب -->
-            <section class="timeline-container">
-                <div class="step-row completed" id="step1">
-                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                    <div class="step-details">
-                        <h4>تم قبول الطلب</h4>
-                        <p>توجّه نحو المطعم للاستلام</p>
-                    </div>
-                </div>
-                
-                <div class="step-row active" id="step2">
-                    <div class="step-icon">2</div>
-                    <div class="step-details">
-                        <h4>في الطريق لنقطة الاستلام</h4>
-                        <p>المستهدف: المطعم</p>
-                    </div>
-                </div>
-
-                <div class="step-row" id="step3">
-                    <div class="step-icon">3</div>
-                    <div class="step-details">
-                        <h4>التوجه لموقع العميل</h4>
-                        <p>بانتظار استلام الطلب من المطعم</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- كرت تفاصيل الوجهة الحالية (ديناميكي) -->
-            <section class="info-card" id="currentInfoCard">
-                <!-- يتم تعبئتها بواسطة جافاسكربت -->
-            </section>
-
-            <!-- زر العمليات السفلي التفاعلي -->
-            <div class="action-bar">
-                <button class="main-action-btn" id="actionBtn" onclick="nextStage()">
-                    <i class="fa-solid fa-location-dot"></i> وصلت للمطعم واستلمت الطلب
-                </button>
-            </div>
+        <div class="content" id="orderContent">
+            <div style="text-align:center; margin-top:50px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i></div>
         </div>
     </div>
 
-    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // إعداد الاتصال بقاعدة البيانات الحقيقية
-        const supabaseUrl = 'https://ldefaxirgruqulxhkaqh.supabase.co';
-        const supabaseKey = 'sb_publishable_Gsn2xn5DjAJehY0SGFubzw_KxV-hG-4'; 
-        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-
+        const supabaseClient = supabase.createClient('https://ldefaxirgruqulxhkaqh.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZWZheGlyZ3J1cXVseGhrYXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NjI1MjEsImV4cCI6MjA5OTAzODUyMX0.WyCwILEemzN0z5UOTd4aVC6YCxmXHTyAKcai00CJtvw');
+        const session = JSON.parse(localStorage.getItem('user_session'));
         const urlParams = new URLSearchParams(window.location.search);
         const orderId = urlParams.get('id');
+        let orderData = null;
 
-        let currentOrder = null;
-        let currentStage = 1;
+        if (!session || !orderId) { window.location.href = 'index.html'; }
 
-        async function loadOrderDetails() {
-            if (!orderId) {
-                alert("رقم الطلب غير صحيح.");
+        async function loadOrderData() {
+            try {
+                const { data, error } = await supabaseClient.from('orders').select('*').eq('id', orderId).single();
+                if (error) throw error;
+                orderData = data;
+                
+                const shortId = orderData.id.toString().substring(0, 6).toUpperCase();
+                document.getElementById('orderTitle').innerText = `طلب #${shortId}`;
+                
+                const custName = orderData.customer_name || orderData.name || 'عميل غير مسجل';
+                const custPhone = orderData.customer_phone || orderData.phone || '';
+                const total = orderData.total_amount || orderData.total_price || orderData.price || orderData.total || 0;
+                const address = orderData.address || orderData.location || 'غير محدد';
+
+                document.getElementById('orderContent').innerHTML = `
+                    <div class="customer-card">
+                        <div class="cust-name"><i class="fa-solid fa-user-circle"></i> ${custName}</div>
+                        <div class="cust-phone"><i class="fa-solid fa-phone"></i> <span dir="ltr">${custPhone}</span> 
+                            ${custPhone ? `<a href="tel:${custPhone}" class="call-btn"><i class="fa-solid fa-phone-volume"></i> اتصال</a>` : ''}
+                        </div>
+                        <div style="font-size:13px; color:#ddd;"><i class="fa-solid fa-location-dot"></i> <strong>الموقع:</strong> ${address}</div>
+                    </div>
+                    
+                    <div class="order-details">
+                        <div class="detail-row"><span>المطلوب تحصيله من العميل:</span> <span class="total-price">${total} ر.ي</span></div>
+                        <div class="detail-row"><span>ملاحظات:</span> <span>${orderData.notes || 'لا يوجد'}</span></div>
+                    </div>
+
+                    <button class="action-btn" onclick="completeDelivery()" id="completeBtn">
+                        <i class="fa-solid fa-check-double"></i> تم التسليم بنجاح
+                    </button>
+                `;
+            } catch (err) {
+                alert("خطأ في جلب بيانات الطلب!");
                 window.location.href = 'index.html';
-                return;
             }
+        }
+
+        async function completeDelivery() {
+            const btn = document.getElementById('completeBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإقفال...';
+            btn.disabled = true;
 
             try {
-                const { data: order, error } = await supabaseClient
-                    .from('orders')
-                    .select('*')
-                    .eq('id', orderId)
-                    .single();
-
-                if (error) throw error;
-                currentOrder = order;
-
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('contentView').style.display = 'block';
-
-                // تعبئة البيانات
-                const shortId = order.id.toString().substring(0, 6).toUpperCase();
-                document.getElementById('headerOrderId').innerHTML = `<i class="fa-solid fa-motorcycle"></i> مهمة #${shortId}`;
-                document.getElementById('headerTotal').innerText = `تحصيل: ${order.total_amount.toLocaleString()} ر.ي`;
-
-                const itemsHTML = (order.order_items || []).map(i => `${i.qty || 1}x ${i.name}`).join('<br>');
-
-                document.getElementById('currentInfoCard').innerHTML = `
-                    <div class="card-meta">
-                        <div>
-                            <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة الحالية: استلام الوجبة</p>
-                            <h3 class="target-name">المطعم</h3>
-                        </div>
-                    </div>
-                    <div class="items-box">
-                        <strong>الأصناف المطلوب استلامها:</strong><br>
-                        ${itemsHTML}
-                    </div>
-                `;
-
-            } catch (err) {
-                console.error("Error fetching order:", err);
-                alert("حدث خطأ في جلب بيانات المهمة.");
-                window.location.href = 'index.html';
-            }
-        }
-
-        async function nextStage() {
-            if (!currentOrder) return;
-            const btn = document.getElementById('actionBtn');
-            const card = document.getElementById('currentInfoCard');
-            const s2 = document.getElementById('step2');
-            const s3 = document.getElementById('step3');
-
-            if (currentStage === 1) {
-                // المرحلة الثانية: استلم الطلب ويتوجه للعميل
-                s2.className = "step-row completed";
-                s2.innerHTML = '<div class="step-icon"><i class="fa-solid fa-check"></i></div><div class="step-details"><h4>تم استلام الطلب من المطعم</h4><p>الوجبة جاهزة مع المندوب</p></div>';
+                // 1. تحديث حالة الطلب إلى مكتمل
+                await supabaseClient.from('orders').update({ status: 'completed' }).eq('id', orderId);
                 
-                s3.className = "step-row active";
-                s3.innerHTML = `<div class="step-icon">3</div><div class="step-details"><h4>جاري تسليم الشحنة للزبون</h4><p>الوجهة: ${currentOrder.customer_name || 'العميل'}</p></div>`;
-                
-                const custName = currentOrder.customer_name || 'عميل Speed Go';
-                const custPhone = currentOrder.customer_phone || '';
-                
-                // استخدام encodeURIComponent لضمان عدم وجود أخطاء في الرابط
-                const mapQuery = encodeURIComponent(custName + ' عدن');
-                
-                card.innerHTML = `
-                    <div class="card-meta">
-                        <div>
-                            <p style="font-size:11px; color:var(--text-gray); margin-bottom:3px;">الخطوة التالية: التوصيل للزبون</p>
-                            <h3 class="target-name">العميل: ${custName}</h3>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            <!-- زر خرائط جوجل للتوجيه المباشر -->
-                            <a href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" target="_blank" class="call-btn" style="background:#4285F4;"><i class="fa-solid fa-map-location-dot"></i></a>
-                            <!-- زر الاتصال بالعميل -->
-                            <a href="tel:${custPhone}" class="call-btn phone"><i class="fa-solid fa-phone"></i></a>
-                        </div>
-                    </div>
-                    <div class="items-box" style="border-right: 3px solid var(--success)">
-                        <strong>المطلوب تحصيله كاش:</strong> <span style="color:var(--success); font-weight:900;">${currentOrder.total_amount.toLocaleString()} ر.ي</span>
-                    </div>
-                `;
-                
-                btn.innerHTML = '<i class="fa-solid fa-house-chimney"></i> وصلت لموقع العميل';
-                btn.style.backgroundColor = 'var(--primary)';
-                btn.style.color = 'white';
-                currentStage = 2;
+                // 2. تحديث عهدة المندوب وإعادته لحالة "نشط"
+                if(session.reference_id) {
+                    const { data: driverInfo } = await supabaseClient.from('drivers').select('wallet_balance').eq('id', session.reference_id).single();
+                    
+                    let orderRawValue = orderData.total_amount || orderData.total_price || orderData.price || orderData.total || "0";
+                    let orderValue = parseFloat(orderRawValue.toString().replace(/[^\d.-]/g, '')) || 0;
+                    const newBalance = (parseFloat(driverInfo.wallet_balance) || 0) + orderValue;
 
-            } else if (currentStage === 2) {
-                // المرحلة الثالثة: وصل للعميل، يحصل الكاش
-                s3.className = "step-row completed";
-                s3.innerHTML = '<div class="step-icon"><i class="fa-solid fa-check"></i></div><div class="step-details"><h4>وصلت لموقع العميل</h4><p>جاري تسليم الطعام وتحصيل الكاش</p></div>';
-                
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> تم تسليم الطلب وتحصيل الكاش';
-                btn.style.backgroundColor = 'var(--success)';
-                btn.style.color = 'white';
-                currentStage = 3;
-
-            } else if (currentStage === 3) {
-                // إنهاء المهمة وتحديث قاعدة البيانات
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إغلاق المهمة...';
-                btn.disabled = true;
-
-                try {
-                    const { error } = await supabaseClient
-                        .from('orders')
-                        .update({ status: 'completed' })
-                        .eq('id', currentOrder.id);
-
-                    if (error) throw error;
-
-                    alert("تهانينا يا كابتن! تم إغلاق الطلب بنجاح، وتمت إضافة عمولة التوصيل إلى محفظتك.");
-                    window.location.href = 'index.html'; 
-
-                } catch (err) {
-                    console.error("Error updating status:", err);
-                    alert("حدث خطأ أثناء إغلاق المهمة. تأكد من الاتصال.");
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> حاول مرة أخرى';
+                    await supabaseClient.from('drivers').update({ status: 'نشط', wallet_balance: newBalance }).eq('id', session.reference_id);
                 }
+
+                alert('تم إغلاق الطلب وتوريد المبلغ לلعهدة بنجاح!');
+                window.location.replace('index.html');
+            } catch (err) {
+                alert('فشل إنهاء الطلب!');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> تم التسليم بنجاح';
             }
         }
 
-        window.onload = loadOrderDetails;
+        window.onload = loadOrderData;
     </script>
 </body>
 </html>
