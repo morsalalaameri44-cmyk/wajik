@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تأكيد الطلب - واجيك</title>
+    <title>تأكيد الطلب - Speed Go</title>
     
     <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -359,7 +359,7 @@
 
         // جلب البيانات من الذاكرة
         function loadCartFromMemory() {
-            const savedCart = localStorage.getItem('wajik_cart');
+            const savedCart = localStorage.getItem('speed_go_cart');
             if (savedCart) {
                 const rawItems = JSON.parse(savedCart);
                 let grouped = {};
@@ -384,7 +384,7 @@
                     flatCart.push({name: item.name, price: item.price});
                 }
             });
-            localStorage.setItem('wajik_cart', JSON.stringify(flatCart));
+            localStorage.setItem('speed_go_cart', JSON.stringify(flatCart));
         }
 
         function renderCart() {
@@ -461,72 +461,61 @@
             renderCart();
         }
 
-        // إرسال الطلب
         async function processOrder() {
-            const customerName = document.getElementById('customerName').value;
-            const customerPhone = document.getElementById('customerPhone').value;
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const notes = document.getElementById('orderNotes').value.trim();
 
-            if(!customerName || !customerPhone) {
-                alert("يرجى إدخال اسمك ورقم الجوال لتوصيل الطلب بنجاح.");
+            if(!name || !phone) {
+                alert("يرجى إدخال الاسم ورقم الجوال لتأكيد الطلب!");
                 return;
             }
 
-            // التحقق من هوية المستخدم
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            
-            if (!user) {
-                alert("يجب عليك تسجيل الدخول أولاً لإتمام الطلب!");
-                window.location.href = 'index.html'; 
+            if(cartItems.length === 0) {
+                alert("سلتك فارغة!");
                 return;
             }
 
-            const submitBtn = document.getElementById("submitOrderBtn");
+            const submitBtn = document.getElementById('submitOrderBtn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:20px;"></i>';
+            submitBtn.innerHTML = '<span>جاري إرسال الطلب...</span>';
 
-            let subtotal = 0;
-            cartItems.forEach(item => subtotal += (item.price * item.qty));
-            const totalAmount = subtotal + deliveryFee;
-            const notes = document.getElementById('orderNotes').value;
+            let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let totalAmount = subtotal + deliveryFee;
 
-            // تجهيز البيانات
-            const newOrderData = {
-                store_id: "9e1755d3-994c-49bb-b188-e3117b6260f4", 
-                customer_id: user.id, 
-                customer_name: customerName,
-                customer_phone: customerPhone,
-                subtotal_amount: subtotal, 
-                total_amount: totalAmount,
-                delivery_fee: deliveryFee,
-                status: 'new',
-                order_items: cartItems,
-                // يمكن إضافة حقل الملاحظات هنا إذا كان موجوداً في قاعدة البيانات
-            };
+            try {
+                // الحصول على مستخدم Supabase الحالي إن وجد
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                const customerId = user ? user.id : null;
 
-            const { data, error } = await supabaseClient
-                .from('orders')
-                .insert([newOrderData]);
+                const { data, error } = await supabaseClient.from('orders').insert([
+                    {
+                        customer_id: customerId,
+                        customer_name: name,
+                        customer_phone: phone,
+                        order_notes: notes,
+                        order_items: cartItems,
+                        total_amount: totalAmount,
+                        status: 'new'
+                    }
+                ]).select();
 
-            if (error) {
-                console.error("خطأ:", error);
-                alert("حدث خطأ:\n" + error.message);
+                if(error) throw error;
+
+                // إظهار شاشة النجاح
+                document.getElementById('successOverlay').classList.add('show');
+                localStorage.removeItem('speed_go_cart');
+
+                setTimeout(() => {
+                    window.location.href = 'orders.html';
+                }, 2500);
+
+            } catch(err) {
+                console.error("Error submitting order:", err);
+                alert("حدث خطأ أثناء إرسال الطلب، تأكد من الاتصال بالإنترنت.");
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<span>تأكيد وإرسال الطلب</span><span class="btn-price-tag">${totalAmount.toLocaleString()} ر.ي</span>`;
-                return;
             }
-
-            // إظهار نافذة النجاح الخرافية
-            const overlay = document.getElementById('successOverlay');
-            overlay.classList.add('show');
-            
-            // إفراغ السلة
-            localStorage.removeItem('wajik_cart');
-            localStorage.removeItem('wajik_total');
-
-            // الانتقال لصفحة الطلبات بأسلوب سلس
-            setTimeout(() => {
-                window.location.href = 'orders.html';
-            }, 3000);
         }
 
         window.onload = loadCartFromMemory;
