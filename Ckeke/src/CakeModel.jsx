@@ -1,5 +1,4 @@
 import { useOrderStore } from './store';
-import * as THREE from 'three';
 
 export default function CakeModel() {
   const layers = useOrderStore((state) => state.layers);
@@ -15,7 +14,6 @@ export default function CakeModel() {
 
       {/* بناء الطبقات */}
       {layers.map((layer, index) => {
-        // حساب الارتفاع لتبدأ من فوق القاعدة مباشرة
         const yPos = (index * 1.2) + 0.65; 
 
         return (
@@ -30,10 +28,10 @@ export default function CakeModel() {
               />
             </mesh>
             
-            {/* حلقة التنعيم المصححة (تستقر أفقياً على حافة الطبقة) */}
+            {/* حلقة التنعيم - الانصياع التام للجاذبية الأرضية */}
             <mesh 
               position={[0, layer.height / 2, 0]} 
-              rotation-x={Math.PI / 2} // <-- هذا هو السطر الذي أصلح دوران الحلقة (كوكب زحل)
+              rotation={[Math.PI / 2, 0, 0]} /* <-- هنا التعديل الصارم لإجبارها على الاستلقاء */
               castShadow 
               receiveShadow
             >
