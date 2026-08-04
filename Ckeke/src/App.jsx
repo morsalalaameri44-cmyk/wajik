@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, ContactShadows, Environment, SpotLight } from '@react-three/drei';
-import CakeModel from './CakeModel';
+import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
+import FinalCake from './FinalCake'; // استدعاء الملف الجديد لكسر الذاكرة المؤقتة
 import { useOrderStore } from './store';
 
 export default function App() {
   const { layers, addLayer, removeLayer, updateLayerColor } = useOrderStore();
-  // حالة للتحكم بظهور أو إخفاء القائمة
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   return (
-    // خلفية متدرجة تشبه إضاءة استوديو التصوير
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #ffffff 0%, #d1d5db 100%)', fontFamily: 'sans-serif' }}>
       
       {/* استوديو 3D */}
@@ -19,12 +17,15 @@ export default function App() {
         {/* إضاءة مسلطة كاستوديو حقيقي */}
         <spotLight position={[5, 10, 5]} angle={0.3} penumbra={1} intensity={2} castShadow />
         <Environment preset="studio" />
-        <CakeModel />
+        
+        {/* المجسم النظيف والجديد */}
+        <FinalCake />
+        
         <ContactShadows position={[0, -1.15, 0]} opacity={0.7} scale={15} blur={2.5} far={4} />
         <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} enableZoom={true} />
       </Canvas>
 
-      {/* زر العرض بملء الشاشة (يطفو في الزاوية العلوية) */}
+      {/* زر العرض بملء الشاشة */}
       <button 
         onClick={() => setIsPanelOpen(!isPanelOpen)}
         style={{
@@ -38,10 +39,9 @@ export default function App() {
         {isPanelOpen ? '👁️ عرض ملء الشاشة' : '🎨 تعديل التصميم'}
       </button>
 
-      {/* لوحة التحكم العائمة (مع حركة انسيابية للاختفاء والظهور) */}
+      {/* لوحة التحكم العائمة */}
       <div style={{
         position: 'absolute', bottom: '20px', left: '50%',
-        // هنا يتم سحب القائمة للأسفل لإخفائها بناءً على حالة الزر
         transform: `translate(-50%, ${isPanelOpen ? '0' : '120%'})`,
         transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
         width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -74,6 +74,7 @@ export default function App() {
           ))}
         </div>
         
+        {/* زر الإجراء */}
         <button style={{ width: '100%', padding: '14px', backgroundColor: '#111827', color: 'white', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
           تأكيد التصميم والانتقال للسعر
         </button>
