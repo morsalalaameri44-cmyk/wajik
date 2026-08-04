@@ -1,43 +1,97 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
 import CakeModel from './CakeModel';
 import { useOrderStore } from './store';
 
 export default function App() {
   const setCakeColor = useOrderStore((state) => state.setCakeColor);
+  const cakeColor = useOrderStore((state) => state.cakeConfig.color);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', fontFamily: 'sans-serif', margin: 0, padding: 0 }}>
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#f3f4f6', fontFamily: 'sans-serif' }}>
       
-      {/* لوحة التحكم */}
-      <div style={{ width: '35%', padding: '20px', backgroundColor: 'white', boxShadow: '2px 0 10px rgba(0,0,0,0.1)', zIndex: 10 }}>
-        <h2 style={{ color: '#333', marginTop: 0 }}>Cake Studio</h2>
-        <p style={{ fontSize: '12px', color: '#666', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>معالج التصميم</p>
+      {/* استوديو 3D - يحتل الشاشة بالكامل */}
+      <Canvas camera={{ position: [0, 3, 7], fov: 45 }} shadows>
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[5, 10, 5]} intensity={1.5} castShadow />
         
-        <div style={{ marginTop: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>لون التغطية:</label>
-          <input 
-            type="color" 
-            defaultValue="#FFD700"
-            onChange={(e) => setCakeColor(e.target.value)}
-            style={{ width: '100%', height: '40px', cursor: 'pointer', border: 'none', padding: 0 }}
-          />
-        </div>
-      </div>
+        {/* بيئة إضاءة واقعية تنعكس على المجسم */}
+        <Environment preset="city" />
+        
+        <CakeModel />
+        
+        {/* ظل ناعم تحت الكيكة لزيادة الواقعية */}
+        <ContactShadows position={[0, -0.5, 0]} opacity={0.6} scale={10} blur={2.5} />
+        <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} enableZoom={true} />
+      </Canvas>
 
-      {/* استوديو 3D */}
-      <div style={{ width: '65%', height: '100%', backgroundColor: '#e5e7eb' }}>
-        <Canvas camera={{ position: [0, 4, 8], fov: 45 }} shadows>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[5, 10, 5]} intensity={1.5} castShadow />
-          
-          <CakeModel />
-          
-          <ContactShadows position={[0, -0.5, 0]} opacity={0.4} scale={10} blur={2} />
-          <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} />
-        </Canvas>
+      {/* لوحة التحكم العائمة (Mobile-First) */}
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '90%',
+        maxWidth: '400px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '24px',
+        padding: '24px',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+        direction: 'rtl'
+      }}>
+        
+        {/* الترويسة */}
+        <div style={{ textAlign: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '15px' }}>
+          <h2 style={{ margin: 0, color: '#111827', fontSize: '22px', fontWeight: '800' }}>Cake Studio</h2>
+          <p style={{ margin: '5px 0 0 0', color: '#6b7280', fontSize: '13px' }}>صمم كيكتك الخاصة بدقة</p>
+        </div>
+
+        {/* أدوات التخصيص */}
+        <div>
+          <label style={{ display: 'block', marginBottom: '12px', fontSize: '15px', fontWeight: 'bold', color: '#374151' }}>
+            لون التغطية:
+          </label>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <input 
+              type="color" 
+              value={cakeColor || '#FFD700'}
+              onChange={(e) => setCakeColor(e.target.value)}
+              style={{ 
+                width: '45px', 
+                height: '45px', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer',
+                padding: 0,
+                backgroundColor: 'transparent'
+              }}
+            />
+            <span style={{ fontSize: '13px', color: '#6b7280' }}>اسحب لاختيار اللون المناسب لمناسبتك</span>
+          </div>
+        </div>
+        
+        {/* زر الإجراء (Call to Action) */}
+        <button style={{
+          width: '100%',
+          padding: '14px',
+          backgroundColor: '#111827',
+          color: 'white',
+          border: 'none',
+          borderRadius: '14px',
+          fontSize: '15px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+          تأكيد التصميم والانتقال للسعر
+        </button>
+
       </div>
-      
     </div>
   );
 }
