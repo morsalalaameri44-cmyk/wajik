@@ -1,35 +1,28 @@
 import { useOrderStore } from './store';
+import { useTexture } from '@react-three/drei';
 
 export default function CakeModel() {
-  // جلب قائمة الطبقات من المخزن الذي أنشأناه للتو
-  const layers = useOrderStore((state) => state.layers);
+  const cakeColor = useOrderStore((state) => state.cakeConfig.color);
 
   return (
-    // خفضنا المجسم قليلاً للأسفل (-1) لكي يظل في منتصف الشاشة عندما نصل لـ 3 طبقات
-    <group position={[0, -1, 0]}> 
+    <group position={[0, -0.5, 0]}>
+      {/* جسم الكيكة الرئيسي - أسطوانة عالية الدقة */}
+      <mesh castShadow receiveShadow>
+        {/* زيادة عدد الـ radial segments إلى 128 لتنعيم الحواف تماماً */}
+        <cylinderGeometry args={[2.1, 2.1, 1.2, 128]} />
+        <meshStandardMaterial 
+          color={cakeColor || '#FFD700'} 
+          roughness={0.6} // جعل السطح أقل لمعاناً لتبدو كالكريمة
+          metalness={0.1}
+          envMapIntensity={0.5} // تفاعل جيد مع إضاءة البيئة
+        />
+      </mesh>
       
-      {layers.map((layer, index) => {
-        // حساب الارتفاع (Y): كل طبقة ارتفاعها 1.2
-        // الطبقة الأولى (index 0) مركزها عند 0.6
-        // الطبقة الثانية (index 1) مركزها عند 1.8
-        // وهكذا... لترتكز كل طبقة فوق الأخرى بدقة متناهية
-        const yPos = (index * 1.2) + 0.6;
-
-        return (
-          <mesh key={layer.id} position={[0, yPos, 0]} castShadow receiveShadow>
-            {/* استخدام نصف القطر (radius) القادم من المخزن لكل طبقة */}
-            <cylinderGeometry args={[layer.radius, layer.radius, layer.height, 128]} />
-            
-            <meshStandardMaterial 
-              color={layer.color} 
-              roughness={0.6} // ملمس واقعي يشبه الكريمة
-              metalness={0.1}
-              envMapIntensity={0.5} 
-            />
-          </mesh>
-        );
-      })}
-
+      {/* ظل خفيف إضافي تحت المجسم لتأكيد مكانه في الفراغ */}
+      <mesh rotation-x={-Math.PI / 2} position-y={-0.6} receiveShadow>
+        <planeGeometry args={[5, 5]} />
+        <shadowMaterial opacity={0.3} />
+      </mesh>
     </group>
   );
 }
