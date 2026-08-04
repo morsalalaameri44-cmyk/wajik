@@ -1,4 +1,49 @@
+import { useMemo } from 'react';
+import * as THREE from 'three';
 import { useOrderStore } from './store';
+
+// مكون فرعي يمثل طبقة الكيك الواحدة باحترافية
+function CakeLayer({ layer, index }) {
+  // استخدام useMemo لضمان عدم إعادة رسم المجسم إلا إذا تغير الحجم
+  const geometry = useMemo(() => {
+    // 1. نرسم شكل دائرة مثالية
+    const shape = new THREE.Shape();
+    // نطرح 0.05 من نصف القطر لنعوض مساحة الحافة الناعمة (Bevel)
+    shape.absarc(0, 0, layer.radius - 0.05, 0, Math.PI * 2, false);
+    
+    // 2. نبثق الدائرة لتصبح أسطوانة مع تفعيل الحواف الناعمة
+    return new THREE.ExtrudeGeometry(shape, {
+      depth: layer.height - 0.1, // نطرح سماكة الحواف العلوية والسفلية من الارتفاع الإجمالي
+      bevelEnabled: true,        // تفعيل النعومة
+      bevelSegments: 16,         // دقة النعومة العالية
+      steps: 1,
+      bevelSize: 0.05,           // عرض الحافة الناعمة
+      bevelThickness: 0.05,      // سماكة الحافة الناعمة
+      curveSegments: 128         // دقة استدارة الكيكة
+    });
+  }, [layer.radius, layer.height]);
+
+  // حسابات رياضية دقيقة: الطبقة السفلية تبدأ من 0.05 (سطح القاعدة الذهببة)
+  // وكل طبقة تالية ترتفع بمقدار 1.2 بدقة متناهية
+  const yPos = (index * 1.2) + 0.05; 
+
+  return (
+    <mesh 
+      position={[0, yPos, 0]} 
+      // نبطح المجسم على المحور السيني لأن الـ Extrude افتراضياً يبني على المحور العيني
+      rotation={[-Math.PI / 2, 0, 0]} 
+      geometry={geometry}
+      castShadow 
+      receiveShadow
+    >
+      <meshStandardMaterial 
+        color={layer.color} 
+        roughness={0.85} // ملمس مطفي يحاكي عجينة السكر الحقيقية
+        metalness={0.02} 
+      />
+    </mesh>
+  );
+}
 
 export default function CakeModel() {
   const layers = useOrderStore((state) => state.layers);
@@ -12,35 +57,11 @@ export default function CakeModel() {
         <meshStandardMaterial color="#d4af37" metalness={0.7} roughness={0.2} />
       </mesh>
 
-      {/* بناء الطبقات */}
-      {layers.map((layer, index) => {
-        const yPos = (index * 1.2) + 0.65; 
-
-        return (
-          <group key={layer.id} position={[0, yPos, 0]}>
-            {/* جسم الطبقة الأساسي */}
-            <mesh castShadow receiveShadow>
-              <cylinderGeometry args={[layer.radius, layer.radius, layer.height, 128]} />
-              <meshStandardMaterial 
-                color={layer.color} 
-                roughness={0.8} 
-                metalness={0.05}
-              />
-            </mesh>
-            
-            {/* حلقة التنعيم - الانصياع التام للجاذبية الأرضية */}
-            <mesh 
-              position={[0, layer.height / 2, 0]} 
-              rotation={[Math.PI / 2, 0, 0]} /* <-- هنا التعديل الصارم لإجبارها على الاستلقاء */
-              castShadow 
-              receiveShadow
-            >
-              <torusGeometry args={[layer.radius, 0.05, 32, 128]} />
-              <meshStandardMaterial color={layer.color} roughness={0.8} metalness={0.05} />
-            </mesh>
-          </group>
-        );
-      })}
+      {/* بناء الطبقات باستدعاء المكون الاحترافي */}
+      {layers.map((layer, index) => (
+        <CakeLayer key={layer.id} layer={layer} index={index} />
+      ))}
+      
     </group>
   );
 }
