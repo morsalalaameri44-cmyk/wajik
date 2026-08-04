@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
-import FinalCake from './FinalCake'; // استدعاء الملف الجديد لكسر الذاكرة المؤقتة
+import FinalCake from './FinalCake'; 
 import { useOrderStore } from './store';
 
 export default function App() {
@@ -9,19 +9,21 @@ export default function App() {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #ffffff 0%, #d1d5db 100%)', fontFamily: 'sans-serif' }}>
+    // تم تغيير الخلفية هنا لتطابق ألوان الصورة المرفقة (بني داكن/برغندي متدرج)
+    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #3a2523 0%, #150a0a 100%)', fontFamily: 'sans-serif' }}>
       
       {/* استوديو 3D */}
       <Canvas camera={{ position: [0, 4, 10], fov: 45 }} shadows>
-        <ambientLight intensity={0.5} />
-        {/* إضاءة مسلطة كاستوديو حقيقي */}
-        <spotLight position={[5, 10, 5]} angle={0.3} penumbra={1} intensity={2} castShadow />
+        {/* تقليل الإضاءة المحيطية قليلاً لتناسب الجو الداكن */}
+        <ambientLight intensity={0.4} />
+        {/* إضاءة مسلطة قوية لإبراز تفاصيل الكيكة وسط الظلام */}
+        <spotLight position={[5, 10, 5]} angle={0.3} penumbra={1} intensity={2.5} castShadow />
         <Environment preset="studio" />
         
-        {/* المجسم النظيف والجديد */}
         <FinalCake />
         
-        <ContactShadows position={[0, -1.15, 0]} opacity={0.7} scale={15} blur={2.5} far={4} />
+        {/* ظل الكيكة على الأرضية */}
+        <ContactShadows position={[0, -1.15, 0]} opacity={0.8} scale={15} blur={2.5} far={4} color="#000000" />
         <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} enableZoom={true} />
       </Canvas>
 
@@ -30,10 +32,11 @@ export default function App() {
         onClick={() => setIsPanelOpen(!isPanelOpen)}
         style={{
           position: 'absolute', top: '20px', left: '20px', zIndex: 50,
-          backgroundColor: '#ffffff', color: '#111827', border: 'none',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: '30px', padding: '10px 20px', fontSize: '14px', fontWeight: 'bold',
-          cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease'
+          cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.3s ease',
+          backdropFilter: 'blur(5px)'
         }}
       >
         {isPanelOpen ? '👁️ عرض ملء الشاشة' : '🎨 تعديل التصميم'}
@@ -44,13 +47,14 @@ export default function App() {
         position: 'absolute', bottom: '20px', left: '50%',
         transform: `translate(-50%, ${isPanelOpen ? '0' : '120%'})`,
         transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        width: '90%', maxWidth: '400px', backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '24px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+        width: '90%', maxWidth: '400px', 
+        backgroundColor: 'rgba(255, 255, 255, 0.95)', // بقيت بيضاء شبه شفافة لتباين جميل مع الخلفية الداكنة
+        borderRadius: '24px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
         backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '20px',
         direction: 'rtl', maxHeight: '70vh', overflowY: 'auto'
       }}>
         
-        {/* الترويسة وأزرار التحكم بالطبقات */}
+        {/* الترويسة وأزرار التحكم */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '15px' }}>
           <div>
             <h2 style={{ margin: 0, color: '#111827', fontSize: '20px', fontWeight: '800' }}>Cake Studio</h2>
