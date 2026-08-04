@@ -1,49 +1,4 @@
-import { useMemo } from 'react';
-import * as THREE from 'three';
 import { useOrderStore } from './store';
-
-// مكون فرعي يمثل طبقة الكيك الواحدة باحترافية
-function CakeLayer({ layer, index }) {
-  // استخدام useMemo لضمان عدم إعادة رسم المجسم إلا إذا تغير الحجم
-  const geometry = useMemo(() => {
-    // 1. نرسم شكل دائرة مثالية
-    const shape = new THREE.Shape();
-    // نطرح 0.05 من نصف القطر لنعوض مساحة الحافة الناعمة (Bevel)
-    shape.absarc(0, 0, layer.radius - 0.05, 0, Math.PI * 2, false);
-    
-    // 2. نبثق الدائرة لتصبح أسطوانة مع تفعيل الحواف الناعمة
-    return new THREE.ExtrudeGeometry(shape, {
-      depth: layer.height - 0.1, // نطرح سماكة الحواف العلوية والسفلية من الارتفاع الإجمالي
-      bevelEnabled: true,        // تفعيل النعومة
-      bevelSegments: 16,         // دقة النعومة العالية
-      steps: 1,
-      bevelSize: 0.05,           // عرض الحافة الناعمة
-      bevelThickness: 0.05,      // سماكة الحافة الناعمة
-      curveSegments: 128         // دقة استدارة الكيكة
-    });
-  }, [layer.radius, layer.height]);
-
-  // حسابات رياضية دقيقة: الطبقة السفلية تبدأ من 0.05 (سطح القاعدة الذهببة)
-  // وكل طبقة تالية ترتفع بمقدار 1.2 بدقة متناهية
-  const yPos = (index * 1.2) + 0.05; 
-
-  return (
-    <mesh 
-      position={[0, yPos, 0]} 
-      // نبطح المجسم على المحور السيني لأن الـ Extrude افتراضياً يبني على المحور العيني
-      rotation={[-Math.PI / 2, 0, 0]} 
-      geometry={geometry}
-      castShadow 
-      receiveShadow
-    >
-      <meshStandardMaterial 
-        color={layer.color} 
-        roughness={0.85} // ملمس مطفي يحاكي عجينة السكر الحقيقية
-        metalness={0.02} 
-      />
-    </mesh>
-  );
-}
 
 export default function CakeModel() {
   const layers = useOrderStore((state) => state.layers);
@@ -51,17 +6,32 @@ export default function CakeModel() {
   return (
     <group position={[0, -1.2, 0]}> 
       
-      {/* قاعدة الكيك الفاخرة (Cake Board) */}
+      {/* قاعدة الكيك الذهبية */}
       <mesh position={[0, 0, 0]} receiveShadow castShadow>
-        <cylinderGeometry args={[2.7, 2.7, 0.1, 128]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.7} roughness={0.2} />
+        <cylinderGeometry args={[2.7, 2.7, 0.1, 64]} />
+        <meshStandardMaterial color="#d4af37" metalness={0.6} roughness={0.3} />
       </mesh>
 
-      {/* بناء الطبقات باستدعاء المكون الاحترافي */}
-      {layers.map((layer, index) => (
-        <CakeLayer key={layer.id} layer={layer} index={index} />
-      ))}
-      
+      {/* طبقات الكيك - أسطوانة نظيفة ومثالية بدون أي تعقيدات */}
+      {layers.map((layer, index) => {
+        const yPos = (index * 1.2) + 0.65; 
+
+        return (
+          <mesh key={layer.id} position={[0, yPos, 0]} castShadow receiveShadow>
+            {/* أسطوانة بدقة 64 لتكون دائرية تماماً وناعمة */}
+            <cylinderGeometry args={[layer.radius, layer.radius, layer.height, 64]} />
+            
+            {/* استخدام خامة فيزيائية تعطي مظهر الكريمة الفاخرة المطفية */}
+            <meshPhysicalMaterial 
+              color={layer.color} 
+              roughness={0.9} 
+              metalness={0.05}
+              clearcoat={0.1} 
+              clearcoatRoughness={0.8}
+            />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
