@@ -1,4 +1,5 @@
 import { useOrderStore } from './store';
+import * as THREE from 'three';
 
 export default function CakeModel() {
   const layers = useOrderStore((state) => state.layers);
@@ -9,7 +10,7 @@ export default function CakeModel() {
       {/* قاعدة الكيك الفاخرة (Cake Board) */}
       <mesh position={[0, 0, 0]} receiveShadow castShadow>
         <cylinderGeometry args={[2.7, 2.7, 0.1, 128]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.7} roughness={0.2} /> {/* لون ذهبي واقعي */}
+        <meshStandardMaterial color="#d4af37" metalness={0.7} roughness={0.2} />
       </mesh>
 
       {/* بناء الطبقات */}
@@ -24,13 +25,18 @@ export default function CakeModel() {
               <cylinderGeometry args={[layer.radius, layer.radius, layer.height, 128]} />
               <meshStandardMaterial 
                 color={layer.color} 
-                roughness={0.8} // خشونة الكريمة/السكر
+                roughness={0.8} 
                 metalness={0.05}
               />
             </mesh>
             
-            {/* السر الاحترافي: حلقة ناعمة في الأعلى لتبدو الحواف كعجينة السكر (Fondant) */}
-            <mesh position={[0, layer.height / 2, 0]} castShadow receiveShadow>
+            {/* حلقة التنعيم المصححة (تستقر أفقياً على حافة الطبقة) */}
+            <mesh 
+              position={[0, layer.height / 2, 0]} 
+              rotation-x={Math.PI / 2} // <-- هذا هو السطر الذي أصلح دوران الحلقة (كوكب زحل)
+              castShadow 
+              receiveShadow
+            >
               <torusGeometry args={[layer.radius, 0.05, 32, 128]} />
               <meshStandardMaterial color={layer.color} roughness={0.8} metalness={0.05} />
             </mesh>
