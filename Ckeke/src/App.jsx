@@ -73,11 +73,12 @@ function CustomerDataScreen({ onNext, onBack }) {
 }
 
 // ==========================================
-// 3. الموجه والشاشة 3D
+// 3. الموجه والاستوديو 3D
 // ==========================================
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('home');
   const { layers, addLayer, removeLayer, updateLayerColor } = useOrderStore();
+  const [isPanelOpen, setIsPanelOpen] = useState(true); // حالة التحكم بظهور لوحة التحكم
 
   if (activeScreen === 'home') {
     return <HomeScreen onStartNewOrder={() => setActiveScreen('customer')} />;
@@ -90,10 +91,24 @@ export default function App() {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #2c1618 0%, #0d0607 100%)', fontFamily: 'sans-serif' }}>
       
+      {/* زر الرجوع لصفحة بيانات العميل */}
       <button onClick={() => setActiveScreen('customer')} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 50, backgroundColor: 'rgba(255,255,255,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', padding: '10px 15px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
         رجوع ↩️
       </button>
 
+      {/* زر ملء الشاشة / إخفاء وإظهار اللوحة */}
+      <button 
+        onClick={() => setIsPanelOpen(!isPanelOpen)}
+        style={{
+          position: 'absolute', top: '20px', left: '20px', zIndex: 50,
+          backgroundColor: 'rgba(212, 175, 55, 0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)',
+          borderRadius: '30px', padding: '10px 20px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)'
+        }}
+      >
+        {isPanelOpen ? '👁️ إخفاء اللوحة' : '🎨 تعديل التصميم'}
+      </button>
+
+      {/* مشهد الـ 3D */}
       <Canvas camera={{ position: [0, 4, 10], fov: 45 }} shadows>
         <ambientLight intensity={0.4} />
         <spotLight position={[5, 10, 5]} angle={0.3} penumbra={1} intensity={2.5} castShadow />
@@ -103,8 +118,10 @@ export default function App() {
         <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} enableZoom={true} />
       </Canvas>
 
+      {/* لوحة التحكم السفلية المتحركة بناءً على حالة isPanelOpen */}
       <div style={{
-        position: 'absolute', bottom: '20px', left: '50%', transform: `translate(-50%, 0)`, width: '90%', maxWidth: '400px', 
+        position: 'absolute', bottom: '20px', left: '50%', transform: `translate(-50%, ${isPanelOpen ? '0' : '150%'})`,
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)', width: '90%', maxWidth: '400px', 
         backgroundColor: 'rgba(255, 255, 255, 0.96)', borderRadius: '24px', padding: '24px', 
         boxShadow: '0 15px 50px rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '20px', direction: 'rtl'
       }}>
@@ -123,7 +140,9 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {layers.map((layer, index) => (
             <div key={layer?.id || index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f9fafb', padding: '10px 15px', borderRadius: '12px', border: '1px solid #f3f4f6' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>{index === 0 ? 'الطبقة السفلية' : index === 1 ? 'الطبقة الوسطى' : 'الطبقة العلوية'}</span>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>
+                {index === 0 ? 'الطبقة السفلية' : index === 1 ? 'الطبقة الوسطى' : 'الطبقة العلوية'}
+              </span>
               <input type="color" value={layer?.color || '#ffffff'} onChange={(e) => updateLayerColor(index, e.target.value)} style={{ width: '35px', height: '35px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: 0, backgroundColor: 'transparent' }} />
             </div>
           ))}
