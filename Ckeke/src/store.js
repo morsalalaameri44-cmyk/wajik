@@ -3,29 +3,30 @@ import { create } from 'zustand';
 const LAYER_PRICE = 5000; 
 
 export const useOrderStore = create((set) => ({
-  // ==========================================
-  // 1. بيانات العميل (الخطوة الأولى)
-  // ==========================================
   customerData: {
     name: '',
     phone: '',
-    occasion: 'عيد ميلاد', // قيمة افتراضية لتسريع العمل
+    occasion: 'عيد ميلاد',
     deliveryDate: '',
     deliveryTime: '',
     notes: ''
   },
   
-  // دالة لتحديث أي حقل في بيانات العميل فوراً
   updateCustomerData: (field, value) => set((state) => ({
-    customerData: { 
-      ...state.customerData, 
-      [field]: value 
-    }
+    customerData: { ...state.customerData, [field]: value }
   })),
 
-  // ==========================================
-  // 2. بيانات التورتة (الخطوة الثانية)
-  // ==========================================
+  // إعدادات النكهات الجديدة
+  flavorData: {
+    cakeFlavor: 'فانيليا',
+    filling: 'شوكولاتة',
+    topping: 'كريمة زبدة'
+  },
+
+  updateFlavorData: (field, value) => set((state) => ({
+    flavorData: { ...state.flavorData, [field]: value }
+  })),
+
   layers: [{ id: 1, color: '#fcd34d' }],
   
   addLayer: () => set((state) => {
@@ -48,6 +49,5 @@ export const useOrderStore = create((set) => ({
     return { layers: newLayers };
   }),
 
-  // حساب السعر
   getTotalPrice: (state) => state.layers.length * LAYER_PRICE
 }));
