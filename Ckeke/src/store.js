@@ -1,40 +1,53 @@
 import { create } from 'zustand';
 
+const LAYER_PRICE = 5000; 
+
 export const useOrderStore = create((set) => ({
-  // الحالة الافتراضية: كيكة من طبقة واحدة
-  layers: [
-    { id: 1, color: '#FFD700', radius: 2.1, height: 1.2 }
-  ],
+  // ==========================================
+  // 1. بيانات العميل (الخطوة الأولى)
+  // ==========================================
+  customerData: {
+    name: '',
+    phone: '',
+    occasion: 'عيد ميلاد', // قيمة افتراضية لتسريع العمل
+    deliveryDate: '',
+    deliveryTime: '',
+    notes: ''
+  },
+  
+  // دالة لتحديث أي حقل في بيانات العميل فوراً
+  updateCustomerData: (field, value) => set((state) => ({
+    customerData: { 
+      ...state.customerData, 
+      [field]: value 
+    }
+  })),
 
-  // دالة لإضافة طبقة جديدة (بحد أقصى 3 طبقات للحفاظ على تناسق الشكل)
+  // ==========================================
+  // 2. بيانات التورتة (الخطوة الثانية)
+  // ==========================================
+  layers: [{ id: 1, color: '#fcd34d' }],
+  
   addLayer: () => set((state) => {
-    if (state.layers.length >= 3) return state;
-    
-    // الطبقة الجديدة يجب أن تكون أصغر من الطبقة التي تحتها
-    const prevLayer = state.layers[state.layers.length - 1];
-    const newRadius = prevLayer.radius * 0.75; 
-    
-    const newLayer = {
-      id: state.layers.length + 1,
-      color: '#ffffff', // لون افتراضي أبيض للطبقة الجديدة
-      radius: newRadius,
-      height: 1.2
-    };
-    
-    return { layers: [...state.layers, newLayer] };
+    if (state.layers.length < 3) {
+      return { layers: [...state.layers, { id: state.layers.length + 1, color: '#ffffff' }] };
+    }
+    return state;
   }),
-
-  // دالة لإزالة الطبقة العلوية (يجب أن تظل طبقة واحدة على الأقل)
+  
   removeLayer: () => set((state) => {
-    if (state.layers.length <= 1) return state;
-    return { layers: state.layers.slice(0, -1) };
+    if (state.layers.length > 1) {
+      return { layers: state.layers.slice(0, -1) };
+    }
+    return state;
+  }),
+  
+  updateLayerColor: (index, color) => set((state) => {
+    const newLayers = [...state.layers];
+    newLayers[index].color = color;
+    return { layers: newLayers };
   }),
 
-  // دالة لتحديث لون طبقة محددة
-  updateLayerColor: (index, newColor) => set((state) => {
-    const updatedLayers = [...state.layers];
-    updatedLayers[index].color = newColor;
-    return { layers: updatedLayers };
-  })
+  // حساب السعر
+  getTotalPrice: (state) => state.layers.length * LAYER_PRICE
 }));
-
