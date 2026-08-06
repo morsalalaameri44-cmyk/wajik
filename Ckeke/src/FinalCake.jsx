@@ -2,24 +2,20 @@ import React from 'react';
 import { useOrderStore } from './store';
 
 export default function FinalCake() {
-  const layers = useOrderStore((state) => state.layers);
-
-  // إعدادات هندسية دقيقة لتراص الطبقات بدون فراغات مع تناقص الحجم
-  const layerSettings = [
-    { radius: 2.2, height: 1.5, yPos: 0.75 }, // الطبقة الأولى (السفلية - الأكبر)
-    { radius: 1.7, height: 1.5, yPos: 2.25 }, // الطبقة الثانية (الوسطى)
-    { radius: 1.2, height: 1.5, yPos: 3.75 }  // الطبقة الثالثة (العلوية - الأصغر)
-  ];
+  const layers = useOrderStore((state) => state.layers) || [];
 
   return (
     <group position={[0, -1.2, 0]}>
       {layers.map((layer, index) => {
-        const setting = layerSettings[index];
+        // معادلة هندسية ديناميكية تمنع انهيار التصميم: 
+        // كل طبقة تصغر بمقدار 0.5 وترتفع بمقدار 1.5 تلقائياً
+        const radius = Math.max(2.2 - (index * 0.5), 0.5); 
+        const yPos = 0.75 + (index * 1.5);
+        
         return (
-          <mesh key={layer.id} position={[0, setting.yPos, 0]} castShadow receiveShadow>
-            {/* 64 لضمان دائرية فائقة النعومة للمجسم */}
-            <cylinderGeometry args={[setting.radius, setting.radius, setting.height, 64]} />
-            <meshStandardMaterial color={layer.color} roughness={0.4} metalness={0.1} />
+          <mesh key={layer?.id || index} position={[0, yPos, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[radius, radius, 1.5, 64]} />
+            <meshStandardMaterial color={layer?.color || '#ffffff'} roughness={0.4} metalness={0.1} />
           </mesh>
         );
       })}
