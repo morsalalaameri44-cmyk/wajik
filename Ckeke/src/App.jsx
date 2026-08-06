@@ -4,9 +4,7 @@ import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
 import FinalCake from './FinalCake';
 import { useOrderStore } from './store';
 
-// ==========================================
 // 1. الشاشة الرئيسية
-// ==========================================
 function HomeScreen({ onStartNewOrder }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', width: '100vw', background: 'radial-gradient(circle at 50% 50%, #2c1618 0%, #0d0607 100%)', fontFamily: 'sans-serif', color: '#fff' }}>
@@ -26,17 +24,10 @@ function HomeScreen({ onStartNewOrder }) {
   );
 }
 
-// ==========================================
 // 2. شاشة بيانات العميل (الخطوة 1)
-// ==========================================
 function CustomerDataScreen({ onNext, onBack }) {
   const { customerData, updateCustomerData } = useOrderStore();
-
-  const inputStyle = {
-    width: '100%', padding: '14px', backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-    border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', 
-    color: '#1f2937', marginBottom: '16px', outline: 'none', boxSizing: 'border-box', direction: 'rtl'
-  };
+  const inputStyle = { width: '100%', padding: '14px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', color: '#1f2937', marginBottom: '16px', outline: 'none', boxSizing: 'border-box', direction: 'rtl' };
 
   return (
     <div style={{ minHeight: '100vh', width: '100vw', background: '#f9fafb', fontFamily: 'sans-serif', padding: '20px', boxSizing: 'border-box' }}>
@@ -45,26 +36,21 @@ function CustomerDataScreen({ onNext, onBack }) {
         <h2 style={{ margin: 0, color: '#111827', fontSize: '20px', fontWeight: '900' }}>بيانات العميل</h2>
         <div style={{ width: '24px' }}></div>
       </div>
-
       <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)' }}>
         <input style={inputStyle} placeholder="👤 اسم العميل" value={customerData?.name || ''} onChange={(e) => updateCustomerData('name', e.target.value)} />
         <input style={inputStyle} type="tel" placeholder="📱 رقم الهاتف" value={customerData?.phone || ''} onChange={(e) => updateCustomerData('phone', e.target.value)} />
-        
         <select style={inputStyle} value={customerData?.occasion || 'عيد ميلاد'} onChange={(e) => updateCustomerData('occasion', e.target.value)}>
           <option value="عيد ميلاد">🎂 عيد ميلاد</option>
           <option value="زواج">💍 زواج / خطوبة</option>
           <option value="تخرج">🎓 تخرج</option>
           <option value="أخرى">✨ مناسبة أخرى</option>
         </select>
-
         <div style={{ display: 'flex', gap: '10px' }}>
           <input style={{...inputStyle, flex: 1}} type="date" value={customerData?.deliveryDate || ''} onChange={(e) => updateCustomerData('deliveryDate', e.target.value)} />
           <input style={{...inputStyle, flex: 1}} type="time" value={customerData?.deliveryTime || ''} onChange={(e) => updateCustomerData('deliveryTime', e.target.value)} />
         </div>
-
-        <textarea style={{...inputStyle, height: '100px', resize: 'none'}} placeholder="📝 ملاحظات إضافية (اختياري)..." value={customerData?.notes || ''} onChange={(e) => updateCustomerData('notes', e.target.value)} />
-        
-        <button onClick={onNext} style={{ width: '100%', padding: '16px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '10px', boxShadow: '0 4px 15px rgba(44, 22, 24, 0.3)' }}>
+        <textarea style={{...inputStyle, height: '100px', resize: 'none'}} placeholder="📝 ملاحظات إضافية..." value={customerData?.notes || ''} onChange={(e) => updateCustomerData('notes', e.target.value)} />
+        <button onClick={onNext} style={{ width: '100%', padding: '16px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
           بدء تصميم التورتة 🎨
         </button>
       </div>
@@ -72,43 +58,69 @@ function CustomerDataScreen({ onNext, onBack }) {
   );
 }
 
-// ==========================================
-// 3. الموجه والاستوديو 3D
-// ==========================================
+// 3. شاشة النكهات والحشوات (الخطوة 3 الجديدة)
+function FlavorScreen({ onNext, onBack }) {
+  const { flavorData, updateFlavorData } = useOrderStore();
+  const inputStyle = { width: '100%', padding: '14px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', color: '#1f2937', marginBottom: '16px', outline: 'none', boxSizing: 'border-box', direction: 'rtl' };
+
+  return (
+    <div style={{ minHeight: '100vh', width: '100vw', background: '#f9fafb', fontFamily: 'sans-serif', padding: '20px', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', marginTop: '10px' }}>
+        <button onClick={onBack} style={{ background: 'transparent', border: 'none', fontSize: '24px', color: '#4b5563', cursor: 'pointer' }}>🔙</button>
+        <h2 style={{ margin: 0, color: '#111827', fontSize: '20px', fontWeight: '900' }}>النكهات والحشوات</h2>
+        <div style={{ width: '24px' }}></div>
+      </div>
+      <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)' }}>
+        <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151'}}>نكهة الكيك الأساسية:</label>
+        <select style={inputStyle} value={flavorData.cakeFlavor} onChange={(e) => updateFlavorData('cakeFlavor', e.target.value)}>
+          <option value="فانيليا">🍰 فانيليا</option>
+          <option value="شوكولاتة">🍫 شوكولاتة</option>
+          <option value="ريد فلفل">🍓 ريد فلفيت</option>
+        </select>
+
+        <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151'}}>الحشوة:</label>
+        <select style={inputStyle} value={flavorData.filling} onChange={(e) => updateFlavorData('filling', e.target.value)}>
+          <option value="شوكولاتة">🍫 شوكولاتة</option>
+          <option value="كريمة وبندق">🥜 كريمة وبندق</option>
+          <option value="فواكه مشكلة">🍓 فواكه مشكلة</option>
+        </select>
+
+        <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151'}}>نوع التغطية:</label>
+        <select style={inputStyle} value={flavorData.topping} onChange={(e) => updateFlavorData('topping', e.target.value)}>
+          <option value="كريمة زبدة">🧁 كريمة زبدة</option>
+          <option value="فوندان">🎨 فوندان (عجينة سكر)</option>
+          <option value="جناش شوكولاتة">🍫 جناش شوكولاتة</option>
+        </select>
+
+        <button onClick={onNext} style={{ width: '100%', padding: '16px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '15px' }}>
+          تأكيد النكهات والمتابعة ➜
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// 4. الموجه الرئيسي
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('home');
   const { layers, addLayer, removeLayer, updateLayerColor } = useOrderStore();
-  const [isPanelOpen, setIsPanelOpen] = useState(true); // حالة التحكم بظهور لوحة التحكم
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
-  if (activeScreen === 'home') {
-    return <HomeScreen onStartNewOrder={() => setActiveScreen('customer')} />;
-  }
-
-  if (activeScreen === 'customer') {
-    return <CustomerDataScreen onNext={() => setActiveScreen('wizard_3d')} onBack={() => setActiveScreen('home')} />;
-  }
+  if (activeScreen === 'home') return <HomeScreen onStartNewOrder={() => setActiveScreen('customer')} />;
+  if (activeScreen === 'customer') return <CustomerDataScreen onNext={() => setActiveScreen('wizard_3d')} onBack={() => setActiveScreen('home')} />;
+  if (activeScreen === 'flavors') return <FlavorScreen onNext={() => alert('تم حفظ الطلب بنجاح في النسخة التجريبية MVP!')} onBack={() => setActiveScreen('wizard_3d')} />;
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #2c1618 0%, #0d0607 100%)', fontFamily: 'sans-serif' }}>
       
-      {/* زر الرجوع لصفحة بيانات العميل */}
       <button onClick={() => setActiveScreen('customer')} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 50, backgroundColor: 'rgba(255,255,255,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', padding: '10px 15px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
         رجوع ↩️
       </button>
 
-      {/* زر ملء الشاشة / إخفاء وإظهار اللوحة */}
-      <button 
-        onClick={() => setIsPanelOpen(!isPanelOpen)}
-        style={{
-          position: 'absolute', top: '20px', left: '20px', zIndex: 50,
-          backgroundColor: 'rgba(212, 175, 55, 0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)',
-          borderRadius: '30px', padding: '10px 20px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)'
-        }}
-      >
+      <button onClick={() => setIsPanelOpen(!isPanelOpen)} style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 50, backgroundColor: 'rgba(212, 175, 55, 0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '30px', padding: '10px 20px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
         {isPanelOpen ? '👁️ إخفاء اللوحة' : '🎨 تعديل التصميم'}
       </button>
 
-      {/* مشهد الـ 3D */}
       <Canvas camera={{ position: [0, 4, 10], fov: 45 }} shadows>
         <ambientLight intensity={0.4} />
         <spotLight position={[5, 10, 5]} angle={0.3} penumbra={1} intensity={2.5} castShadow />
@@ -118,14 +130,12 @@ export default function App() {
         <OrbitControls makeDefault minPolarAngle={0} maxPolarAngle={Math.PI / 2.1} enableZoom={true} />
       </Canvas>
 
-      {/* لوحة التحكم السفلية المتحركة بناءً على حالة isPanelOpen */}
       <div style={{
         position: 'absolute', bottom: '20px', left: '50%', transform: `translate(-50%, ${isPanelOpen ? '0' : '150%'})`,
-        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)', width: '90%', maxWidth: '400px', 
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)`, width: '90%', maxWidth: '400px', 
         backgroundColor: 'rgba(255, 255, 255, 0.96)', borderRadius: '24px', padding: '24px', 
         boxShadow: '0 15px 50px rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '20px', direction: 'rtl'
       }}>
-        
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f3f4f6', paddingBottom: '15px' }}>
           <div>
             <h2 style={{ margin: 0, color: '#150a0a', fontSize: '20px', fontWeight: '900' }}>مواصفات التورتة</h2>
@@ -133,22 +143,21 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button onClick={addLayer} disabled={layers.length >= 3} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length >= 3 ? '#e5e7eb' : '#2c1618', color: layers.length >= 3 ? '#9ca3af' : '#d4af37', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>+</button>
-            <button onClick={removeLayer} disabled={layers.length <= 1} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length <= 1 ? '#e5e7eb' : '#ef4444', color: layers.length <= 1 ? '#9ca3af' : 'white', fontSize: '18px', cursor: 'pointer' }}>-</button>
+            <button onClick[removeLayer] disabled={layers.length <= 1} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length <= 1 ? '#e5e7eb' : '#ef4444', color: layers.length <= 1 ? '#9ca3af' : 'white', fontSize: '18px', cursor: 'pointer' }}>-</button>
           </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {layers.map((layer, index) => (
             <div key={layer?.id || index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f9fafb', padding: '10px 15px', borderRadius: '12px', border: '1px solid #f3f4f6' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>
-                {index === 0 ? 'الطبقة السفلية' : index === 1 ? 'الطبقة الوسطى' : 'الطبقة العلوية'}
-              </span>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>{index === 0 ? 'الطبقة السفلية' : index === 1 ? 'الطبقة الوسطى' : 'الطبقة العلوية'}</span>
               <input type="color" value={layer?.color || '#ffffff'} onChange={(e) => updateLayerColor(index, e.target.value)} style={{ width: '35px', height: '35px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: 0, backgroundColor: 'transparent' }} />
             </div>
           ))}
         </div>
         
-        <button style={{ width: '100%', padding: '14px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* زر الانتقال لشاشة النكهات */}
+        <button onClick={() => setActiveScreen('flavors')} style={{ width: '100%', padding: '14px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>متابعة (للنكهات) ➜</span>
           <span style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', padding: '4px 12px', borderRadius: '8px' }}>{layers.length * 5000} ريال</span>
         </button>
