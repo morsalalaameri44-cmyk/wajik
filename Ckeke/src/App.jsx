@@ -40,20 +40,17 @@ function CustomerDataScreen({ onNext, onBack }) {
 
   return (
     <div style={{ minHeight: '100vh', width: '100vw', background: '#f9fafb', fontFamily: 'sans-serif', padding: '20px', boxSizing: 'border-box' }}>
-      
-      {/* الهيدر */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', marginTop: '10px' }}>
         <button onClick={onBack} style={{ background: 'transparent', border: 'none', fontSize: '24px', color: '#4b5563', cursor: 'pointer' }}>🔙</button>
         <h2 style={{ margin: 0, color: '#111827', fontSize: '20px', fontWeight: '900' }}>بيانات العميل</h2>
-        <div style={{ width: '24px' }}></div> {/* توازن بصري */}
+        <div style={{ width: '24px' }}></div>
       </div>
 
-      {/* الفورم الزجاجي الفاخر */}
       <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.05)' }}>
-        <input style={inputStyle} placeholder="👤 اسم العميل" value={customerData.name} onChange={(e) => updateCustomerData('name', e.target.value)} />
-        <input style={inputStyle} type="tel" placeholder="📱 رقم الهاتف" value={customerData.phone} onChange={(e) => updateCustomerData('phone', e.target.value)} />
+        <input style={inputStyle} placeholder="👤 اسم العميل" value={customerData?.name || ''} onChange={(e) => updateCustomerData('name', e.target.value)} />
+        <input style={inputStyle} type="tel" placeholder="📱 رقم الهاتف" value={customerData?.phone || ''} onChange={(e) => updateCustomerData('phone', e.target.value)} />
         
-        <select style={inputStyle} value={customerData.occasion} onChange={(e) => updateCustomerData('occasion', e.target.value)}>
+        <select style={inputStyle} value={customerData?.occasion || 'عيد ميلاد'} onChange={(e) => updateCustomerData('occasion', e.target.value)}>
           <option value="عيد ميلاد">🎂 عيد ميلاد</option>
           <option value="زواج">💍 زواج / خطوبة</option>
           <option value="تخرج">🎓 تخرج</option>
@@ -61,13 +58,12 @@ function CustomerDataScreen({ onNext, onBack }) {
         </select>
 
         <div style={{ display: 'flex', gap: '10px' }}>
-          <input style={{...inputStyle, flex: 1}} type="date" value={customerData.deliveryDate} onChange={(e) => updateCustomerData('deliveryDate', e.target.value)} />
-          <input style={{...inputStyle, flex: 1}} type="time" value={customerData.deliveryTime} onChange={(e) => updateCustomerData('deliveryTime', e.target.value)} />
+          <input style={{...inputStyle, flex: 1}} type="date" value={customerData?.deliveryDate || ''} onChange={(e) => updateCustomerData('deliveryDate', e.target.value)} />
+          <input style={{...inputStyle, flex: 1}} type="time" value={customerData?.deliveryTime || ''} onChange={(e) => updateCustomerData('deliveryTime', e.target.value)} />
         </div>
 
-        <textarea style={{...inputStyle, height: '100px', resize: 'none'}} placeholder="📝 ملاحظات إضافية (اختياري)..." value={customerData.notes} onChange={(e) => updateCustomerData('notes', e.target.value)} />
+        <textarea style={{...inputStyle, height: '100px', resize: 'none'}} placeholder="📝 ملاحظات إضافية (اختياري)..." value={customerData?.notes || ''} onChange={(e) => updateCustomerData('notes', e.target.value)} />
         
-        {/* زر الانتقال للتصميم */}
         <button onClick={onNext} style={{ width: '100%', padding: '16px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '10px', boxShadow: '0 4px 15px rgba(44, 22, 24, 0.3)' }}>
           بدء تصميم التورتة 🎨
         </button>
@@ -77,12 +73,11 @@ function CustomerDataScreen({ onNext, onBack }) {
 }
 
 // ==========================================
-// 3. المكون الأساسي والموجه (Router)
+// 3. الموجه والشاشة 3D
 // ==========================================
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('home');
   const { layers, addLayer, removeLayer, updateLayerColor } = useOrderStore();
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
 
   if (activeScreen === 'home') {
     return <HomeScreen onStartNewOrder={() => setActiveScreen('customer')} />;
@@ -92,7 +87,6 @@ export default function App() {
     return <CustomerDataScreen onNext={() => setActiveScreen('wizard_3d')} onBack={() => setActiveScreen('home')} />;
   }
 
-  // شاشة الاستوديو 3D (الخطوة 2)
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #2c1618 0%, #0d0607 100%)', fontFamily: 'sans-serif' }}>
       
@@ -128,9 +122,9 @@ export default function App() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {layers.map((layer, index) => (
-            <div key={layer.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f9fafb', padding: '10px 15px', borderRadius: '12px', border: '1px solid #f3f4f6' }}>
+            <div key={layer?.id || index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f9fafb', padding: '10px 15px', borderRadius: '12px', border: '1px solid #f3f4f6' }}>
               <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#374151' }}>{index === 0 ? 'الطبقة السفلية' : index === 1 ? 'الطبقة الوسطى' : 'الطبقة العلوية'}</span>
-              <input type="color" value={layer.color} onChange={(e) => updateLayerColor(index, e.target.value)} style={{ width: '35px', height: '35px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: 0, backgroundColor: 'transparent' }} />
+              <input type="color" value={layer?.color || '#ffffff'} onChange={(e) => updateLayerColor(index, e.target.value)} style={{ width: '35px', height: '35px', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: 0, backgroundColor: 'transparent' }} />
             </div>
           ))}
         </div>
@@ -143,4 +137,3 @@ export default function App() {
     </div>
   );
 }
-// Force Vercel Update
