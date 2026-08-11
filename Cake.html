@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مصمم الكيك ثلاثي الأبعاد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  if (typeof THREE === 'undefined') {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>');
+  }
+</script>
+<style>
+  :root{
+    --cream:#FAF3E7;
+    --card:#FFFDF8;
+    --rose:#D8869A;
+    --rose-dark:#B85D74;
+    --gold:#B8863B;
+    --choc:#3A2A22;
+    --choc-soft:#7A6152;
+    --mint:#8FAE96;
+    --line:#E6D9C4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:'Tajawal',sans-serif;background:var(--cream);color:var(--choc);}
+  body{
+    display:flex;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 85% 10%, rgba(216,134,154,0.10), transparent 45%),
+      radial-gradient(circle at 10% 90%, rgba(143,174,150,0.10), transparent 40%),
+      var(--cream);
+  }
+
+  /* ===== Stage (left, since RTL sidebar sits right) ===== */
+  #stage-wrap{
+    flex:1 1 auto;
+    position:relative;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+  #stage-wrap::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 38%, rgba(255,251,242,0.9), transparent 70%),
+      linear-gradient(180deg, #3A2A22 0%, #4E362A 55%, #2C2019 100%);
+    z-index:0;
+  }
+  #canvas-host{position:absolute; inset:0; z-index:1; cursor:grab;}
+  #canvas-host:active{cursor:grabbing;}
+  #canvas-host canvas{display:block; width:100%; height:100%;}
+
+  .stage-hint{
+    position:absolute; bottom:22px; left:50%; transform:translateX(-50%);
+    z-index:2; font-size:12.5px; color:#F1E4D4; opacity:.65; letter-spacing:.3px;
+    background:rgba(0,0,0,0.18); padding:6px 14px; border-radius:20px;
+    pointer-events:none;
+  }
+  .stage-title{
+    position:absolute; top:26px; left:50%; transform:translateX(-50%);
+    z-index:2; text-align:center; pointer-events:none;
+  }
+  .stage-title h1{
+    font-family:'Lalezar',sans-serif; font-weight:400; font-size:26px;
+    color:#F8ECDA; margin:0; letter-spacing:1px; text-shadow:0 2px 10px rgba(0,0,0,.35);
+  }
+  .stage-title span{color:#E0A9B6; font-size:12.5px; letter-spacing:2px;}
+
+  /* ===== Sidebar (order ticket) ===== */
+  #ticket{
+    flex:0 0 380px;
+    max-width:380px;
+    background:var(--card);
+    border-left:1px dashed var(--line);
+    padding:26px 24px 30px;
+    overflow-y:auto;
+    position:relative;
+  }
+  #ticket::before{
+    content:"";
+    position:absolute; top:0; bottom:0; right:0; width:3px;
+    background:repeating-linear-gradient(180deg, var(--rose) 0 10px, transparent 10px 20px);
+    opacity:.5;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px; margin-bottom:4px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(145deg,var(--rose),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px; box-shadow:0 3px 8px rgba(184,134,59,.35);
+  }
+  .brand h2{font-family:'Lalezar',sans-serif;font-weight:400;font-size:21px;margin:0;color:var(--choc);}
+  .brand p{margin:1px 0 0;font-size:11.5px;color:var(--choc-soft);letter-spacing:1px;}
+
+  .ticket-divider{
+    border:none; border-top:1.5px dashed var(--line); margin:18px 0 16px;
+  }
+
+  fieldset{border:none;padding:0;margin:0 0 15px;}
+  .field-row{display:flex; gap:12px;}
+  .field-row .field{flex:1;}
+  label{
+    display:block; font-size:12.5px; font-weight:700; color:var(--choc-soft);
+    margin-bottom:6px; letter-spacing:.3px;
+  }
+  label .n{
+    display:inline-block; width:16px;height:16px;line-height:16px;text-align:center;
+    background:var(--rose); color:#fff; border-radius:50%; font-size:10px; margin-left:6px;
+  }
+  select{
+    width:100%; appearance:none; -webkit-appearance:none;
+    background:#FFFCF6 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0L5 6L10 0" fill="%23B8863B"/></svg>') no-repeat left 12px center;
+    border:1.5px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:13.5px; color:var(--choc);
+    cursor:pointer; transition:.15s border-color;
+  }
+  select:hover, select:focus{border-color:var(--rose); outline:none;}
+
+  .swatch-row{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+  .swatch{width:20px;height:20px;border-radius:50%;border:2px solid #fff; box-shadow:0 0 0 1px var(--line); flex:0 0 auto;}
+
+  #generate-btn{
+    width:100%; margin-top:6px; padding:14px; border:none; border-radius:12px;
+    background:linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+    color:#fff; font-family:'Tajawal',sans-serif; font-weight:900; font-size:15.5px;
+    letter-spacing:.5px; cursor:pointer; box-shadow:0 8px 18px rgba(184,93,116,.32);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  #generate-btn:hover{transform:translateY(-1px); box-shadow:0 10px 22px rgba(184,93,116,.4);}
+  #generate-btn:active{transform:translateY(0);}
+
+  .seal{
+    margin-top:14px; padding:12px 14px; border:1.5px solid var(--line); border-radius:10px;
+    background:#FDF8EF; font-size:12px; color:var(--choc-soft); line-height:1.7; text-align:center;
+  }
+  .seal b{color:var(--gold);}
+
+  /* ===== order meta (order no. / customer / notes) ===== */
+  .order-meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    background:#FDF8EF; border:1.5px solid var(--line); border-radius:10px;
+    padding:9px 13px; margin-bottom:16px; font-size:11.5px; color:var(--choc-soft);
+  }
+  .order-meta b{color:var(--choc); font-family:'Tajawal',sans-serif; font-weight:900; letter-spacing:.5px;}
+  textarea{
+    width:100%; resize:vertical; min-height:56px;
+    background:#FFFCF6; border:1.5px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:13px; color:var(--choc);
+    transition:.15s border-color;
+  }
+  textarea:hover, textarea:focus{border-color:var(--rose); outline:none;}
+  input[type=text].meta-input{
+    width:100%; background:#FFFCF6; border:1.5px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-family:'Tajawal',sans-serif; font-size:13.5px; color:var(--choc);
+  }
+  input[type=text].meta-input:hover, input[type=text].meta-input:focus{border-color:var(--rose); outline:none;}
+
+  /* ===== live estimate summary ===== */
+  #summary-box{
+    display:flex; gap:10px; margin:14px 0 6px;
+  }
+  .stat{
+    flex:1; text-align:center; background:linear-gradient(145deg,#FDF8EF,#FBF0E2);
+    border:1.5px solid var(--line); border-radius:10px; padding:10px 6px;
+  }
+  .stat b{display:block; font-family:'Lalezar',sans-serif; font-weight:400; font-size:19px; color:var(--rose-dark);}
+  .stat span{font-size:10.5px; color:var(--choc-soft); letter-spacing:.3px;}
+
+  #print-btn{
+    width:100%; margin-top:10px; padding:13px; border-radius:12px; cursor:pointer;
+    background:#FFFDF8; border:1.5px solid var(--gold); color:var(--gold);
+    font-family:'Tajawal',sans-serif; font-weight:900; font-size:14.5px; letter-spacing:.3px;
+    transition:.15s background,.15s color;
+  }
+  #print-btn:hover{background:var(--gold); color:#fff;}
+
+  /* ===== printable production sheet (hidden on screen) ===== */
+  #print-sheet{display:none;}
+
+  @media (max-width: 860px){
+    body{flex-direction:column;}
+    #ticket{flex:0 0 auto; max-width:100%; border-left:none; border-top:1px dashed var(--line); order:2;}
+    #stage-wrap{height:52vh; order:1;}
+  }
+
+  @media print{
+    body *{visibility:hidden;}
+    #print-sheet, #print-sheet *{visibility:visible;}
+    #print-sheet{
+      display:block; position:absolute; top:0; right:0; left:0; margin:0; padding:14mm;
+      font-family:'Tajawal',sans-serif; color:#2A1E17;
+    }
+    @page{ size:A4; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="stage-wrap">
+    <div class="stage-title"><span>ATELIER DES GÂTEAUX</span><h1>معاينة الكيكة الحية</h1></div>
+    <div id="canvas-host"></div>
+    <div class="stage-hint">اسحب للتدوير — العجلة للتكبير</div>
+  </div>
+
+  <aside id="ticket">
+    <div class="brand">
+      <div class="mark">🎂</div>
+      <div>
+        <h2>بطاقة طلب الكيكة</h2>
+        <p>اختر المواصفات الجاهزة أدناه</p>
+      </div>
+    </div>
+
+    <div class="order-meta">
+      <span>رقم الطلب: <b id="order-no">—</b></span>
+      <span>التاريخ: <b id="order-date">—</b></span>
+    </div>
+
+    <div class="field" style="margin-bottom:16px;">
+      <label>مرجع العميل / اسم الطلب <span style="font-weight:400;color:var(--choc-soft);">(اختياري)</span></label>
+      <input type="text" id="f-customer" class="meta-input" placeholder="مثال: طلب أسرة الأحمدي">
+    </div>
+
+    <hr class="ticket-divider">
+
+    <fieldset>
+      <div class="field-row">
+        <div class="field">
+          <label><span class="n">١</span>شكل الكيكة</label>
+          <select id="f-shape">
+            <option value="round" selected>دائري</option>
+            <option value="square">مربّع</option>
+            <option value="heart">قلب</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="n">٢</span>عدد الطبقات</label>
+          <select id="f-tiers">
+            <option value="1" selected>طبقة واحدة</option>
+            <option value="2">طبقتان</option>
+            <option value="3">ثلاث طبقات</option>
+          </select>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="field-row">
+        <div class="field">
+          <label><span class="n">٣</span>العرض</label>
+          <select id="f-width">
+            <option value="1.1" data-cm="15">صغير (١٥سم)</option>
+            <option value="1.4" data-cm="20" selected>متوسط (٢٠سم)</option>
+            <option value="1.7" data-cm="25">كبير (٢٥سم)</option>
+            <option value="2.0" data-cm="30">كبير جدًا (٣٠سم)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span class="n">٤</span>الطول</label>
+          <select id="f-length">
+            <option value="1.1" data-cm="15">صغير (١٥سم)</option>
+            <option value="1.4" data-cm="20" selected>متوسط (٢٠سم)</option>
+            <option value="1.7" data-cm="25">كبير (٢٥سم)</option>
+            <option value="2.0" data-cm="30">كبير جدًا (٣٠سم)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label><span class="n">٥</span>ارتفاع الطبقة</label>
+        <select id="f-height">
+          <option value="0.65" data-cm="8">قصيرة (٨سم)</option>
+          <option value="0.95" data-cm="12" selected>متوسطة (١٢سم)</option>
+          <option value="1.3" data-cm="16">عالية (١٦سم)</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <hr class="ticket-divider">
+
+    <fieldset>
+      <div class="field">
+        <label><span class="n">٦</span>نوع الحشوة</label>
+        <select id="f-filling">
+          <option value="vanilla" selected>فانيليا</option>
+          <option value="chocolate">شوكولاتة</option>
+          <option value="strawberry">فراولة</option>
+          <option value="redvelvet">ريد فيلفت</option>
+          <option value="lemon">ليمون</option>
+          <option value="caramel">كراميل</option>
+          <option value="mixedfruit">فواكه مشكّلة</option>
+          <option value="nutella">نوتيلا</option>
+        </select>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label><span class="n">٧</span>لون الكريمة</label>
+        <select id="f-color">
+          <option value="#FFF8F0" selected>أبيض</option>
+          <option value="#F3C6D3">وردي فاتح</option>
+          <option value="#D8869A">وردي غامق</option>
+          <option value="#AEDDEE">أزرق سماوي</option>
+          <option value="#E4C070">ذهبي</option>
+          <option value="#5B3A29">بني شوكولاتة</option>
+          <option value="#B9DCC0">أخضر نعناعي</option>
+          <option value="#F6E2A6">أصفر فانيليا</option>
+          <option value="#C9AEDD">بنفسجي</option>
+        </select>
+        <div class="swatch-row" id="color-swatches"></div>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label><span class="n">٨</span>الديكور العلوي</label>
+        <select id="f-decor">
+          <option value="sprinkles" selected>رذاذ سكري ملوّن</option>
+          <option value="drip">تساقط شوكولاتة (Drip)</option>
+          <option value="flowers">زهور كريمية</option>
+          <option value="fruits">فواكه طازجة</option>
+          <option value="candles">شموع احتفالية</option>
+          <option value="none">بدون ديكور</option>
+        </select>
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label><span class="n">٩</span>المناسبة (لافتة الكيك)</label>
+        <select id="f-occasion">
+          <option value="birthday" selected>عيد ميلاد سعيد</option>
+          <option value="graduation">مبروك التخرج</option>
+          <option value="wedding">مبروك الزفاف</option>
+          <option value="none">بدون لافتة</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <div class="field" style="margin-bottom:6px;">
+      <label>ملاحظات للمعمل <span style="font-weight:400;color:var(--choc-soft);">(اختياري)</span></label>
+      <textarea id="f-notes" placeholder="مثال: تجنّب المكسرات، تسليم الساعة ٥ مساءً..."></textarea>
+    </div>
+
+    <button id="generate-btn">🎂 أنشئ الكيكة</button>
+
+    <div id="summary-box">
+      <div class="stat"><b id="stat-weight">—</b><span>الوزن التقديري</span></div>
+      <div class="stat"><b id="stat-servings">—</b><span>عدد الحصص التقديري</span></div>
+    </div>
+
+    <button id="print-btn">🖨️ طباعة مواصفات الإنتاج للمعمل</button>
+
+    <div class="seal">تُعرض شريحة الكيكة على الطبق الصغير بجانب المعاينة لإظهار <b>طبقات الحشوة</b> المختارة.</div>
+  </aside>
+
+  <!-- ===== Printable production sheet (production/lab order) ===== -->
+  <div id="print-sheet">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #B8863B;padding-bottom:14px;margin-bottom:18px;">
+      <div>
+        <div style="font-size:22px;font-weight:900;">أتيليه الكيك — بطاقة أمر إنتاج</div>
+        <div style="font-size:11.5px;color:#6B564A;margin-top:3px;letter-spacing:.5px;">ATELIER DES GÂTEAUX · PRODUCTION SPEC SHEET</div>
+      </div>
+      <div style="text-align:left;font-size:12px;line-height:1.9;">
+        <div>رقم الطلب: <b id="ps-order-no"></b></div>
+        <div>التاريخ: <b id="ps-date"></b></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;font-size:13px;"><b>مرجع العميل / اسم الطلب:</b> <span id="ps-customer"></span></div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:18px;">
+      <tbody id="ps-table"></tbody>
+    </table>
+
+    <div style="display:flex;gap:14px;margin-bottom:18px;">
+      <div style="flex:1;border:1.5px solid #E6D9C4;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:900;color:#B85D74;" id="ps-weight"></div>
+        <div style="font-size:11px;color:#6B564A;">الوزن التقديري</div>
+      </div>
+      <div style="flex:1;border:1.5px solid #E6D9C4;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:900;color:#B85D74;" id="ps-servings"></div>
+        <div style="font-size:11px;color:#6B564A;">عدد الحصص التقديري</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:22px;">
+      <div style="font-size:13px;font-weight:900;margin-bottom:6px;">ملاحظات للمعمل:</div>
+      <div style="min-height:40px;border:1.5px solid #E6D9C4;border-radius:8px;padding:10px 12px;font-size:12.5px;" id="ps-notes"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:40px;font-size:12px;">
+      <div style="flex:1;">مسؤول الإنتاج: __________________ &nbsp;&nbsp; التوقيع: __________</div>
+      <div style="flex:1;text-align:left;">مراقبة الجودة: __________________ &nbsp;&nbsp; التوقيع: __________</div>
+    </div>
+  </div>
+
+<script>
+/* ---------------- Scene setup ---------------- */
+if (typeof THREE === 'undefined') {
+  document.getElementById('canvas-host').innerHTML =
+    '<div style="color:#F8ECDA;text-align:center;padding-top:40%;font-family:Tajawal,sans-serif;font-size:14px;line-height:2;">' +
+    'تعذّر تحميل مكتبة الرسم ثلاثي الأبعاد (three.js).<br>تأكد من اتصالك بالإنترنت ثم أعد تحميل الصفحة.' +
+    '</div>';
+  throw new Error('THREE.js failed to load from both CDNs');
+}
+const host = document.getElementById('canvas-host');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, host.clientWidth/host.clientHeight, 0.1, 100);
+camera.position.set(0, 3.2, 8.5);
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(host.clientWidth, host.clientHeight);
+renderer.shadowMap.enabled = true;
+host.appendChild(renderer.domElement);
+
+window.addEventListener('resize', ()=>{
+  camera.aspect = host.clientWidth/host.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(host.clientWidth, host.clientHeight);
+});
+
+// lights
+scene.add(new THREE.AmbientLight(0xfff2e0, 0.55));
+const key = new THREE.DirectionalLight(0xfff1de, 1.05);
+key.position.set(4, 8, 5); key.castShadow = true;
+key.shadow.mapSize.set(1024,1024);
+scene.add(key);
+const rim = new THREE.PointLight(0xE0A9B6, 0.6, 20);
+rim.position.set(-5, 3, -4);
+scene.add(rim);
+const fill = new THREE.PointLight(0xB8863B, 0.35, 20);
+fill.position.set(0, 2, -6);
+scene.add(fill);
+
+// backdrop spotlight glow
+const glow = new THREE.Mesh(
+  new THREE.CircleGeometry(6, 48),
+  new THREE.MeshBasicMaterial({color:0xFFF3DE, transparent:true, opacity:0.06})
+);
+glow.position.set(0,2,-6);
+scene.add(glow);
+
+// cake stand
+const standGroup = new THREE.Group();
+const standTop = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.6, 2.7, 0.12, 64),
+  new THREE.MeshStandardMaterial({color:0xE9D9BA, metalness:0.6, roughness:0.25})
+);
+standTop.receiveShadow = true;
+standGroup.add(standTop);
+const standStem = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.18, 0.3, 0.9, 32),
+  new THREE.MeshStandardMaterial({color:0xB8863B, metalness:0.7, roughness:0.3})
+);
+standStem.position.y = -0.51;
+standGroup.add(standStem);
+const standBase = new THREE.Mesh(
+  new THREE.CylinderGeometry(1.1, 1.1, 0.14, 48),
+  new THREE.MeshStandardMaterial({color:0xB8863B, metalness:0.7, roughness:0.3})
+);
+standBase.position.y = -0.99;
+standGroup.add(standBase);
+standGroup.position.y = 1.0;
+scene.add(standGroup);
+
+// side plate for slice
+const plate = new THREE.Mesh(
+  new THREE.CylinderGeometry(1.05, 1.05, 0.06, 48),
+  new THREE.MeshStandardMaterial({color:0xFFFDF6, metalness:0.1, roughness:0.5})
+);
+plate.position.set(3.4, 0.15, 1.6);
+plate.receiveShadow = true;
+scene.add(plate);
+
+let cakeGroup = new THREE.Group();
+let sliceGroup = new THREE.Group();
+scene.add(cakeGroup, sliceGroup);
+
+/* ---------------- data maps ---------------- */
+const fillingColors = {
+  vanilla:   {sponge:'#F5E6C8', fill:'#F0D48A'},
+  chocolate: {sponge:'#8A5A3B', fill:'#5B3A29'},
+  strawberry:{sponge:'#F5E6C8', fill:'#E97C8D'},
+  redvelvet: {sponge:'#7A2036', fill:'#F3E3E6'},
+  lemon:     {sponge:'#F5E6C8', fill:'#F4E285'},
+  caramel:   {sponge:'#E8CDA0', fill:'#C48A3E'},
+  mixedfruit:{sponge:'#F5E6C8', fill:'#D66A6A'},
+  nutella:   {sponge:'#8A5A3B', fill:'#4B2E1E'}
+};
+
+function disposeGroup(g){
+  g.traverse(o=>{
+    if(o.geometry) o.geometry.dispose();
+    if(o.material){ if(Array.isArray(o.material)) o.material.forEach(m=>m.dispose()); else o.material.dispose(); }
+  });
+  while(g.children.length) g.remove(g.children[0]);
+}
+
+function heartShape(size){
+  const s = new THREE.Shape();
+  const x=0, y=0;
+  s.moveTo(x, y + size*0.35);
+  s.bezierCurveTo(x, y+size*0.65, x-size, y+size*0.65, x-size, y+size*0.15);
+  s.bezierCurveTo(x-size, y-size*0.35, x, y-size*0.55, x, y-size*1.05);
+  s.bezierCurveTo(x, y-size*0.55, x+size, y-size*0.35, x+size, y+size*0.15);
+  s.bezierCurveTo(x+size, y+size*0.65, x, y+size*0.65, x, y+size*0.35);
+  return s;
+}
+
+function makeTierMesh(shape, radiusX, radiusZ, height, color){
+  let mesh;
+  const mat = new THREE.MeshStandardMaterial({color, roughness:0.55, metalness:0.02});
+  if(shape==='round'){
+    const geo = new THREE.CylinderGeometry(radiusX, radiusX*0.985, height, 56);
+    mesh = new THREE.Mesh(geo, mat);
+    mesh.scale.z = radiusZ/radiusX;
+  } else if(shape==='square'){
+    const geo = new THREE.BoxGeometry(radiusX*1.75, height, radiusZ*1.75);
+    mesh = new THREE.Mesh(geo, mat);
+  } else {
+    const hs = heartShape(radiusX*0.95);
+    const geo = new THREE.ExtrudeGeometry(hs, {depth:height, bevelEnabled:true, bevelThickness:0.03, bevelSize:0.03, bevelSegments:2, curveSegments:24});
+    geo.rotateX(-Math.PI/2);
+    geo.translate(0, 0, 0.35*radiusX);
+    mesh = new THREE.Mesh(geo, mat);
+    mesh.scale.z = radiusZ/radiusX;
+  }
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  return mesh;
+}
+
+function buildCake(p){
+  disposeGroup(cakeGroup);
+  let y = 0;
+  let rx = p.width, rz = p.length;
+  const boardMat = new THREE.MeshStandardMaterial({color:0xD8AE55, metalness:0.4, roughness:0.4});
+
+  for(let i=0;i<p.tiers;i++){
+    // thin gold board under each tier
+    const board = new THREE.Mesh(new THREE.CylinderGeometry(rx*1.12, rx*1.12, 0.045, 48), boardMat);
+    board.position.y = y;
+    board.scale.z = rz/rx;
+    board.castShadow = true;
+    cakeGroup.add(board);
+    y += 0.05;
+
+    const tier = makeTierMesh(p.shape, rx, rz, p.height, p.color);
+    tier.position.y = y + p.height/2;
+    cakeGroup.add(tier);
+
+    y += p.height + 0.02;
+    rx *= 0.74; rz *= 0.74;
+  }
+
+  cakeGroup.position.y = standGroup.position.y + 0.09;
+  addDecoration(p, y);
+  addTopper(p, y);
+}
+
+function addDecoration(p, topY){
+  const topRadius = p.width * Math.pow(0.74, p.tiers-1);
+  const topZ = p.length * Math.pow(0.74, p.tiers-1);
+  const groupY = topY + 0.02;
+
+  if(p.decor==='sprinkles'){
+    const cols = [0xE97C8D,0xAEDDEE,0xF6E2A6,0xC9AEDD,0xB9DCC0,0xFFFFFF];
+    for(let i=0;i<90;i++){
+      const a = Math.random()*Math.PI*2;
+      const r = Math.random()*topRadius*0.82;
+      const geo = new THREE.CylinderGeometry(0.02,0.02,0.09,6);
+      const mat = new THREE.MeshStandardMaterial({color: cols[i%cols.length]});
+      const s = new THREE.Mesh(geo, mat);
+      s.position.set(Math.cos(a)*r*(topRadius/Math.max(topRadius,topZ)), groupY+0.03, Math.sin(a)*r*(topZ/Math.max(topRadius,topZ)));
+      s.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      cakeGroup.add(s);
+    }
+  }
+  else if(p.decor==='drip'){
+    const dripColor = new THREE.Color(p.color).multiplyScalar(0.6);
+    const mat = new THREE.MeshStandardMaterial({color:dripColor, roughness:0.35, metalness:0.05});
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(topRadius*1.01, topRadius*1.01, 0.06, 48), mat);
+    cap.position.y = groupY; cap.scale.z = topZ/topRadius;
+    cakeGroup.add(cap);
+    const count = 26;
+    for(let i=0;i<count;i++){
+      const a = (i/count)*Math.PI*2;
+      const len = 0.15 + Math.random()*0.22;
+      const drop = new THREE.Mesh(new THREE.ConeGeometry(0.05, len, 8), mat);
+      drop.position.set(Math.cos(a)*topRadius, groupY-len/2+0.02, Math.sin(a)*topZ);
+      drop.rotation.x = Math.PI;
+      cakeGroup.add(drop);
+    }
+  }
+  else if(p.decor==='flowers'){
+    const petalCols = [0xE97C8D,0xF3C6D3,0xFFFFFF,0xC9AEDD];
+    for(let i=0;i<7;i++){
+      const a = (i/7)*Math.PI*2;
+      const r = topRadius*0.62;
+      const fx = Math.cos(a)*r, fz = Math.sin(a)*r*(topZ/topRadius);
+      const flowerCol = petalCols[i%petalCols.length];
+      const petMat = new THREE.MeshStandardMaterial({color:flowerCol, roughness:0.6});
+      for(let k=0;k<6;k++){
+        const pa = (k/6)*Math.PI*2;
+        const petal = new THREE.Mesh(new THREE.SphereGeometry(0.075,10,10), petMat);
+        petal.scale.set(1,0.55,1.7);
+        petal.position.set(fx+Math.cos(pa)*0.09, groupY+0.06, fz+Math.sin(pa)*0.09);
+        petal.rotation.y = pa;
+        cakeGroup.add(petal);
+      }
+      const center = new THREE.Mesh(new THREE.SphereGeometry(0.055,10,10), new THREE.MeshStandardMaterial({color:0xE4C070}));
+      center.position.set(fx, groupY+0.08, fz);
+      cakeGroup.add(center);
+    }
+  }
+  else if(p.decor==='fruits'){
+    const cols = [0xB3273D,0x6B2A6B,0xE97C8D,0x8B1E3F,0xC0392B];
+    for(let i=0;i<20;i++){
+      const a = Math.random()*Math.PI*2;
+      const r = topRadius*(0.7+Math.random()*0.25);
+      const berry = new THREE.Mesh(new THREE.SphereGeometry(0.07+Math.random()*0.03,10,10), new THREE.MeshStandardMaterial({color:cols[i%cols.length], roughness:0.35}));
+      berry.position.set(Math.cos(a)*r, groupY+0.06, Math.sin(a)*r*(topZ/topRadius));
+      cakeGroup.add(berry);
+    }
+  }
+  else if(p.decor==='candles'){
+    const count = Math.min(5, p.tiers+3);
+    for(let i=0;i<count;i++){
+      const a = (i/count)*Math.PI*2;
+      const r = topRadius*0.35;
+      const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,0.42,10), new THREE.MeshStandardMaterial({color:[0xE97C8D,0xAEDDEE,0xF6E2A6,0xC9AEDD,0xB9DCC0][i%5]}));
+      stick.position.set(Math.cos(a)*r, groupY+0.23, Math.sin(a)*r*(topZ/topRadius));
+      cakeGroup.add(stick);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.035,0.09,10), new THREE.MeshStandardMaterial({color:0xFFB347, emissive:0xFF8C1A, emissiveIntensity:0.9}));
+      flame.position.set(stick.position.x, groupY+0.47, stick.position.z);
+      cakeGroup.add(flame);
+      const flicker = new THREE.PointLight(0xFFB347, 0.35, 1.5);
+      flicker.position.copy(flame.position);
+      cakeGroup.add(flicker);
+    }
+  }
+}
+
+function makeTextTexture(text){
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 220;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle = 'rgba(255,253,246,0.97)';
+  roundRect(ctx, 8,8, c.width-16, c.height-16, 26); ctx.fill();
+  ctx.strokeStyle = '#B8863B'; ctx.lineWidth=6;
+  roundRect(ctx, 8,8, c.width-16, c.height-16, 26); ctx.stroke();
+  ctx.fillStyle = '#B85D74';
+  ctx.font = '64px Tajawal, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.direction = 'rtl';
+  ctx.fillText(text, c.width/2, c.height/2+6);
+  const tex = new THREE.CanvasTexture(c);
+  tex.needsUpdate = true;
+  return tex;
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function addTopper(p, topY){
+  if(p.occasion==='none') return;
+  const labels = {birthday:'عيد ميلاد سعيد', graduation:'مبروك التخرج', wedding:'مبروك الزفاف'};
+  const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.55,8), new THREE.MeshStandardMaterial({color:0xB8863B, metalness:0.6, roughness:0.3}));
+  stick.position.set(0, topY+0.32, 0);
+  cakeGroup.add(stick);
+  const tex = makeTextTexture(labels[p.occasion]);
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.95,0.42), new THREE.MeshBasicMaterial({map:tex, transparent:true, side:THREE.DoubleSide}));
+  flag.position.set(0.42, topY+0.62, 0);
+  cakeGroup.add(flag);
+}
+
+/* ---------------- slice on plate ---------------- */
+function buildSlice(p){
+  disposeGroup(sliceGroup);
+  const colors = fillingColors[p.filling];
+  const layers = 4;
+  const layerH = 0.09;
+  let y = plate.position.y + 0.04;
+  const radius = 0.62;
+  for(let i=0;i<layers;i++){
+    const isFill = i%2===1;
+    const mat = new THREE.MeshStandardMaterial({color: isFill? colors.fill : colors.sponge, roughness:0.6});
+    const geo = new THREE.CylinderGeometry(radius, radius, layerH, 32, 1, false, 0, Math.PI/2.6);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(plate.position.x, y, plate.position.z);
+    mesh.castShadow = true;
+    sliceGroup.add(mesh);
+    y += layerH;
+  }
+  // frosting cap on slice
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(radius*1.02, radius*1.02, 0.06, 32,1,false,0,Math.PI/2.6), new THREE.MeshStandardMaterial({color:p.color, roughness:0.5}));
+  cap.position.set(plate.position.x, y+0.01, plate.position.z);
+  sliceGroup.add(cap);
+}
+
+/* ---------------- read form + generate ---------------- */
+function selected(id){ return document.getElementById(id).options[document.getElementById(id).selectedIndex]; }
+
+function readParams(){
+  const widthOpt = selected('f-width'), lengthOpt = selected('f-length'), heightOpt = selected('f-height');
+  return {
+    shape: document.getElementById('f-shape').value,
+    shapeLabel: selected('f-shape').text,
+    tiers: parseInt(document.getElementById('f-tiers').value,10),
+    tiersLabel: selected('f-tiers').text,
+    width: parseFloat(widthOpt.value),
+    widthCm: parseFloat(widthOpt.dataset.cm),
+    widthLabel: widthOpt.text,
+    length: parseFloat(lengthOpt.value),
+    lengthCm: parseFloat(lengthOpt.dataset.cm),
+    lengthLabel: lengthOpt.text,
+    height: parseFloat(heightOpt.value),
+    heightCm: parseFloat(heightOpt.dataset.cm),
+    heightLabel: heightOpt.text,
+    filling: document.getElementById('f-filling').value,
+    fillingLabel: selected('f-filling').text,
+    color: document.getElementById('f-color').value,
+    colorLabel: selected('f-color').text,
+    decor: document.getElementById('f-decor').value,
+    decorLabel: selected('f-decor').text,
+    occasion: document.getElementById('f-occasion').value,
+    occasionLabel: selected('f-occasion').text,
+    customer: document.getElementById('f-customer').value.trim(),
+    notes: document.getElementById('f-notes').value.trim()
+  };
+}
+
+/* ---- estimates (real-world cm -> approximate weight & servings) ---- */
+function computeEstimates(p){
+  const shapeFactor = p.shape==='square' ? 1.0 : 0.785; // square = full rect area, round/heart ~ ellipse
+  let totalVolumeL = 0; // liters (dm^3)
+  let rW = p.widthCm, rL = p.lengthCm;
+  for(let i=0;i<p.tiers;i++){
+    const areaCm2 = rW * rL * shapeFactor;
+    const volCm3 = areaCm2 * p.heightCm;
+    totalVolumeL += volCm3/1000;
+    rW *= 0.74; rL *= 0.74;
+  }
+  const weightKg = totalVolumeL * 0.65; // ~0.65 kg per liter of finished cake
+  const servings = Math.max(4, Math.round((weightKg*1000)/110/2)*2); // ~110g per serving, rounded to even number
+  return { weightKg, servings };
+}
+
+function updateSummary(p){
+  const est = computeEstimates(p);
+  document.getElementById('stat-weight').textContent = est.weightKg.toFixed(1) + ' كجم';
+  document.getElementById('stat-servings').textContent = est.servings + ' حصة';
+  return est;
+}
+
+function generate(){
+  const p = readParams();
+  buildCake(p);
+  buildSlice(p);
+  updateSummary(p);
+}
+
+document.getElementById('generate-btn').addEventListener('click', generate);
+
+/* ---------------- order number / date ---------------- */
+const orderNo = 'CK-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-' + Math.floor(100+Math.random()*900);
+const orderDateStr = new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
+document.getElementById('order-no').textContent = orderNo;
+document.getElementById('order-date').textContent = orderDateStr;
+
+/* ---------------- print production sheet ---------------- */
+function fillPrintSheet(p, est){
+  document.getElementById('ps-order-no').textContent = orderNo;
+  document.getElementById('ps-date').textContent = orderDateStr;
+  document.getElementById('ps-customer').textContent = p.customer || '—';
+  document.getElementById('ps-weight').textContent = est.weightKg.toFixed(1) + ' كجم';
+  document.getElementById('ps-servings').textContent = est.servings + ' حصة';
+  document.getElementById('ps-notes').textContent = p.notes || 'لا توجد ملاحظات إضافية.';
+
+  const rows = [
+    ['شكل الكيكة', p.shapeLabel],
+    ['عدد الطبقات', p.tiersLabel],
+    ['العرض', p.widthLabel],
+    ['الطول', p.lengthLabel],
+    ['ارتفاع كل طبقة', p.heightLabel],
+    ['نوع الحشوة', p.fillingLabel],
+    ['لون الكريمة', p.colorLabel + '  (' + p.color + ')'],
+    ['الديكور العلوي', p.decorLabel],
+    ['لافتة المناسبة', p.occasionLabel]
+  ];
+  const tbody = document.getElementById('ps-table');
+  tbody.innerHTML = rows.map((r,i)=>(
+    '<tr style="background:'+(i%2===0?'#FBF3E7':'#FFFFFF')+';">'+
+      '<td style="padding:9px 12px;font-weight:700;width:38%;border-bottom:1px solid #E6D9C4;">'+r[0]+'</td>'+
+      '<td style="padding:9px 12px;border-bottom:1px solid #E6D9C4;">'+r[1]+'</td>'+
+    '</tr>'
+  )).join('');
+}
+
+document.getElementById('print-btn').addEventListener('click', ()=>{
+  const p = readParams();
+  const est = computeEstimates(p);
+  fillPrintSheet(p, est);
+  setTimeout(()=>window.print(), 50);
+});
+
+// live swatch preview for color select
+const swatchRow = document.getElementById('color-swatches');
+Array.from(document.getElementById('f-color').options).forEach(opt=>{
+  const sw = document.createElement('div');
+  sw.className='swatch';
+  sw.style.background = opt.value;
+  swatchRow.appendChild(sw);
+});
+
+/* ---------------- drag to orbit + zoom ---------------- */
+let isDown=false, lastX=0, lastY=0, theta=0.4, phi=1.15, radiusCam=8.5;
+function updateCamera(){
+  camera.position.x = radiusCam*Math.sin(phi)*Math.sin(theta);
+  camera.position.z = radiusCam*Math.sin(phi)*Math.cos(theta);
+  camera.position.y = radiusCam*Math.cos(phi);
+  camera.lookAt(0, 1.4, 0);
+}
+updateCamera();
+host.addEventListener('pointerdown', e=>{isDown=true; lastX=e.clientX; lastY=e.clientY;});
+window.addEventListener('pointerup', ()=>isDown=false);
+window.addEventListener('pointermove', e=>{
+  if(!isDown) return;
+  theta -= (e.clientX-lastX)*0.006;
+  phi -= (e.clientY-lastY)*0.006;
+  phi = Math.max(0.5, Math.min(1.5, phi));
+  lastX=e.clientX; lastY=e.clientY;
+  updateCamera();
+});
+host.addEventListener('wheel', e=>{
+  e.preventDefault();
+  radiusCam += e.deltaY*0.004;
+  radiusCam = Math.max(4.5, Math.min(13, radiusCam));
+  updateCamera();
+}, {passive:false});
+
+let autoSpin = true;
+host.addEventListener('pointerdown', ()=>autoSpin=false);
+
+function animate(){
+  requestAnimationFrame(animate);
+  if(autoSpin){ theta += 0.0022; updateCamera(); }
+  renderer.render(scene, camera);
+}
+animate();
+
+generate();
+</script>
+</body>
+</html>
