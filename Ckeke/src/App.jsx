@@ -58,7 +58,7 @@ function CustomerDataScreen({ onNext, onBack }) {
   );
 }
 
-// 3. شاشة النكهات والحشوات (الخطوة 3 الجديدة)
+// 3. شاشة النكهات والحشوات (الخطوة 3)
 function FlavorScreen({ onNext, onBack }) {
   const { flavorData, updateFlavorData } = useOrderStore();
   const inputStyle = { width: '100%', padding: '14px', backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', color: '#1f2937', marginBottom: '16px', outline: 'none', boxSizing: 'border-box', direction: 'rtl' };
@@ -75,7 +75,7 @@ function FlavorScreen({ onNext, onBack }) {
         <select style={inputStyle} value={flavorData.cakeFlavor} onChange={(e) => updateFlavorData('cakeFlavor', e.target.value)}>
           <option value="فانيليا">🍰 فانيليا</option>
           <option value="شوكولاتة">🍫 شوكولاتة</option>
-          <option value="ريد فلفل">🍓 ريد فلفيت</option>
+          <option value="ريد فلفيت">🍓 ريد فلفيت</option>
         </select>
 
         <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#374151'}}>الحشوة:</label>
@@ -93,14 +93,14 @@ function FlavorScreen({ onNext, onBack }) {
         </select>
 
         <button onClick={onNext} style={{ width: '100%', padding: '16px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '15px' }}>
-          تأكيد النكهات والمتابعة ➜
+          تأكيد النكهات والانتقال للزينة ➜
         </button>
       </div>
     </div>
   );
 }
 
-// 4. الموجه الرئيسي
+// 4. الموجه ومكون العرض 3D (الخطوة 2)
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('home');
   const { layers, addLayer, removeLayer, updateLayerColor } = useOrderStore();
@@ -108,11 +108,10 @@ export default function App() {
 
   if (activeScreen === 'home') return <HomeScreen onStartNewOrder={() => setActiveScreen('customer')} />;
   if (activeScreen === 'customer') return <CustomerDataScreen onNext={() => setActiveScreen('wizard_3d')} onBack={() => setActiveScreen('home')} />;
-  if (activeScreen === 'flavors') return <FlavorScreen onNext={() => alert('تم حفظ الطلب بنجاح في النسخة التجريبية MVP!')} onBack={() => setActiveScreen('wizard_3d')} />;
+  if (activeScreen === 'flavors') return <FlavorScreen onNext={() => alert('جاهزون للخطوة الرابعة: الزينة!')} onBack={() => setActiveScreen('wizard_3d')} />;
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', background: 'radial-gradient(circle at 50% 50%, #2c1618 0%, #0d0607 100%)', fontFamily: 'sans-serif' }}>
-      
       <button onClick={() => setActiveScreen('customer')} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 50, backgroundColor: 'rgba(255,255,255,0.1)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', padding: '10px 15px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(5px)' }}>
         رجوع ↩️
       </button>
@@ -132,7 +131,7 @@ export default function App() {
 
       <div style={{
         position: 'absolute', bottom: '20px', left: '50%', transform: `translate(-50%, ${isPanelOpen ? '0' : '150%'})`,
-        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)`, width: '90%', maxWidth: '400px', 
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)', width: '90%', maxWidth: '400px', 
         backgroundColor: 'rgba(255, 255, 255, 0.96)', borderRadius: '24px', padding: '24px', 
         boxShadow: '0 15px 50px rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: '20px', direction: 'rtl'
       }}>
@@ -143,7 +142,7 @@ export default function App() {
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button onClick={addLayer} disabled={layers.length >= 3} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length >= 3 ? '#e5e7eb' : '#2c1618', color: layers.length >= 3 ? '#9ca3af' : '#d4af37', fontSize: '18px', cursor: 'pointer', fontWeight: 'bold' }}>+</button>
-            <button onClick[removeLayer] disabled={layers.length <= 1} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length <= 1 ? '#e5e7eb' : '#ef4444', color: layers.length <= 1 ? '#9ca3af' : 'white', fontSize: '18px', cursor: 'pointer' }}>-</button>
+            <button onClick={removeLayer} disabled={layers.length <= 1} style={{ width: '35px', height: '35px', borderRadius: '8px', border: 'none', backgroundColor: layers.length <= 1 ? '#e5e7eb' : '#ef4444', color: layers.length <= 1 ? '#9ca3af' : 'white', fontSize: '18px', cursor: 'pointer' }}>-</button>
           </div>
         </div>
 
@@ -156,7 +155,6 @@ export default function App() {
           ))}
         </div>
         
-        {/* زر الانتقال لشاشة النكهات */}
         <button onClick={() => setActiveScreen('flavors')} style={{ width: '100%', padding: '14px', backgroundColor: '#2c1618', color: '#d4af37', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>متابعة (للنكهات) ➜</span>
           <span style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', padding: '4px 12px', borderRadius: '8px' }}>{layers.length * 5000} ريال</span>
