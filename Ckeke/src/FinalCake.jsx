@@ -1,9 +1,9 @@
 import React from 'react';
 import { useOrderStore } from './store';
-import { Text, TransformControls, Float } from '@react-three/drei';
+import { TransformControls, Text } from '@react-three/drei';
 
 export default function FinalCake() {
-  const { layers, decorations } = useOrderStore();
+  const { layers, decorations, selectedId, setSelectedId } = useOrderStore();
 
   return (
     <group position={[0, -1.2, 0]}>
@@ -15,17 +15,21 @@ export default function FinalCake() {
         </mesh>
       ))}
       
-      {/* الزينة القابلة للسحب */}
+      {/* محرك الزينة */}
       {decorations.map((dec) => (
-        <TransformControls key={dec.id} mode="translate">
-          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-            <group position={[0, 2.5, 0]}>
-              {dec.type === '🌹 ورد' && <Text fontSize={1}>🌹</Text>}
-              {dec.type === '👑 تاج' && <Text fontSize={1}>👑</Text>}
-              {dec.type === '🦋 فراشات' && <Text fontSize={1}>🦋</Text>}
-              {dec.type === '✍️ كتابة' && <Text fontSize={0.5} color="black">نص</Text>}
-            </group>
-          </Float>
+        <TransformControls 
+          key={dec.id} 
+          enabled={selectedId === dec.id}
+          onMouseDown={() => setSelectedId(dec.id)}
+        >
+          <group position={dec.position} onClick={(e) => { e.stopPropagation(); setSelectedId(dec.id); }}>
+            {dec.type === '🌹 ورد' && <mesh><sphereGeometry args={[0.3]} /><meshStandardMaterial color="red" /></mesh>}
+            {dec.type === '👑 تاج' && <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[0.3, 0.1, 16, 32]} /><meshStandardMaterial color="gold" /></mesh>}
+            {dec.type === '🦋 فراشات' && <mesh><coneGeometry args={[0.2, 0.4, 3]} /><meshStandardMaterial color="purple" /></mesh>}
+            {dec.type === '💖 قلب' && <mesh><dodecahedronGeometry args={[0.3]} /><meshStandardMaterial color="pink" /></mesh>}
+            {dec.type === '🎓 تخرج' && <mesh><boxGeometry args={[0.4, 0.2, 0.4]} /><meshStandardMaterial color="black" /></mesh>}
+            {dec.type === '💍 خاتم' && <mesh><torusGeometry args={[0.2, 0.05, 16, 32]} /><meshStandardMaterial color="silver" /></mesh>}
+          </group>
         </TransformControls>
       ))}
 
