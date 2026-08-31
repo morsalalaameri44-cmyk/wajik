@@ -18,33 +18,33 @@ jobs:
         with:
           node-version: 18
 
-      - name: Setup Java
+      - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Install & Build Customer App
+      - name: Build Web Application
+        run: |
+          npm install --legacy-peer-deps || (cd apps/customer && npm install --legacy-peer-deps)
+          cd apps/customer
+          npm run build
+
+      - name: Setup Capacitor & Generate Android Project
         run: |
           cd apps/customer
-          npm install
-          npm run build || true
+          npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
+          npx cap init "SpeedGoCustomer" "com.speedgo.customer" --web-dir dist
+          npx @capacitor/cli add android
+          npx @capacitor/cli sync android
 
-      - name: Setup Capacitor & Android
-        run: |
-          cd apps/customer
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init SpeedGoCustomer com.speedgo.customer --web-dir dist
-          npx cap add android
-          npx cap sync android
-
-      - name: Build Debug APK
+      - name: Build APK via Gradle
         run: |
           cd apps/customer/android
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
           name: SpeedGo-Customer-APK
