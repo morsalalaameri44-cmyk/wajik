@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -27,7 +27,7 @@ jobs:
       - name: Initialize Project & Setup Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest
+          npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "SpeedGoCustomer" "com.speedgo.customer" --web-dir apps/customer
           npx cap add android
           npx cap sync android
@@ -36,7 +36,7 @@ jobs:
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload Finished APK
         uses: actions/upload-artifact@v4
